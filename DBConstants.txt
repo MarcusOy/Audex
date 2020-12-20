@@ -1,0 +1,91 @@
+Groups:
+1. Admin - full access
+2. Member - upload files and download files
+3. Viewer - view files
+
+DeviceType:
+1. Web
+2. Windows
+3. MacOS
+4. Linux
+5. iOS
+6. Android
+7. Other
+
+FileTypes:
+1. Photo - .png, .jpeg, ...
+2. Video - .mp4, .mov, ...
+3. Audio - .mp3, .aac, ...
+4. Document - .docx, .pdf, ...
+5. Archive - .zip, .7z, ...
+6. Text - .txt, .csv, ...
+7. Code - .js, .cs, ...
+8. Other - everything else
+
+ConfigSettings:
+1. ThemePrimaryColor - #00918d
+2. ThemeTextColorLight - #000000
+3. ThemeTextColorDark - #FFFFFF
+4. ThemeBackgroundColorLight - #FFFFFF
+5. ThemeBackgroundColorDark - #141414
+
+ColorThemes (https://uxdesign.cc/dark-mode-ui-design-the-definitive-guide-part-1-color-53dcfaea5129):
+1. DarkCool
+- Primary: #2196F3
+- Text Color: #F5F7FA
+- Background Color: #1F2933
+- JSON:
+    {
+        "themePrimary": "#2196F3",
+        "themeLighterAlt": "#01060a",
+        "themeLighter": "#051827",
+        "themeLight": "#0a2d49",
+        "themeTertiary": "#145991",
+        "themeSecondary": "#1e83d5",
+        "themeDarkAlt": "#379ff4",
+        "themeDark": "#55adf5",
+        "themeDarker": "#80c2f8",
+        "neutralLighterAlt": "#25313c",
+        "neutralLighter": "#2b3844",
+        "neutralLight": "#364351",
+        "neutralQuaternaryAlt": "#3c4a59",
+        "neutralQuaternary": "#42515f",
+        "neutralTertiaryAlt": "#5b6b7a",
+        "neutralTertiary": "#f8fafc",
+        "neutralSecondary": "#f9fafc",
+        "neutralPrimaryAlt": "#fafbfd",
+        "neutralPrimary": "#F5F7FA",
+        "neutralDark": "#fdfdfe",
+        "black": "#fefefe",
+        "white": "#1F2933"
+    }
+
+2. DarkWarm
+- Primary: #f29822
+- Text: #faf9f7
+- Background: #27241d
+- Code: 
+    {
+        "themePrimary": "#f29822",
+        "themeLighterAlt": "#0a0601",
+        "themeLighter": "#271805",
+        "themeLight": "#492e0a",
+        "themeTertiary": "#915b14",
+        "themeSecondary": "#d5861e",
+        "themeDarkAlt": "#f4a237",
+        "themeDark": "#f5b055",
+        "themeDarker": "#f8c480",
+        "neutralLighterAlt": "#302c24",
+        "neutralLighter": "#38342b",
+        "neutralLight": "#464136",
+        "neutralQuaternaryAlt": "#4e493e",
+        "neutralQuaternary": "#555044",
+        "neutralTertiaryAlt": "#726c5f",
+        "neutralTertiary": "#a7a7a6",
+        "neutralSecondary": "#8c8b8b",
+        "neutralPrimaryAlt": "#70706f",
+        "neutralPrimary": "#FAF9F7",
+        "neutralDark": "#393939",
+        "black": "#1e1e1e",
+        "white": "#27241D"
+    }

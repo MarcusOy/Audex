@@ -1,0 +1,87 @@
+version: "3"
+services:
+  # # Dev Container
+  # audexdev:
+  #     build: 
+  #       context: ./Audex.API
+  #       dockerfile: ./Dockerfile
+  #     volumes:
+  #       - ./Audex.API:/app
+  #     environment:
+  #       - DOTNET_USE_POLLING_FILE_WATCHER=1
+  #       - DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX=2
+  #       - DOTNET_CLI_HOME=/sdk
+  #       - DOTNET_CLI_TELEMETRY_OPTOUT=1
+  #       - AUDEX_DEVELOPMENT=1
+  #     ports:
+  #         - "81:81"
+  #     restart: always
+  #     # logging:
+  #     #   driver: none
+  # Database
+  db:
+    image: mysql:5.7.32
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports: 
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_USER: audexapp
+      MYSQL_PASSWORD: "!audexapp!"
+      MYSQL_DATABASE: audex
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  # api:
+  #   container_name: audex
+  #   build: 
+  #     context: ./Audex.API
+  #     dockerfile: ./Audex.API/Dockerfile
+  #   volumes:
+  #     - ./LocorumBackend.API:/app/LocorumBackend.API
+  #     - ./LocorumBackend.Models:/app/LocorumBackend.Models
+  #   environment:
+  #     - DOTNET_USE_POLLING_FILE_WATCHER=1
+  #     - DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX=2
+  #     - DOTNET_CLI_TELEMETRY_OPTOUT=1
+  #     - AUDEX_DEVELOPMENT=1
+  #   ports:
+  #       - "5000:5000"
+
+
+
+
+#   nginx:
+#     container_name: locorumnginx
+#     image: nginx
+#     volumes:
+#       - ./Nginx/config:/etc/nginx:ro
+#       - ./Nginx/error:/var/www/error:ro
+#     restart: always
+#     ports:
+#       - 80:80
+#     depends_on:
+#       - portal
+#       - landing
+#       - portainer
+#       - strapi
+#     logging:
+#       driver: none
+#   portainer:
+#     image: portainer/portainer
+#     container_name: portainer
+#     restart: unless-stopped
+#     volumes:
+#       - portainer_data:/data
+#       - /var/run/docker.sock:/var/run/docker.sock
+#     ports:
+#       - 9000:9000
+#     logging:
+#       driver: none
+
+
+# volumes:
+#   portainer_data:
