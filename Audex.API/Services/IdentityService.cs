@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Audex.API.Services
@@ -25,17 +26,17 @@ namespace Audex.API.Services
 
     public class IdentityService : IIdentityService
     {
-        private ILogger<IdentityService> _logger { get; set; }
-        private AudexDBContext _context { get; set; }
-        private IConfiguration _configuration { get; }
+        private ILogger<IdentityService> _logger { get; }
+        private AudexDBContext _context { get; }
+        private AudexSettings _settings { get; }
 
         public IdentityService(ILogger<IdentityService> logger,
                                AudexDBContext context,
-                               IConfiguration config)
+                               IOptions<AudexSettings> settings)
         {
             _logger = logger;
             _context = context;
-            _configuration = config;
+            _settings = settings.Value;
         }
         public async Task<string> Authenticate(string username, string password)
         {
@@ -66,7 +67,7 @@ namespace Audex.API.Services
         private string GenerateAccessToken(string username, string userId, string[] roles)
         {
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])); // TODO: change secret to one generated on initialization
+                Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
 
             var claims = new List<Claim>
             {
@@ -80,10 +81,10 @@ namespace Audex.API.Services
             var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"], // TODO: Switch to dynamic issuer url
-                "audience", // TODO: Should be the same as above
+                _settings.Jwt.Issuer, // TODO: Switch to dynamic issuer url
+                _settings.Jwt.Audience, // TODO: Should be the same as above
                 claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddDays(30),
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -66,7 +66,7 @@ namespace Audex.API
             // .UseLazyLoadingProxies()
             );
 
-            // Setupt CORS policy
+            // Setup CORS policy
             services.AddCors(options =>
             {
                 options.AddPolicy(name: "APICors",
@@ -81,6 +81,7 @@ namespace Audex.API
 
             // Added custom JWT Identity Authentication Service
             services.AddScoped<IIdentityService, IdentityService>();
+            services.Configure<AudexSettings>(o => Configuration.GetSection("Audex").Bind(o));
             services.AddHttpContextAccessor();
 
             // Added JWT authenitcation
@@ -96,10 +97,10 @@ namespace Audex.API
                     ValidateAudience = true,
                     ValidateIssuer = true,
                     ValidateIssuerSigningKey = true,
-                    ValidAudience = "audience", // TODO: dynamically change audience based on user
-                    ValidIssuer = Configuration["Jwt:Issuer"], // TODO: dynamically change audience based on user
+                    ValidAudience = Configuration["Audex:Jwt:Audience"], // TODO: dynamically change audience based on user
+                    ValidIssuer = Configuration["Audex:Jwt:Issuer"], // TODO: dynamically change audience based on user
                     // RequireSignedTokens = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])) // TODO: generate random secret on initialization
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Audex:Jwt:Key"])) // TODO: generate random secret on initialization
                 };
                 o.RequireHttpsMetadata = false;
                 o.SaveToken = true;
@@ -126,7 +127,7 @@ namespace Audex.API
                             return new ValueTask(Task.CompletedTask);
                         }
                     )
-                    // .AddErrorFilter<GraphQLErrorFilter>()
+                    .AddErrorFilter<GraphQLErrorFilter>() // For debugging purposes
                     .AddFiltering()
                     .AddSorting();
         }
@@ -143,7 +144,8 @@ namespace Audex.API
                 if (env.IsDevelopment())
                 {
                     logger.LogInformation("Audex is running in development mode.");
-                    app.UseDeveloperExceptionPage();
+                    // app.UseDeveloperExceptionPage();
+                    app.UseStatusCodePages();
                 }
 
                 // app.UseHttpsRedirection(); //TODO: Reenable this
@@ -164,6 +166,7 @@ namespace Audex.API
                 });
 
                 app.UsePlayground("/api/v1/graphql");
+
             }
 
             dbContext.EnsureInitialData(identityService, logger); // TODO: use proper DI

@@ -1,3 +1,4 @@
+using System.Data;
 using System.Net;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,8 +39,21 @@ namespace Audex.API.GraphQL
         {
             return context.Users
                           .Include(u => u.Group)
-                          .ThenInclude(g => g.GroupRoles)
-                          .ThenInclude(gr => gr.Role);
+                            .ThenInclude(g => g.GroupRoles)
+                            .ThenInclude(gr => gr.Role)
+                          .Select(u => new User
+                          {
+                              Id = u.Id,
+                              Username = u.Username,
+                              // Excluding Password and Salt
+                              Password = "***",
+                              Salt = "***",
+                              DateCreated = u.DateCreated,
+                              Active = u.Active,
+                              GroupId = u.GroupId,
+                              Group = u.Group,
+                              Devices = u.Devices
+                          });
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]
