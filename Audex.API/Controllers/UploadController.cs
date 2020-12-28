@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Net;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Audex.API.Controllers
 {
@@ -27,15 +29,16 @@ namespace Audex.API.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize]
         public IEnumerable<WeatherForecast> Get()
         {
+            var user = HttpContext.User;
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
+                Summary = $"Currently logged in user: {user.Identity.Name}"
             })
             .ToArray();
         }

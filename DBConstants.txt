@@ -3,6 +3,15 @@ Groups:
 2. Member - upload files and download files
 3. Viewer - view files
 
+Roles:
+1. Login
+2. UploadFiles
+3. ViewFiles
+4. UserManagement
+5. DeviceManagement
+6. PrivatelyShareFiles
+7. PubliclyShareFiles
+
 DeviceType:
 1. Web
 2. Windows

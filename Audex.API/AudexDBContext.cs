@@ -9,6 +9,8 @@ namespace Audex.API
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupRole> GroupRoles { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceType> DeviceTypes { get; set; }
         public DbSet<File> Files { get; set; }

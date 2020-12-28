@@ -1,21 +1,61 @@
+using System.Net;
 using System.Collections.Generic;
 using System.Linq;
+using Audex.API.GraphQL.Extensions;
 using HotChocolate;
-using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
+using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using HotChocolate.AspNetCore.Authorization;
 
 namespace Audex.API.GraphQL
 {
     public class Query
     {
+
         public string Test()
         {
             return "This is a test query. It works!";
         }
 
-        public IQueryable<User> GetUsers([ScopedService] AudexDBContext context)
+        [Authorize]
+        public string TestAuthorized()
         {
-            return context.Users;
+            return "This is a test query. You are authorized!";
+        }
+
+        [Authorize]
+        public User WhoAmI([CurrentUserGlobalState] CurrentUser user,
+                           [Service] AudexDBContext context)
+        {
+            return context.Users
+                          .FirstOrDefault(u => u.Id == user.UserId);
+        }
+
+        [Authorize, UsePaging, UseFiltering, UseSorting]
+        public IQueryable<User> GetUsers([Service] AudexDBContext context)
+        {
+            return context.Users
+                          .Include(u => u.Group)
+                          .ThenInclude(g => g.GroupRoles)
+                          .ThenInclude(gr => gr.Role);
+        }
+
+        [Authorize, UsePaging, UseFiltering, UseSorting]
+        public IQueryable<Group> GetGroups([Service] AudexDBContext context)
+        {
+            return context.Groups
+                          .Include(g => g.Users)
+                          .Include(g => g.GroupRoles);
+        }
+
+        [Authorize, UsePaging, UseFiltering, UseSorting]
+        public IQueryable<GroupRole> GetGroupRoles([Service] AudexDBContext context)
+        {
+            return context.GroupRoles
+                          .Include(gr => gr.Group)
+                          .Include(gr => gr.Role);
         }
 
         // [Authorize]

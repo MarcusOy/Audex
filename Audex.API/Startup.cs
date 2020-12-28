@@ -1,3 +1,4 @@
+using System.Security.AccessControl;
 using System.Text;
 using System.Reflection;
 using System;
@@ -20,6 +21,10 @@ using Microsoft.IdentityModel.Tokens;
 using HotChocolate;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Interceptors;
+using Audex.API.GraphQL;
+using Audex.API.Migrations;
+using System.Security.Claims;
+using Audex.API.GraphQL.Extensions;
 
 namespace Audex.API
 {
@@ -47,6 +52,7 @@ namespace Audex.API
             cs["Password"] = "!audexapp!";
 
             // Add EntityFramework Context
+            // services.AddDbContextFactory<AudexDBContext>(
             services.AddDbContextPool<AudexDBContext>(
                 dbContextOptions => dbContextOptions
                     .UseMySql(
@@ -57,6 +63,7 @@ namespace Audex.API
                     // Everything from this point on is optional but helps with debugging.
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
+            // .UseLazyLoadingProxies()
             );
 
             // Setupt CORS policy
@@ -90,9 +97,9 @@ namespace Audex.API
                     ValidateIssuer = true,
                     ValidateIssuerSigningKey = true,
                     ValidAudience = "audience", // TODO: dynamically change audience based on user
-                    ValidIssuer = "issuer", // TODO: dynamically change audience based on user
-                    RequireSignedTokens = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret")) // TODO: generate random secret on initialization
+                    ValidIssuer = Configuration["Jwt:Issuer"], // TODO: dynamically change audience based on user
+                    // RequireSignedTokens = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])) // TODO: generate random secret on initialization
                 };
                 o.RequireHttpsMetadata = false;
                 o.SaveToken = true;
@@ -101,7 +108,27 @@ namespace Audex.API
             services.AddGraphQLServer()
                     .AddMutationType<Audex.API.GraphQL.Mutation>()
                     .AddQueryType<Audex.API.GraphQL.Query>()
-                    .AddAuthorization();
+                    .AddAuthorization()
+                    .AddHttpRequestInterceptor(
+                        (context, executer, builder, ct) =>
+                        {
+                            if (context.GetUser().Identity.IsAuthenticated)
+                            {
+                                builder.SetProperty("CurrentUser",
+                                    new CurrentUser(
+                                        Guid.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                                        context.User.Identity.Name,
+                                        context.User.Claims.Select(x => $"{x.Type} : {x.Value}").ToList()
+                                    )
+                                );
+                            }
+
+                            return new ValueTask(Task.CompletedTask);
+                        }
+                    )
+                    // .AddErrorFilter<GraphQLErrorFilter>()
+                    .AddFiltering()
+                    .AddSorting();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -125,83 +152,21 @@ namespace Audex.API
 
                 app.UseCors("APICors");
 
+                app.UseAuthentication();
+
                 app.UseAuthorization();
 
-                app.UseAuthentication();
 
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    endpoints.MapGraphQL("/graphql");
+                    endpoints.MapGraphQL("/api/v1/graphql");
                 });
 
-                app.UsePlayground("/graphql");
+                app.UsePlayground("/api/v1/graphql");
             }
 
-            // Database initial data checks
-            using (logger.BeginScope("Audex is checking the configured database..."))
-            {
-                // Apply pending migrations
-                dbContext.Database.Migrate();
-
-                // Checking admin account
-                if (dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
-                {
-                    var u = "admin"; //TODO: Allow user to specify
-                    var p = identityService.GenerateRandomPassword(16);
-                    var s = identityService.GenerateSalt();
-                    dbContext.Users.Add(new User
-                    {
-                        Id = new Guid(),
-                        Username = "admin",
-                        Password = identityService.GenerateHashedPassword(p, s.AsBytes),
-                        DateCreated = DateTime.UtcNow,
-                        Active = true,
-                        Salt = s.AsString,
-                        GroupId = 1
-                    });
-                    logger.LogWarning("Admin account was not initialized, so a new one has been created.");
-                    logger.LogInformation("Use the following account to login:");
-                    logger.LogInformation($"Username: {u}");
-                    logger.LogInformation($"Password: {p}");
-
-                }
-                // Checking Group entities
-                if (dbContext.Groups.Count() < 3)
-                {
-                    logger.LogWarning("Groups are not initialized.");
-                    if (dbContext.Groups.FirstOrDefault(g => g.Name == "Administrator") == null)
-                    {
-                        dbContext.Groups.Add(new Group
-                        {
-                            Id = 1,
-                            Name = "Administrator"
-                        });
-                        logger.LogInformation("The Administrator group has been initialized.");
-                    }
-                    if (dbContext.Groups.FirstOrDefault(g => g.Name == "Member") == null)
-                    {
-                        dbContext.Groups.Add(new Group
-                        {
-                            Id = 2,
-                            Name = "Member"
-                        });
-                        logger.LogInformation("The Member group has been initialized.");
-                    }
-                    if (dbContext.Groups.FirstOrDefault(g => g.Name == "Viewer") == null)
-                    {
-                        dbContext.Groups.Add(new Group
-                        {
-                            Id = 3,
-                            Name = "Viewer"
-                        });
-                        logger.LogInformation("The Viewer group has been initialized.");
-                    }
-                }
-
-                dbContext.SaveChanges();
-            }
+            dbContext.EnsureInitialData(identityService, logger); // TODO: use proper DI
         }
-
     }
 }

@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,7 +17,7 @@ namespace Audex.API.Services
 {
     public interface IIdentityService
     {
-        Task<string> Authenticate(string email, string password);
+        Task<string> Authenticate(string username, string password);
         public string GenerateRandomPassword(int length, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_");
         public (byte[] AsBytes, string AsString) GenerateSalt();
         public string GenerateHashedPassword(string password, byte[] salt);
@@ -25,21 +27,29 @@ namespace Audex.API.Services
     {
         private ILogger<IdentityService> _logger { get; set; }
         private AudexDBContext _context { get; set; }
+        private IConfiguration _configuration { get; }
+
         public IdentityService(ILogger<IdentityService> logger,
-                               AudexDBContext context)
+                               AudexDBContext context,
+                               IConfiguration config)
         {
             _logger = logger;
             _context = context;
+            _configuration = config;
         }
         public async Task<string> Authenticate(string username, string password)
         {
             //Your custom logic here (e.g. database query)
             //Mocked for a sake of simplicity
             var roles = new List<string>();
-            var u = _context.Users.FirstOrDefault(u => u.Username == username);
+            var u = _context.Users
+                    .Include(u => u.Group)
+                    .Include(u => u.Group.GroupRoles)
+                        .ThenInclude(gr => gr.Role)
+                    .FirstOrDefault(u => u.Username == username);
             if (u != null)
             {
-                if (GenerateHashedPassword(password, Encoding.UTF8.GetBytes(u.Salt)) == u.Password)
+                if (GenerateHashedPassword(password, Convert.FromBase64String(u.Salt)) == u.Password)
                 {
                     foreach (GroupRole gR in u.Group.GroupRoles)
                     {
@@ -50,13 +60,13 @@ namespace Audex.API.Services
                 }
             }
 
-            throw new AuthenticationException();
+            throw new AuthenticationException("Credential not valid.");
         }
 
         private string GenerateAccessToken(string username, string userId, string[] roles)
         {
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("secret")); // TODO: change secret to one generated on initialization
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])); // TODO: change secret to one generated on initialization
 
             var claims = new List<Claim>
             {
@@ -70,10 +80,10 @@ namespace Audex.API.Services
             var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                "issuer", // TODO: Switch to dynamic issuer url
+                _configuration["Jwt:Issuer"], // TODO: Switch to dynamic issuer url
                 "audience", // TODO: Should be the same as above
                 claims,
-                expires: DateTime.Now.AddDays(60),
+                expires: DateTime.Now.AddHours(1),
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -133,7 +143,7 @@ namespace Audex.API.Services
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
                 salt: salt,
-                prf: KeyDerivationPrf.HMACSHA1,
+                prf: KeyDerivationPrf.HMACSHA512,
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
         }
