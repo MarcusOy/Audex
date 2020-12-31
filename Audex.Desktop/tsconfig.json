@@ -19,7 +19,11 @@
     "module": "esnext",
     "isolatedModules": true
   },
+  // "include": [
+  //   "src"
+  // ]
   "include": [
-    "src"
+    "src/**/*.d.ts",
+    "src/**/*.ts"
   ]
 }
