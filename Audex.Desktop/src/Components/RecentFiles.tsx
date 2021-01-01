@@ -3,20 +3,18 @@ import {
 	Icon,
 	IconButton,
 	Link,
-	List,
-	ScrollablePane,
 	Spinner,
 	SpinnerSize,
 	Text,
 } from '@fluentui/react';
-import { useBoolean } from '@fluentui/react-hooks';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { getFileTypeIconProps, FileIconType } from '@uifabric/file-type-icons';
+import { getFileTypeIconProps } from '@uifabric/file-type-icons';
 import BackToTop from 'react-back-to-top-button';
 import React, { useState } from 'react';
 import faker from 'faker';
 import MenuBar from './MenuBar';
-import FilePanel from './FilePanel';
+import { IFilePanel } from './FilePanel';
+import { DataStore } from '../Stores/DataStore';
 
 const RecentFiles = () => {
 	const moreFakeRecent = () => {
@@ -61,9 +59,15 @@ const RecentFiles = () => {
 	// 	false
 	// );
 	// const [file]
-	// const inspectFile = (id: string) => {
-	// 	openPanel();
-	// };
+	const inspectFile = (id: string) => {
+		// DataStore.update((s) => {
+		// 	(s.Modals.FilePanel.isOpen = true),
+		// 		(s.Modals.FilePanel.fileId = id);
+		// });
+		DataStore.openModal<IFilePanel>((s) => s.Modals.FilePanel, {
+			fileId: id,
+		});
+	};
 
 	return (
 		<div>

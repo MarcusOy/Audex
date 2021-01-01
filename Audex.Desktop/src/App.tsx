@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import HeaderBar from './Components/Header/HeaderBar';
 import HomePage from './Pages/HomePage';
+import Modals from './Components/Modals';
 
 const App = () => {
 	initializeIcons();
@@ -19,7 +20,7 @@ const App = () => {
 		<ThemeProvider>
 			<Router>
 				<HeaderBar />
-
+				<Modals />
 				<Switch>
 					<Route path='/' exact>
 						<Redirect to='/Home/Recent' />

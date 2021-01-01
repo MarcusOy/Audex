@@ -1,19 +1,27 @@
 import { Panel } from '@fluentui/react';
+import { useStoreState } from 'pullstate';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { useBoolean } from '@fluentui/react-hooks';
+import { DataStore } from '../Stores/DataStore';
+import { IModal } from './Modals';
 
-interface Props {
-	isOpen: boolean;
-	dismiss: () => void;
+export interface IFilePanel extends IModal {
+	fileId: string;
 }
 
-const FilePanel = (props: Props) => {
+const FilePanel = () => {
+	const modalState = DataStore.useState((s) => s.Modals.FilePanel);
+
+	const onDismissed = () => {
+		DataStore.update((s) => {
+			s.Modals.FilePanel.isOpen = false;
+		});
+	};
+
 	return (
 		<Panel
 			headerText='File'
-			isOpen={props.isOpen}
-			onDismiss={props.dismiss}
+			isOpen={modalState.isOpen}
+			onDismissed={onDismissed}
 		>
 			<p>Content goes here.</p>
 		</Panel>
