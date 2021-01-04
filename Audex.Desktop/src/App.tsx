@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom';
 import HeaderBar from './Components/Header/HeaderBar';
 import HomePage from './Pages/HomePage';
-import Modals from './Components/Modals';
+import Modals from './Components/Modals/Modals';
 
 const App = () => {
 	initializeIcons();

@@ -1,5 +1,6 @@
 import { CommandBar, ICommandBarItemProps } from '@fluentui/react';
 import React, { useEffect, useState } from 'react';
+import { DataStore } from '../Data/DataStore';
 
 const _baseItems: ICommandBarItemProps[] = [
 	{
@@ -12,11 +13,21 @@ const _baseItems: ICommandBarItemProps[] = [
 					key: 'upload',
 					text: 'File Upload',
 					iconProps: { iconName: 'OpenFile' },
+					onClick: () =>
+						DataStore.update((s) => {
+							s.Modals.FileTransfer.isOpen = true;
+							s.Modals.FileTransfer.mode = 'upload';
+						}),
 				},
 				{
 					key: 'transfer',
 					text: 'File Transfer',
 					iconProps: { iconName: 'ChangeEntitlements' },
+					onClick: () =>
+						DataStore.update((s) => {
+							s.Modals.FileTransfer.isOpen = true;
+							s.Modals.FileTransfer.mode = 'transfer';
+						}),
 				},
 			],
 		},
@@ -99,6 +110,7 @@ const _farItems: ICommandBarItemProps[] = [
 
 interface Props {
 	type: 'Recent' | 'Files' | 'Devices';
+	itemsSelected?: boolean;
 }
 
 const MenuBar = (props: Props) => {
@@ -107,7 +119,6 @@ const MenuBar = (props: Props) => {
 	useEffect(() => {
 		let i = [];
 		i = i.concat(_baseItems);
-		console.log(_baseItems);
 		switch (props.type) {
 			case 'Recent':
 				i = i.concat(_recentItems);
@@ -124,7 +135,7 @@ const MenuBar = (props: Props) => {
 
 	return (
 		<CommandBar
-			style={{ marginTop: 10, position: 'sticky', top: 0 }}
+			style={{ marginTop: 10, position: 'sticky', top: 0, zIndex: 100 }}
 			items={items}
 			// overflowItems={_overflowItems}
 			farItems={_farItems}

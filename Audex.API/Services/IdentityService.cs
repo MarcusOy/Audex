@@ -18,7 +18,7 @@ namespace Audex.API.Services
 {
     public interface IIdentityService
     {
-        Task<string> Authenticate(string username, string password);
+        string Authenticate(string username, string password);
         public string GenerateRandomPassword(int length, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_");
         public (byte[] AsBytes, string AsString) GenerateSalt();
         public string GenerateHashedPassword(string password, byte[] salt);
@@ -38,7 +38,7 @@ namespace Audex.API.Services
             _context = context;
             _settings = settings.Value;
         }
-        public async Task<string> Authenticate(string username, string password)
+        public string Authenticate(string username, string password)
         {
             //Your custom logic here (e.g. database query)
             //Mocked for a sake of simplicity

@@ -1,7 +1,7 @@
 import { Panel } from '@fluentui/react';
 import { useStoreState } from 'pullstate';
 import React from 'react';
-import { DataStore } from '../Stores/DataStore';
+import { DataStore } from '../../Data/DataStore';
 import { IModal } from './Modals';
 
 export interface IFilePanel extends IModal {
@@ -9,7 +9,7 @@ export interface IFilePanel extends IModal {
 }
 
 const FilePanel = () => {
-	const modalState = DataStore.useState((s) => s.Modals.FilePanel);
+	const modalState = useStoreState(DataStore, (s) => s.Modals.FilePanel);
 
 	const onDismissed = () => {
 		DataStore.update((s) => {
@@ -21,9 +21,10 @@ const FilePanel = () => {
 		<Panel
 			headerText='File'
 			isOpen={modalState.isOpen}
-			onDismissed={onDismissed}
+			onDismiss={onDismissed}
+			isLightDismiss
 		>
-			<p>Content goes here.</p>
+			<p>File ID: {modalState.fileId}</p>
 		</Panel>
 	);
 };

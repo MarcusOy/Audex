@@ -1,8 +1,9 @@
-import { IModal } from './../Components/Modals';
-import { IFilePanel } from './../Components/FilePanel';
+import { IFileTransferPanel } from '../Components/Modals/FileTransferPanel';
+import { IModal } from '../Components/Modals/Modals';
+import { IFilePanel } from '../Components/Modals/FilePanel';
 import { Store } from 'pullstate';
 import { useEffect, useState } from 'react';
-import { getSplitButtonClassNames } from '@fluentui/react';
+import { IFileUnit } from '../Components/Uploading/FileUnit';
 
 export interface AudexStore {
 	Authentication: {
@@ -14,6 +15,10 @@ export interface AudexStore {
 	Modals: {
 		FilePanel: IFilePanel;
 		FilePreview: IModal;
+		FileTransfer: IFileTransferPanel;
+	};
+	Upload: {
+		Files: IFileUnit[];
 	};
 }
 
@@ -32,30 +37,23 @@ const initialState: AudexStore = {
 		FilePreview: {
 			isOpen: false,
 		},
+		FileTransfer: {
+			isOpen: false,
+			fileId: '',
+			mode: 'upload',
+		},
+	},
+	Upload: {
+		Files: [],
 	},
 };
 
-class ExpandedDataStore extends Store<AudexStore> {
-	openModal<S extends IModal = IModal>(
-		getSubState: (state: AudexStore) => S,
-		options?: S
-	) {
-		let s = getSubState(this.getRawState());
-		s = {
-			...options!,
-			isOpen: true,
-		};
-
-		this.update(getSubState);
-	}
-}
-
-export const DataStore = new ExpandedDataStore(initialState);
+export const DataStore = new Store<AudexStore>(initialState);
 
 export const useLoader = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const [isError, setIsError] = useState(false);
-	const [isSecure, setIsSecure] = useState(false);
+	const [isLoading] = useState(false);
+	const [isError] = useState(false);
+	const [isSecure] = useState(false);
 
 	useEffect(() => {
 		//TODO: load from secure storage

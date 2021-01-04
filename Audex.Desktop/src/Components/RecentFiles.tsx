@@ -1,20 +1,21 @@
 import {
 	ActivityItem,
+	FontIcon,
 	Icon,
 	IconButton,
 	Link,
+	Separator,
 	Spinner,
 	SpinnerSize,
 	Text,
 } from '@fluentui/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { getFileTypeIconProps } from '@uifabric/file-type-icons';
-import BackToTop from 'react-back-to-top-button';
 import React, { useState } from 'react';
 import faker from 'faker';
 import MenuBar from './MenuBar';
-import { IFilePanel } from './FilePanel';
-import { DataStore } from '../Stores/DataStore';
+import { DataStore } from '../Data/DataStore';
+import BackToTop from './BackToTop';
 
 const RecentFiles = () => {
 	const moreFakeRecent = () => {
@@ -28,7 +29,7 @@ const RecentFiles = () => {
 						</Link>,
 						<Text key={2}> uploaded </Text>,
 						<Link
-							onClick={() => inspectFile('file guid')}
+							onClick={() => inspectFile(faker.random.uuid())}
 							style={{ fontWeight: 'bold' }}
 							key={3}
 						>
@@ -64,8 +65,9 @@ const RecentFiles = () => {
 		// 	(s.Modals.FilePanel.isOpen = true),
 		// 		(s.Modals.FilePanel.fileId = id);
 		// });
-		DataStore.openModal<IFilePanel>((s) => s.Modals.FilePanel, {
-			fileId: id,
+		DataStore.update((s) => {
+			(s.Modals.FilePanel.fileId = id),
+				(s.Modals.FilePanel.isOpen = true);
 		});
 	};
 
@@ -89,26 +91,20 @@ const RecentFiles = () => {
 			>
 				{activity.map((i) => {
 					return (
-						<ActivityItem
-							{...i}
-							key={i.key}
-							style={{
-								marginTop: 20,
-								marginLeft: 40,
-								marginRight: 40,
-							}}
-						/>
+						<div key={i.key}>
+							<Separator />
+							<ActivityItem
+								{...i}
+								style={{
+									// marginTop: 20,
+									marginLeft: 40,
+									marginRight: 40,
+								}}
+							/>
+						</div>
 					);
 				})}
 			</InfiniteScroll>
-			<BackToTop showAt={100} speed={1500} easing='easeOutSine'>
-				<IconButton
-					iconProps={{ iconName: 'ChevronUp' }}
-					title='BacktoTop'
-					ariaLabel='BacktoTop'
-				/>
-			</BackToTop>
-			{/* <FilePanel isOpen={isOpen} dismiss={dismissPanel} /> */}
 		</div>
 	);
 };

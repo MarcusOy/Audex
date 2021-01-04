@@ -25,6 +25,7 @@ using Audex.API.GraphQL;
 using Audex.API.Migrations;
 using System.Security.Claims;
 using Audex.API.GraphQL.Extensions;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Audex.API
 {
@@ -40,6 +41,12 @@ namespace Audex.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // // Sets max file size
+            // services.Configure<KestrelServerOptions>(options =>
+            // {
+            //     options.Limits.MaxRequestBodySize = int.MaxValue; // TODO: set max file size
+            // });
+
             // Add API Controllers
             services.AddControllers();
 
@@ -72,8 +79,8 @@ namespace Audex.API
                 options.AddPolicy(name: "APICors",
                 builder =>
                 {
-                    // builder.AllowAnyOrigin();
-                    builder.WithOrigins("http://localhost:3000");
+                    builder.AllowAnyOrigin();
+                    // builder.WithOrigins("http://localhost:3000");
                     builder.AllowAnyMethod();
                     builder.AllowAnyHeader();
                 });

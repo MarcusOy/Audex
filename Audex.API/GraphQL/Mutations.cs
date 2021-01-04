@@ -6,7 +6,7 @@ namespace Audex.API.GraphQL
 {
     public class Mutation
     {
-        public Task<string> GetToken(string username, string password, [Service] IIdentityService identityService) =>
+        public string GetToken(string username, string password, [Service] IIdentityService identityService) =>
             identityService.Authenticate(username, password);
     }
 }

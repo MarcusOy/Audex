@@ -38,36 +38,43 @@ namespace Audex.API.Controllers
                       Go ahead and make a file upload!";
         }
 
-        [HttpPost, Authorize]
+        [HttpPost] // TODO: readd authorization
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        [DisableRequestSizeLimit]
+        [Consumes("multipart/form-data")] // for Zip files with form data
         public async Task<IActionResult> Post([FromForm] FilesUploadedModel model)
         {
-            long size = model.Files.Sum(f => f.Length);
-
-            foreach (var formFile in model.Files)
+            try
             {
-                if (formFile.Length > 0)
+                if (model.File != null && model.File.Length > 0)
                 {
                     var filePath = Path.GetTempFileName();
 
                     using (var stream = System.IO.File.Create(filePath))
                     {
-                        await formFile.CopyToAsync(stream);
+                        await model.File.CopyToAsync(stream);
                     }
+
+
+
+                    // Process uploaded files
+                    // Don't rely on or trust the FileName property without validation.
+
+                    return Ok(new { uid = Guid.NewGuid() });
                 }
+                else
+                    return BadRequest("Not a file.");
             }
-
-            // Process uploaded files
-            // Don't rely on or trust the FileName property without validation.
-
-            return Ok(new { count = model.Files.Count, size });
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         public class FilesUploadedModel
         {
             [FromForm(Name = "file")]
-            public List<IFormFile> Files { get; set; }
-            public string Key { get; set; }
-
+            public IFormFile File { get; set; }
         }
     }
 }
