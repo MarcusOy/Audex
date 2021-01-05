@@ -62,7 +62,7 @@ const HeaderBar = () => {
 								maxWidth: 600,
 							}}
 							placeholder='Search'
-							underlined
+							// underlined
 							onSearch={(newValue) =>
 								console.log('value is ' + newValue)
 							}

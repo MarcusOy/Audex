@@ -223,9 +223,9 @@ export class DetailsListDocumentsExample extends React.Component<
 						message={`Number of items after filter applied: ${items.length}.`}
 					/>
 				</div> */}
-				<div className={classNames.selectionDetails}>
+				{/* <div className={classNames.selectionDetails}>
 					{selectionDetails}
-				</div>
+				</div> */}
 				<Announced message={selectionDetails} />
 				{announcedMessage ? (
 					<Announced message={announcedMessage} />

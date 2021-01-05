@@ -18,31 +18,6 @@ namespace Audex.API.Migrations
                 // Apply pending migrations
                 dbContext.Database.Migrate();
 
-                // Checking admin account
-                if (dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
-                {
-                    var u = "admin"; //TODO: Allow user to specify
-                    var p = identityService.GenerateRandomPassword(16);
-                    var s = identityService.GenerateSalt();
-                    dbContext.Users.Add(new User
-                    {
-                        Id = new Guid(),
-                        Username = "admin",
-                        Password = identityService.GenerateHashedPassword(p, s.AsBytes),
-                        DateCreated = DateTime.UtcNow,
-                        Active = true,
-                        Salt = s.AsString,
-                        GroupId = 1
-                    });
-                    logger.LogInformation($@"
-                        Admin account was not initialized, so a new one has been created.
-                        Use the following account to login:
-
-                        Username: {u}
-                        Password: {p}
-                    ");
-
-                }
 
                 // Checking Role entities
                 if (dbContext.Roles.Count() < 7)
@@ -50,7 +25,7 @@ namespace Audex.API.Migrations
                     logger.LogWarning("Roles may not be initialized.");
                     string[] r = {"Login",
                                   "UploadFiles",
-                                  "UploadFiles",
+                                //   "UploadFiles",
                                   "ViewFiles",
                                   "UserManagement",
                                   "DeviceManagement",
@@ -68,7 +43,10 @@ namespace Audex.API.Migrations
                             m += $"The {s} role has been initialized.\n";
                         }
                     }
+                    dbContext.SaveChanges();
+
                     logger.LogInformation(m);
+
                 }
 
                 // Checking Group entities
@@ -90,6 +68,8 @@ namespace Audex.API.Migrations
                             m += $"The {s} group has been initialized.\n";
                         }
                     }
+                    dbContext.SaveChanges();
+
                     logger.LogInformation(m);
                 }
 
@@ -130,8 +110,102 @@ namespace Audex.API.Migrations
                         }
                         m += $"The role {s.Role} has been added to group {s.Group}.\n";
                     }
+                    dbContext.SaveChanges();
+
                     logger.LogInformation(m);
                 }
+
+                // Checking Device entities
+                if (dbContext.DeviceTypes.Count() < 10)
+                {
+                    logger.LogWarning("DeviceTypes may not be initialized.");
+                    string[] d = {"Audex Server",
+                                  "Windows",
+                                  "MacOS",
+                                  "Linux",
+                                  "Web",
+                                  "iOS",
+                                  "Android",
+                                  "Other"};
+                    var m = "";
+                    foreach (string s in d)
+                    {
+                        if (dbContext.DeviceTypes.FirstOrDefault(d => d.Name == s) == null)
+                        {
+                            dbContext.DeviceTypes.Add(new DeviceType
+                            {
+                                Name = s
+                            });
+                            m += $"The {s} DeviceType has been initialized.\n";
+                        }
+                    }
+                    dbContext.SaveChanges();
+
+                    logger.LogInformation(m);
+                }
+
+                // Checking admin account
+                if (dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
+                {
+                    // Adding admin user and saving to get id
+                    var un = "admin"; //TODO: Allow user to specify
+                    var p = identityService.GenerateRandomPassword(16);
+                    var s = identityService.GenerateSalt();
+                    var u = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        Username = un,
+                        Password = identityService.GenerateHashedPassword(p, s.AsBytes),
+                        DateCreated = DateTime.UtcNow,
+                        Active = true,
+                        Salt = s.AsString,
+                        Group = dbContext.Groups.FirstOrDefault(g => g.Name == "Administrator")
+                    };
+                    dbContext.Users.Add(u);
+                    dbContext.SaveChanges();
+
+                    // Adding a device for the server
+                    var d = new Device
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Audex Server",
+                        User = u,
+                        DeviceType = dbContext.DeviceTypes.FirstOrDefault(d => d.Name == "Audex Server")
+                    };
+                    dbContext.Devices.Add(d);
+                    dbContext.SaveChanges();
+
+                    // Adding starting drive and a root file node
+                    var fn = new FileNode
+                    {
+                        Id = Guid.NewGuid(),
+                        IsDirectory = true,
+                        Name = $"{un}'s Root",
+                        DateCreated = DateTime.UtcNow,
+                        OwnerUser = u,
+                        ParentFileNodeId = null,
+                        UploadedByDevice = d
+                    };
+                    dbContext.FileNodes.Add(fn);
+                    dbContext.SaveChanges();
+
+                    var dr = new Drive
+                    {
+                        Id = Guid.NewGuid(),
+                        OwnerUser = u,
+                        RootFileNode = fn
+                    };
+                    dbContext.Drives.Add(dr);
+                    logger.LogInformation($@"
+                        Admin account was not initialized, so a new one has been created.
+                        Use the following account to login:
+
+                        Username: {un}
+                        Password: {p}
+                    ");
+
+                }
+
                 dbContext.SaveChanges();
             }
         }

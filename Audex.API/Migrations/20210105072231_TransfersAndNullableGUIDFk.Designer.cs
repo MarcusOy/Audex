@@ -3,14 +3,16 @@ using System;
 using Audex.API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210105072231_TransfersAndNullableGUIDFk")]
+    partial class TransfersAndNullableGUIDFk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,7 +123,7 @@ namespace Audex.API.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("ExpiryDate")
+                    b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("FileExtension")
@@ -214,16 +216,13 @@ namespace Audex.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime?>("ExpiryDate")
+                    b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("FileNodeId")
                         .HasColumnType("char(36)");
 
                     b.Property<int>("PIN")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TimesUsed")
                         .HasColumnType("int");
 
                     b.Property<string>("UrlExtension")
@@ -242,14 +241,8 @@ namespace Audex.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<Guid>("FileNodeId")
                         .HasColumnType("char(36)");
-
-                    b.Property<bool>("IsFullfilled")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<Guid?>("ReceivingDeviceId")
                         .HasColumnType("char(36)");

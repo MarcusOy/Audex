@@ -13,9 +13,13 @@ namespace Audex.API
         public DbSet<Role> Roles { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceType> DeviceTypes { get; set; }
-        public DbSet<File> Files { get; set; }
-        public DbSet<FileType> FilesTypes { get; set; }
-        public DbSet<FileExtension> FileExtensions { get; set; }
+        public DbSet<Drive> Drives { get; set; }
+        public DbSet<FileNode> FileNodes { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<Share> Shares { get; set; }
+        public DbSet<Activity> Activity { get; set; }
+        // public DbSet<FileType> FilesTypes { get; set; }
+        // public DbSet<FileExtension> FileExtensions { get; set; }
 
         public AudexDBContext(DbContextOptions<AudexDBContext> options)
             : base(options)
@@ -35,6 +39,8 @@ namespace Audex.API
         public string Password { get; set; }
         [Required]
         public string Salt { get; set; }
+        // [Required] // TODO: reactivate this when encryption is implemented
+        public string PublicKey { get; set; }
         [Required]
         public DateTime DateCreated { get; set; }
         [Required]
@@ -99,10 +105,12 @@ namespace Audex.API
         public string Name { get; set; }
 
         // DeviceType Relationship
+        [Required]
         public int DeviceTypeId { get; set; }
         public DeviceType DeviceType { get; set; }
 
         // User Relationship
+        [Required]
         public Guid UserId { get; set; }
         public User User { get; set; }
     }
@@ -118,56 +126,163 @@ namespace Audex.API
         public List<Device> Devices { get; set; }
     }
 
-    public class File
+    public class Drive
+    {
+        [Required]
+        public Guid Id { get; set; }
+
+        [Required]
+        public Guid OwnerUserId { get; set; }
+        public User OwnerUser { get; set; }
+        [Required]
+        public Guid RootFileNodeId { get; set; }
+        public FileNode RootFileNode { get; set; }
+    }
+    public class FileNode
     {
         [Required]
         public Guid Id { get; set; }
         [Required]
-        public string FileName { get; set; }
+        public bool IsDirectory { get; set; }
         [Required]
-        public DateTime DateUploaded { get; set; }
+        public string Name { get; set; }
+        public string FileExtension { get; set; }
+        public long FileSize { get; set; }
         [Required]
-        public Boolean IsPersistant { get; set; }
-        public string OriginalPersistantPath { get; set; }
-        public DateTime ExpiryDate { get; set; }
+        public DateTime DateCreated { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
+
+        // User Relationship
+        [Required]
+        public Guid OwnerUserId { get; set; }
+        public User OwnerUser { get; set; }
+
+        // Device Relationship
+        public Guid UploadedByDeviceId { get; set; }
+        public Device UploadedByDevice { get; set; }
+
+        // FileNode Relationship - Parent
+        public Guid? ParentFileNodeId { get; set; }
+        public FileNode ParentFileNode { get; set; }
+
+        // FileNode Relationship - Children
+        public List<FileNode> ChildrenFileNodes { get; set; }
+    }
+    // public class File
+    // {
+    //     [Required]
+    //     public Guid Id { get; set; }
+
+
+    //     // FileNode Relationship
+    //     public Guid FileNodeId { get; set; }
+    //     public FileNode FileNode { get; set; }
+
+    //     // Device Relationship
+    //     [Required]
+    //     public Guid UploadedByDeviceId { get; set; }
+    //     public Device UploadedByDevice { get; set; }
+
+    //     // FileType Relationship
+    //     [Required]
+    //     public int FileTypeId { get; set; }
+    //     public FileType FileType { get; set; }
+
+    // }
+
+    // public class FileType
+    // {
+    //     [Required]
+    //     public int Id { get; set; }
+    //     [Required]
+    //     public string Name { get; set; }
+
+    //     // File Relationship
+    //     public List<File> Files { get; set; }
+
+    //     // FileExtension Relationship
+    //     public List<FileExtension> FileExtensions { get; set; }
+    // }
+
+    // public class FileExtension
+    // {
+    //     [Required]
+    //     public int Id { get; set; }
+    //     [Required]
+    //     public string Name { get; set; }
+
+    //     // FileType Relationship
+    //     public int FileTypeId { get; set; }
+    //     public FileType FileType { get; set; }
+    // }
+
+    public class Transfer
+    {
+        [Required]
+        public Guid Id { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
+        public bool IsFullfilled { get; set; }
+
+        // FileNode Relationship
+        [Required]
+        public Guid FileNodeId { get; set; }
+        public FileNode FileNode { get; set; }
 
         // Device Relationship
         [Required]
-        public Guid UploadedByDeviceId { get; set; }
-        public Device UploadedByDevice { get; set; }
-        public Guid RecipientDeviceId { get; set; }
-        public Device RecipientDevice { get; set; }
+        public Guid SenderDeviceId { get; set; }
+        public Device SenderDevice { get; set; }
+        public Guid? ReceivingDeviceId { get; set; }
+        public Device ReceivingrDevice { get; set; }
 
-        // FileType Relationship
+        // User Relationship
         [Required]
-        public int FileTypeId { get; set; }
-        public FileType FileType { get; set; }
-
+        public Guid SenderUserId { get; set; }
+        public User SenderUser { get; set; }
+        public Guid? ReceivingUserId { get; set; }
+        public User ReceivingUser { get; set; }
     }
 
-    public class FileType
+    public class Share
+    {
+        [Required]
+        public Guid Id { get; set; }
+
+        public string UrlExtension { get; set; }
+        public int PIN { get; set; }
+        public int TimesUsed { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
+
+        // FileNode Relationship
+        [Required]
+        public Guid FileNodeId { get; set; }
+        public FileNode FileNode { get; set; }
+    }
+
+    public class Activity
     {
         [Required]
         public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
+        public string Message { get; set; } // Will have placeholders, such as {u}, {u2}, {d}, {f}
 
-        // File Relationship
-        public List<File> Files { get; set; }
+        // User Relationship
+        public Guid? UserId { get; set; } // Will be activity originator
+        public User User { get; set; }
+        public Guid? User2Id { get; set; } // Will be optional receipient
+        public User User2 { get; set; }
 
-        // FileExtension Relationship
-        public List<FileExtension> FileExtensions { get; set; }
+        // Device Relationship
+        public Guid? DeviceId { get; set; } // Will be optional device receipient
+        public Device Device { get; set; }
+
+        // FileNode Relationship
+        public Guid? FileNodeId { get; set; } // Will be optional file node involved in activity
+        public FileNode FileNode { get; set; }
+
     }
 
-    public class FileExtension
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
 
-        // FileType Relationship
-        public int FileTypeId { get; set; }
-        public FileType FileType { get; set; }
-    }
 }

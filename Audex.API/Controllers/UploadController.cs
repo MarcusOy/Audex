@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Audex.API.Services;
+using Audex.Helpers;
 
 namespace Audex.API.Controllers
 {
@@ -22,11 +25,15 @@ namespace Audex.API.Controllers
 
         private readonly ILogger<UploadController> _logger;
         private readonly AudexDBContext _context;
+        private readonly AudexSettings _settings;
 
-        public UploadController(ILogger<UploadController> logger, AudexDBContext context)
+        public UploadController(ILogger<UploadController> logger,
+                                AudexDBContext context,
+                                IOptions<AudexSettings> settings)
         {
             _logger = logger;
             _context = context;
+            _settings = settings.Value;
         }
 
         [HttpGet, Authorize]
@@ -41,26 +48,31 @@ namespace Audex.API.Controllers
         [HttpPost] // TODO: readd authorization
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [DisableRequestSizeLimit]
-        [Consumes("multipart/form-data")] // for Zip files with form data
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> Post([FromForm] FilesUploadedModel model)
         {
             try
             {
                 if (model.File != null && model.File.Length > 0)
                 {
-                    var filePath = Path.GetTempFileName();
+                    var uid = Guid.NewGuid();
+                    var filePath = PathHelper.GetProperPath(Path.Combine(_settings.FileSystem.Temporary, uid.ToString()));
 
                     using (var stream = System.IO.File.Create(filePath))
                     {
                         await model.File.CopyToAsync(stream);
                     }
 
+                    // Mark file as temporary in case user does not complete 
+                    FileInfo fileInfo = new FileInfo(filePath);
+                    fileInfo.Attributes = FileAttributes.Temporary;
+
 
 
                     // Process uploaded files
                     // Don't rely on or trust the FileName property without validation.
 
-                    return Ok(new { uid = Guid.NewGuid() });
+                    return Ok(new { uid });
                 }
                 else
                     return BadRequest("Not a file.");
