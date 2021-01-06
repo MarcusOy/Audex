@@ -10,6 +10,7 @@ import filesize from 'filesize';
 import useAxios from 'axios-hooks';
 import { DataStore } from '../../Data/DataStore';
 import { useStores, useStoreState } from 'pullstate';
+import { access } from 'fs';
 
 export enum FileState {
 	Uploading,
@@ -28,6 +29,7 @@ interface Props {
 
 const FileUnit = (props: Props) => {
 	const uploadState = useStoreState(DataStore, (s) => s.Upload);
+	const authState = useStoreState(DataStore, (s) => s.Authentication);
 
 	const [uid, setUid] = useState('');
 	const [fileState, setFileState] = useState(FileState.Uploading);
@@ -35,6 +37,7 @@ const FileUnit = (props: Props) => {
 
 	const formData = new FormData();
 	formData.append('file', props.file, props.file.name);
+	formData.append('deviceId', authState.deviceId);
 
 	const [{ data, loading, error }, execute] = useAxios(
 		{
@@ -44,7 +47,7 @@ const FileUnit = (props: Props) => {
 			url: 'Upload',
 			headers: {
 				'Content-Type': 'multipart/form-data',
-				Authorization: 'bearer', // TODO: insert JWT token here
+				Authorization: `Bearer ${authState.accessToken}`, // TODO: insert JWT token here
 			},
 			onUploadProgress: function (progressEvent) {
 				setProgress(

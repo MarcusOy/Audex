@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Audex.API.Services;
-using Audex.Helpers;
+using Audex.API.Helpers;
 
 namespace Audex.API.Controllers
 {
@@ -45,18 +45,46 @@ namespace Audex.API.Controllers
                       Go ahead and make a file upload!";
         }
 
-        [HttpPost] // TODO: readd authorization
+        [HttpPost, Authorize] // TODO: readd authorization
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Post([FromForm] FilesUploadedModel model)
         {
-            try
+
+            if (model.File != null && model.File.Length > 0)
             {
-                if (model.File != null && model.File.Length > 0)
+                // Get User
+                var user = _context.Users.FirstOrDefault(
+                            u => u.Username == HttpContext.User.Identity.Name);
+
+                // Create and add a new unparented FileNode
+                var fn = new FileNode
                 {
-                    var uid = Guid.NewGuid();
-                    var filePath = PathHelper.GetProperPath(Path.Combine(_settings.FileSystem.Temporary, uid.ToString()));
+                    IsDirectory = false,
+                    Name = model.File.FileName.Split(".")[0],
+                    FileExtension = model.File.FileName.Split(".")[1],
+                    FileSize = model.File.Length,
+                    DateCreated = DateTime.UtcNow,
+                    ExpiryDate = DateTime.UtcNow.AddDays(1),
+                    OwnerUser = user,
+                    UploadedByDeviceId = model.DeviceId,
+                    // ParentFileNodeId = _context.Drives.FirstOrDefault(
+                    //     d => d.OwnerUserId == user.Id).RootFileNodeId,
+                };
+                _context.FileNodes.Add(fn);
+                _context.SaveChanges();
+
+                try
+                {
+                    // Now add the file to the filesystem with name of the FileNode's id
+
+                    var uid = fn.Id;
+                    var path = PathHelper.GetProperPath(_settings.FileSystem.Temporary);
+                    var filePath = Path.Combine(path, uid.ToString());
+
+                    FileInfo fileInfo = new FileInfo(filePath);
+                    fileInfo.Directory.Create();
 
                     using (var stream = System.IO.File.Create(filePath))
                     {
@@ -64,29 +92,30 @@ namespace Audex.API.Controllers
                     }
 
                     // Mark file as temporary in case user does not complete 
-                    FileInfo fileInfo = new FileInfo(filePath);
                     fileInfo.Attributes = FileAttributes.Temporary;
-
-
-
-                    // Process uploaded files
-                    // Don't rely on or trust the FileName property without validation.
 
                     return Ok(new { uid });
                 }
-                else
-                    return BadRequest("Not a file.");
+                catch (Exception e)
+                {
+                    _context.FileNodes.Remove(fn);
+                    _context.SaveChanges();
+
+                    return BadRequest(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            else
+                return BadRequest("Not a file.");
+
         }
 
         public class FilesUploadedModel
         {
             [FromForm(Name = "file")]
             public IFormFile File { get; set; }
+
+            [FromForm(Name = "deviceId")]
+            public Guid DeviceId { get; set; }
         }
     }
 }

@@ -1,7 +1,7 @@
 using System.IO;
 using System;
 
-namespace Audex.Helpers
+namespace Audex.API.Helpers
 {
     public static class PathHelper
     {

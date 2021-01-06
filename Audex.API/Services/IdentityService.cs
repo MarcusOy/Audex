@@ -84,7 +84,7 @@ namespace Audex.API.Services
                 _settings.Jwt.Issuer, // TODO: Switch to dynamic issuer url
                 _settings.Jwt.Audience, // TODO: Should be the same as above
                 claims,
-                expires: DateTime.Now.AddDays(30),
+                expires: DateTime.Now.AddDays(1),
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
