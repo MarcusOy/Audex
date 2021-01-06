@@ -18,7 +18,7 @@ To be done.
 
 ## Projects
 
-This repository contains several differnt projects. Below are links to each projects README.md for further instructions.
+This repository contains several different projects. Below are links to each projects README.md for further instructions.
 
 - [Audex.API (.NET Core File Server)](./Audex.API/README.md)
 - [Audex.Desktop (Multi-platform React Electron Client)](./Audex.Desktop/README.md)
