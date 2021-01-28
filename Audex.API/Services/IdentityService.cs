@@ -7,7 +7,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Audex.API.Helpers;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -18,65 +20,104 @@ namespace Audex.API.Services
 {
     public interface IIdentityService
     {
-        string Authenticate(string username, string password);
-        public string GenerateRandomPassword(int length, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_");
-        public (byte[] AsBytes, string AsString) GenerateSalt();
-        public string GenerateHashedPassword(string password, byte[] salt);
+        public (string AuthToken, string RefreshToken) Authenticate(string username, string password);
+        public (string AuthToken, string RefreshToken) Reauthenticate(string refreshToken);
     }
 
     public class IdentityService : IIdentityService
     {
+        private IHttpContextAccessor _context { get; }
         private ILogger<IdentityService> _logger { get; }
-        private AudexDBContext _context { get; }
+        private AudexDBContext _dbContext { get; }
         private AudexSettings _settings { get; }
 
-        public IdentityService(ILogger<IdentityService> logger,
-                               AudexDBContext context,
+        public IdentityService(IHttpContextAccessor context,
+                               ILogger<IdentityService> logger,
+                               AudexDBContext dbContext,
                                IOptions<AudexSettings> settings)
         {
-            _logger = logger;
             _context = context;
+            _logger = logger;
+            _dbContext = dbContext;
             _settings = settings.Value;
         }
-        public string Authenticate(string username, string password)
+        public (string AuthToken, string RefreshToken) Authenticate(string username, string password)
         {
-            //Your custom logic here (e.g. database query)
-            //Mocked for a sake of simplicity
             var roles = new List<string>();
-            var u = _context.Users
+            var u = _dbContext.Users
                     .Include(u => u.Group)
                     .Include(u => u.Group.GroupRoles)
                         .ThenInclude(gr => gr.Role)
                     .FirstOrDefault(u => u.Username == username);
-            if (u != null)
-            {
-                if (GenerateHashedPassword(password, Convert.FromBase64String(u.Salt)) == u.Password)
-                {
-                    foreach (GroupRole gR in u.Group.GroupRoles)
-                    {
-                        roles.Add(gR.Role.Name);
-                    }
 
-                    return GenerateAccessToken(username, u.Id.ToString(), roles.ToArray());
-                }
+            if (u is null || u.Password != SecurityHelpers.GenerateHashedPassword(password, Convert.FromBase64String(u.Salt)))
+                throw new AuthenticationException("Credentials not valid.");
+
+            foreach (GroupRole gR in u.Group.GroupRoles)
+            {
+                roles.Add(gR.Role.Name);
             }
 
-            throw new AuthenticationException("Credential not valid.");
+            return (
+                GenerateAuthToken(username, u.Id, roles.ToArray()).Token,
+                GenerateRefreshToken(u.Id).Token
+            );
         }
 
-        private string GenerateAccessToken(string username, string userId, string[] roles)
+        public (string AuthToken, string RefreshToken) Reauthenticate(string refreshToken)
+        {
+            var roles = new List<string>();
+            var hash = SecurityHelpers.GenerateHash(refreshToken);
+            var u = _dbContext.Users
+                    .Include(u => u.Group)
+                    .Include(u => u.Group.GroupRoles)
+                        .ThenInclude(gr => gr.Role)
+                    .Include(u => u.Tokens)
+                    .SingleOrDefault(u => u.Tokens
+                        .Any(t => t.Token == hash)
+                    );
+
+            if (u is null)
+                throw new AuthenticationException("Credential not valid.");
+
+            var t = u.Tokens
+                    .Where(t => t.IsRefreshToken)
+                    .SingleOrDefault(t => t.Token == hash);
+
+            if (t is null || !t.IsActive)
+                throw new AuthenticationException("Refresh token not valid.");
+
+            var newToken = GenerateRefreshToken(u.Id);
+            t.RevokedOn = DateTime.UtcNow;
+            t.RevokedByIP = GetIPAddress();
+            t.ReplacedByTokenId = newToken.EntityId;
+
+            foreach (GroupRole gR in u.Group.GroupRoles)
+            {
+                roles.Add(gR.Role.Name);
+            }
+
+            return (
+                GenerateAuthToken(u.Username, u.Id, roles.ToArray()).Token,
+                newToken.Token
+            );
+
+        }
+
+        private (string Token, Guid EntityId) GenerateAuthToken(string username, Guid userId, string[] roles)
         {
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
+                            Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Name, username)
             };
 
-            claims = claims.Concat(roles.Select(role => new Claim(ClaimTypes.Role, role))).ToList();
+            var expiry = DateTime.UtcNow.AddMinutes(1);
 
+            claims = claims.Concat(roles.Select(role => new Claim(ClaimTypes.Role, role))).ToList();
 
             var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -84,69 +125,52 @@ namespace Audex.API.Services
                 _settings.Jwt.Issuer, // TODO: Switch to dynamic issuer url
                 _settings.Jwt.Audience, // TODO: Should be the same as above
                 claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: expiry,
                 signingCredentials: signingCredentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public string GenerateRandomPassword(int length, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_")
-        {
-            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+            var signedToken = new JwtSecurityTokenHandler().WriteToken(token);
+            var test = SecurityHelpers.GenerateHash(signedToken);
+            var e = _dbContext.AuthTokens.Add(new AuthToken
             {
-                byte[] data = new byte[length];
+                IsRefreshToken = false,
+                Token = SecurityHelpers.GenerateHash(signedToken),
+                ExpiresOn = expiry,
+                CreatedOn = DateTime.UtcNow,
+                CreatedByIP = GetIPAddress(),
+                UserId = userId
+            });
+            _dbContext.SaveChanges();
 
-                // If chars.Length isn't a power of 2 then there is a bias if we simply use the modulus operator. The first characters of chars will be more probable than the last ones.
-                // buffer used if we encounter an unusable random byte. We will regenerate it in this buffer
-                byte[] buffer = null;
+            return (signedToken, e.Entity.Id);
+        }
+        private (string Token, Guid EntityId) GenerateRefreshToken(Guid userId)
+        {
+            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            {
+                var randomBytes = new byte[64];
+                rngCryptoServiceProvider.GetBytes(randomBytes);
+                var token = Convert.ToBase64String(randomBytes);
 
-                // Maximum random number that can be used without introducing a bias
-                int maxRandom = byte.MaxValue - ((byte.MaxValue + 1) % chars.Length);
-
-                crypto.GetBytes(data);
-
-                char[] result = new char[length];
-
-                for (int i = 0; i < length; i++)
+                var e = _dbContext.AuthTokens.Add(new AuthToken
                 {
-                    byte value = data[i];
+                    IsRefreshToken = true,
+                    Token = SecurityHelpers.GenerateHash(token),
+                    ExpiresOn = DateTime.UtcNow.AddDays(7),
+                    CreatedOn = DateTime.UtcNow,
+                    CreatedByIP = GetIPAddress(),
+                    UserId = userId
+                });
+                _dbContext.SaveChanges();
 
-                    while (value > maxRandom)
-                    {
-                        if (buffer == null)
-                        {
-                            buffer = new byte[1];
-                        }
-
-                        crypto.GetBytes(buffer);
-                        value = buffer[0];
-                    }
-
-                    result[i] = chars[value % chars.Length];
-                }
-
-                return new string(result);
+                return (token, e.Entity.Id);
             }
         }
-
-        public (byte[] AsBytes, string AsString) GenerateSalt()
+        private string GetIPAddress()
         {
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
-            return (salt, Convert.ToBase64String(salt));
-        }
-        public string GenerateHashedPassword(string password, byte[] salt)
-        {
-            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA512,
-                iterationCount: 10000,
-                numBytesRequested: 256 / 8));
+            if (_context.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
+                return _context.HttpContext.Request.Headers["X-Forwarded-For"];
+            else
+                return _context.HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
         }
     }
 }

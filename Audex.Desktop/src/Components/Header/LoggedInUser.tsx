@@ -9,6 +9,7 @@ import {
 	IContextualMenuItem,
 } from '@fluentui/react';
 import React from 'react';
+import { DataStore } from '../../Data/DataStore';
 
 const accountMenuItems: IContextualMenuItem[] = [
 	{
@@ -23,7 +24,14 @@ const accountMenuItems: IContextualMenuItem[] = [
 	{
 		key: 'logout',
 		text: 'Log Out',
-		onClick: () => console.log('Log Out'),
+		onClick: () => {
+			DataStore.update((s) => {
+				s.Authentication.accessToken = null;
+				s.Authentication.refreshToken = null;
+				s.Authentication.username = null;
+				s.Authentication.isAuthenticated = false;
+			});
+		},
 	},
 ];
 

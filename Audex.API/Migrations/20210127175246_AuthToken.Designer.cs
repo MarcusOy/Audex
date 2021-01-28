@@ -3,14 +3,16 @@ using System;
 using Audex.API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210127175246_AuthToken")]
+    partial class AuthToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,13 +72,13 @@ namespace Audex.API.Migrations
                     b.Property<bool>("IsRefreshToken")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<Guid?>("ReplacedByTokenId")
+                    b.Property<Guid>("ReplacedByTokenId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("RevokedByIP")
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime?>("RevokedOn")
+                    b.Property<DateTime>("RevokedOn")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Token")
@@ -393,7 +395,9 @@ namespace Audex.API.Migrations
                 {
                     b.HasOne("Audex.API.AuthToken", "ReplacedByToken")
                         .WithMany()
-                        .HasForeignKey("ReplacedByTokenId");
+                        .HasForeignKey("ReplacedByTokenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Audex.API.User", "User")
                         .WithMany("Tokens")

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Audex.API.Helpers;
 using Audex.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -149,13 +150,13 @@ namespace Audex.API.Migrations
                 {
                     // Adding admin user and saving to get id
                     var un = "admin"; //TODO: Allow user to specify
-                    var p = identityService.GenerateRandomPassword(16);
-                    var s = identityService.GenerateSalt();
+                    var p = SecurityHelpers.GenerateRandomPassword(16);
+                    var s = SecurityHelpers.GenerateSalt();
                     var u = new User
                     {
                         Id = Guid.NewGuid(),
                         Username = un,
-                        Password = identityService.GenerateHashedPassword(p, s.AsBytes),
+                        Password = SecurityHelpers.GenerateHashedPassword(p, s.AsBytes),
                         DateCreated = DateTime.UtcNow,
                         Active = true,
                         Salt = s.AsString,

@@ -8,6 +8,7 @@ namespace Audex.API
     public class AudexDBContext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<AuthToken> AuthTokens { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupRole> GroupRoles { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -46,6 +47,9 @@ namespace Audex.API
         [Required]
         public Boolean Active { get; set; }
 
+        // Token Relationship
+        public List<AuthToken> Tokens { get; set; }
+
         // Group Relationship
         public int GroupId { get; set; }
         public Group Group { get; set; }
@@ -54,6 +58,35 @@ namespace Audex.API
         public List<Device> Devices { get; set; }
     }
 
+    public class AuthToken
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public bool IsRefreshToken { get; set; }
+        [Required]
+        public string Token { get; set; }
+        [Required]
+        public DateTime ExpiresOn { get; set; }
+        public bool IsExpired => DateTime.UtcNow >= ExpiresOn;
+        [Required]
+        public DateTime CreatedOn { get; set; }
+        [Required]
+        public string CreatedByIP { get; set; }
+
+        public DateTime? RevokedOn { get; set; }
+        public string RevokedByIP { get; set; }
+        public bool IsActive => RevokedOn == null && !IsExpired;
+
+        // User relationship
+        public Guid UserId { get; set; }
+        public User User { get; set; }
+
+        // Token relationship
+        public Guid? ReplacedByTokenId { get; set; }
+        public AuthToken ReplacedByToken { get; set; }
+
+    }
     public class Group
     {
         [Required]

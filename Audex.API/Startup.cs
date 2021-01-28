@@ -59,18 +59,17 @@ namespace Audex.API
             cs["Password"] = "!audexapp!";
 
             // Add EntityFramework Context
-            // services.AddDbContextFactory<AudexDBContext>(
             services.AddDbContextPool<AudexDBContext>(
                 dbContextOptions => dbContextOptions
                     .UseMySql(
                         cs.ConnectionString,
                         new MySqlServerVersion(new Version(5, 7, 32)),
                         mySqlOptions => mySqlOptions
-                            .CharSetBehavior(CharSetBehavior.NeverAppend))
+                            .CharSetBehavior(CharSetBehavior.NeverAppend)
+                            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
                     // Everything from this point on is optional but helps with debugging.
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
-            // .UseLazyLoadingProxies()
             );
 
             // Setup CORS policy
@@ -114,7 +113,7 @@ namespace Audex.API
             });
 
             services.AddGraphQLServer()
-                    .AddMutationType<Audex.API.GraphQL.Mutation>()
+                    .AddMutationType<Audex.API.GraphQL.Mutations.AuthMutations>()
                     .AddQueryType<Audex.API.GraphQL.Query>()
                     .AddAuthorization()
                     .AddHttpRequestInterceptor(

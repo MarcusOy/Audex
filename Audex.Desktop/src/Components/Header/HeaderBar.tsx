@@ -14,6 +14,7 @@ import { Link, useHistory, useLocation } from 'react-router-dom';
 import LoggedInUser from './LoggedInUser';
 import menuLinkGroups from './MenuItems';
 import useResponsive from '../../Hooks/useResponsive';
+import Logo from './Logo';
 
 const HeaderBar = () => {
 	// Menu Panel
@@ -45,7 +46,7 @@ const HeaderBar = () => {
 					ariaLabel='Menu'
 					onClick={openPanel}
 				/>
-				<Text variant='xLarge'>Audex</Text>
+				<Logo />
 				{screenIsAtMost('sm') ? (
 					<div style={{ flexGrow: 1 }} />
 				) : (
