@@ -31,7 +31,24 @@ namespace Audex.API.GraphQL
                            [Service] AudexDBContext context)
         {
             return context.Users
-                          .FirstOrDefault(u => u.Id == user.UserId);
+                          .Include(u => u.Group)
+                            .ThenInclude(g => g.GroupRoles)
+                            .ThenInclude(gr => gr.Role)
+                          .Select(u => new User
+                          {
+                              Id = u.Id,
+                              Username = u.Username,
+                              // Excluding Password and Salt
+                              Password = "***",
+                              Salt = "***",
+                              DateCreated = u.DateCreated,
+                              Active = u.Active,
+                              GroupId = u.GroupId,
+                              Group = u.Group,
+                              Devices = u.Devices
+                          })
+                          .FirstOrDefault(u => u.Id == user.UserId)
+;
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]

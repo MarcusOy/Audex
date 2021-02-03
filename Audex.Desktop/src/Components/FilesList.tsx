@@ -8,11 +8,9 @@ import {
 	IColumn,
 	MarqueeSelection,
 	mergeStyleSets,
-	Toggle,
-	TextField,
 } from '@fluentui/react';
 import MenuBar from './MenuBar';
-import { DataStore } from '../Data/DataStore';
+import ModalService from '../Data/Services/ModalService';
 
 const classNames = mergeStyleSets({
 	fileIconHeaderIcon: {
@@ -50,12 +48,6 @@ const classNames = mergeStyleSets({
 		marginBottom: '20px',
 	},
 });
-const controlStyles = {
-	root: {
-		margin: '0 30px 20px 0',
-		maxWidth: '300px',
-	},
-};
 
 export interface IDetailsListDocumentsExampleState {
 	columns: IColumn[];
@@ -199,7 +191,6 @@ export class DetailsListDocumentsExample extends React.Component<
 			columns,
 			items,
 			selectionDetails,
-			isModalSelection,
 			announcedMessage,
 		} = this.state;
 
@@ -267,35 +258,12 @@ export class DetailsListDocumentsExample extends React.Component<
 		}
 	}
 
-	private _getKey(item: any, index?: number): string {
+	private _getKey(item: any): string {
 		return item.key;
 	}
 
-	private _onChangeModalSelection = (
-		ev: React.MouseEvent<HTMLElement>,
-		checked: boolean
-	): void => {
-		this.setState({ isModalSelection: checked });
-	};
-
-	private _onChangeText = (
-		ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-		text: string
-	): void => {
-		this.setState({
-			items: text
-				? this._allItems.filter(
-						(i) => i.name.toLowerCase().indexOf(text) > -1
-				  )
-				: this._allItems,
-		});
-	};
-
 	private _onItemInvoked(item: IDocument): void {
-		DataStore.update((s) => {
-			s.Modals.FilePanel.fileId = item.name;
-			s.Modals.FilePanel.isOpen = true;
-		});
+		ModalService.openFileModal({ fileId: item.name });
 	}
 
 	private _getSelectionDetails(): string {

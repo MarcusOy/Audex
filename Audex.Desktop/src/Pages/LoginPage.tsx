@@ -20,8 +20,9 @@ import Flex from '../Components/Flex';
 import Logo from '../Components/Header/Logo';
 import Spacer from '../Components/Spacer';
 import useResponsive from '../Hooks/useResponsive';
-import { gql, useMutation } from '@apollo/client';
-import { DataStore } from '../Data/DataStore';
+import { useMutation } from '@apollo/client';
+import IdentityService from '../Data/Services/IdentityService';
+import { AUTHENTICATE } from '../Data/Mutations';
 
 interface FormFields {
 	username: string;
@@ -49,15 +50,6 @@ const serverOptions: IDropdownOption[] = [
 	},
 ];
 
-const AUTHENTICATE = gql`
-	mutation Authentication($username: String, $password: String) {
-		authenticate(username: $username, password: $password) {
-			authToken
-			refreshToken
-		}
-	}
-`;
-
 const LoginPage = () => {
 	const {
 		register,
@@ -75,14 +67,7 @@ const LoginPage = () => {
 		})
 			.then((r) => {
 				console.log(r.data);
-				DataStore.update((s) => {
-					s.Authentication.username = data.username;
-					s.Authentication.accessToken =
-						r.data.authenticate.authToken;
-					s.Authentication.refreshToken =
-						r.data.authenticate.refreshToken;
-					s.Authentication.isAuthenticated = true;
-				});
+				IdentityService.setUser(r.data.authenticate);
 			})
 			.catch((r) => {
 				console.log(r);

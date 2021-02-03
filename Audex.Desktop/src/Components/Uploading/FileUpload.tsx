@@ -1,7 +1,8 @@
 import { Stack, Label, DefaultButton } from '@fluentui/react';
 import { useStoreState } from 'pullstate';
 import React, { createRef } from 'react';
-import { DataStore } from '../../Data/DataStore';
+import { DataStore } from '../../Data/DataStore/DataStore';
+import FileService from '../../Data/Services/FileService';
 import Spacer from '../Spacer';
 import FileUnit, { IFileUnit } from './FileUnit';
 
@@ -11,13 +12,8 @@ const FileUpload = () => {
 
 	const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const f = Array.from(e!.target!.files!) as Array<IFileUnit>;
-		DataStore.update((s) => {
-			const a: IFileUnit[] = new Array<IFileUnit>()
-				.concat(uploadState.Files)
-				.concat(f);
-			s.Upload.Files = a;
-			inputRef.current!.value = '';
-		});
+		FileService.addFiles(f);
+		inputRef.current!.value = '';
 	};
 
 	return (

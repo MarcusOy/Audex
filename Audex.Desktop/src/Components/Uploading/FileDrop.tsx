@@ -1,8 +1,7 @@
 import { FontIcon, Stack, Text, useTheme } from '@fluentui/react';
 import React, { useState } from 'react';
 import { FileDrop as FileDropZone } from 'react-file-drop';
-import { DataStore } from '../../Data/DataStore';
-import { IFileUnit } from './FileUnit';
+import FileService from '../../Data/Services/FileService';
 
 interface Props {
 	children: React.ReactNode;
@@ -33,12 +32,7 @@ const FileDrop = (props: Props) => {
 		<FileDropZone
 			onDrop={(files) => {
 				setFileHover(false);
-				DataStore.update((s) => {
-					s.Upload.Files = Array.from(files) as Array<IFileUnit>;
-
-					s.Modals.FileTransfer.isOpen = true;
-					s.Modals.FileTransfer.mode = 'upload';
-				});
+				FileService.initialAddFiles(files);
 			}}
 			onDragOver={() => setFileHover(true)}
 			onDragLeave={() => setFileHover(false)}

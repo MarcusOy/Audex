@@ -8,9 +8,9 @@ import {
 } from '@fluentui/react';
 import filesize from 'filesize';
 import useAxios from 'axios-hooks';
-import { DataStore } from '../../Data/DataStore';
-import { useStores, useStoreState } from 'pullstate';
-import { access } from 'fs';
+import { DataStore } from '../../Data/DataStore/DataStore';
+import { useStoreState } from 'pullstate';
+import FileService from '../../Data/Services/FileService';
 
 export enum FileState {
 	Uploading,
@@ -70,10 +70,8 @@ const FileUnit = (props: Props) => {
 		} else {
 			setFileState(FileState.Uploading);
 		}
-		DataStore.update((s) => {
-			const i = uploadState.Files.indexOf(props.file);
-			s.Upload.Files[i]?.success == true;
-		});
+
+		FileService.fileSuccess(uploadState.Files.indexOf(props.file));
 	}, [data]);
 
 	useEffect(() => {
@@ -84,9 +82,7 @@ const FileUnit = (props: Props) => {
 	}, [error]);
 
 	const removeFile = () => {
-		DataStore.update((s) => {
-			s.Upload.Files = uploadState.Files.filter((f) => f != props.file);
-		});
+		FileService.removeFile(props.file);
 	};
 
 	const description =

@@ -10,21 +10,24 @@ import {
 import HeaderBar from './Components/Header/HeaderBar';
 import HomePage from './Pages/HomePage';
 import Modals from './Components/Modals/Modals';
-import { DataStore } from './Data/DataStore';
+import { DataStore } from './Data/DataStore/DataStore';
 import LoginPage from './Pages/LoginPage';
+import { ApolloProvider } from '@apollo/client';
+import useLoader from './Data/DataStore/useLoader';
+import useAudexApolloClient from './Hooks/useAudexApolloClient';
+
 import './App.css';
 
-import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
-
-const client = new ApolloClient({
-	uri: 'http://localhost:5000/api/v1/graphql',
-	cache: new InMemoryCache(),
-});
-
 const App = () => {
+	const { isLoading, isError } = useLoader();
 	const state = DataStore.useState();
+	const client = useAudexApolloClient();
+
 	initializeIcons();
 	initializeFileTypeIcons();
+
+	if (isLoading) return <p>loading</p>;
+	if (isError) return <p>error</p>;
 
 	return (
 		// <ThemeProvider theme={appTheme}>

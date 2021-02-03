@@ -1,8 +1,6 @@
 import {
 	ActivityItem,
-	FontIcon,
 	Icon,
-	IconButton,
 	Link,
 	Separator,
 	Spinner,
@@ -14,8 +12,7 @@ import { getFileTypeIconProps } from '@uifabric/file-type-icons';
 import React, { useState } from 'react';
 import faker from 'faker';
 import MenuBar from './MenuBar';
-import { DataStore } from '../Data/DataStore';
-import BackToTop from './BackToTop';
+import ModalService from '../Data/Services/ModalService';
 
 const RecentFiles = () => {
 	const moreFakeRecent = () => {
@@ -61,14 +58,7 @@ const RecentFiles = () => {
 	// );
 	// const [file]
 	const inspectFile = (id: string) => {
-		// DataStore.update((s) => {
-		// 	(s.Modals.FilePanel.isOpen = true),
-		// 		(s.Modals.FilePanel.fileId = id);
-		// });
-		DataStore.update((s) => {
-			(s.Modals.FilePanel.fileId = id),
-				(s.Modals.FilePanel.isOpen = true);
-		});
+		ModalService.openFileModal({ fileId: id });
 	};
 
 	return (

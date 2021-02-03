@@ -3,6 +3,9 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
 
+const { ipcMain } = require('electron');
+// const { keytar } = require('keytar');
+
 let mainWindow;
 
 function createWindow() {
@@ -40,4 +43,14 @@ app.on('activate', () => {
 	if (mainWindow === null) {
 		createWindow();
 	}
+});
+
+ipcMain.handle('keytarGet', async (event, arg) => {
+	console.log(`Using keytar to retrieve "${arg.key}"...`);
+	return await keytar.getPassword('audex', arg.key);
+});
+
+ipcMain.handle('keytarSet', async (event, arg) => {
+	console.log(`Using keytar to store "${arg.key}"...`);
+	await keytar.setPasssword('audex', arg.key, arg.value);
 });

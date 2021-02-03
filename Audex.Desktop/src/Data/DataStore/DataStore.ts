@@ -1,11 +1,16 @@
-import { IFileTransferPanel } from '../Components/Modals/FileTransferPanel';
-import { IModal } from '../Components/Modals/Modals';
-import { IFilePanel } from '../Components/Modals/FilePanel';
+import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
+import { IModal } from '../../Components/Modals/Modals';
+import { IFilePanel } from '../../Components/Modals/FilePanel';
 import { Store } from 'pullstate';
 import { useEffect, useState } from 'react';
-import { IFileUnit } from '../Components/Uploading/FileUnit';
+import { IFileUnit } from '../../Components/Uploading/FileUnit';
+import { IServer } from '../Services/ServerService';
 
 export interface AudexStore {
+	Servers: {
+		serverList: IServer[];
+		selectedServer: IServer;
+	};
 	Authentication: {
 		isAuthenticated: boolean;
 		username: string;
@@ -23,13 +28,24 @@ export interface AudexStore {
 	};
 }
 
+const devServer = {
+	hostName: 'http://localhost:5000',
+	apiVersion: 'v1',
+	apiEndpoint: '/api/v1/graphql',
+	online: true,
+};
+
 const initialState: AudexStore = {
+	Servers: {
+		serverList: [devServer],
+		selectedServer: devServer,
+	},
 	Authentication: {
 		isAuthenticated: false,
-		username: 'admin',
+		username: '',
 		accessToken: '',
 		refreshToken: '',
-		deviceId: 'ae3848f7-7f20-4287-aba5-15531d3a1dbf',
+		deviceId: 'ae3848f7-7f20-4287-aba5-15531d3a1dbf', //TODO: use deviceId from server
 	},
 	Modals: {
 		FilePanel: {
@@ -51,15 +67,3 @@ const initialState: AudexStore = {
 };
 
 export const DataStore = new Store<AudexStore>(initialState);
-
-export const useLoader = () => {
-	const [isLoading] = useState(false);
-	const [isError] = useState(false);
-	const [isSecure] = useState(false);
-
-	useEffect(() => {
-		//TODO: load from secure storage
-	}, []);
-
-	return { isLoading, isError, isSecure } as const;
-};

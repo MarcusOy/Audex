@@ -17,12 +17,13 @@ import {
 	IDropdownOption,
 } from '@fluentui/react';
 import { useStoreState } from 'pullstate';
-import { DataStore } from '../../Data/DataStore';
+import { DataStore } from '../../Data/DataStore/DataStore';
 import { IModal } from './Modals';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import Spacer from '../Spacer';
 import FileUpload from '../Uploading/FileUpload';
+import ModalService from '../../Data/Services/ModalService';
 
 export interface IFileTransferPanel extends IModal {
 	fileId?: string;
@@ -84,10 +85,7 @@ export const FileTransferPanel = () => {
 	const [isDialogVisible, setIsDialogVisible] = React.useState(false);
 	const hideDialog = React.useCallback(() => setIsDialogVisible(false), []);
 	const hideDialogAndPanel = React.useCallback(() => {
-		DataStore.update((s) => {
-			s.Modals.FileTransfer.isOpen = false;
-			s.Upload.Files = [];
-		});
+		ModalService.closeFileTransferModal();
 		setIsDialogVisible(false);
 	}, []);
 

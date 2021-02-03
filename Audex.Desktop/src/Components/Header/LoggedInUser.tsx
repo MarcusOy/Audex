@@ -1,3 +1,4 @@
+import { gql, useQuery } from '@apollo/client';
 import {
 	mergeStyleSets,
 	Persona,
@@ -7,9 +8,12 @@ import {
 	getTheme,
 	IPersonaSharedProps,
 	IContextualMenuItem,
+	Text,
 } from '@fluentui/react';
-import React from 'react';
-import { DataStore } from '../../Data/DataStore';
+import React, { useEffect } from 'react';
+import { DataStore } from '../../Data/DataStore/DataStore';
+import IdentityService from '../../Data/Services/IdentityService';
+import { WHO_AM_I } from '../../Data/Queries';
 
 const accountMenuItems: IContextualMenuItem[] = [
 	{
@@ -17,33 +21,28 @@ const accountMenuItems: IContextualMenuItem[] = [
 		text: 'Account',
 		onClick: () => console.log('Account'),
 	},
-	// {
-	// 	key: 'divider_1',
-	// 	itemType: ContextualMenuItemType.Divider,
-	// },
 	{
 		key: 'logout',
 		text: 'Log Out',
-		onClick: () => {
-			DataStore.update((s) => {
-				s.Authentication.accessToken = null;
-				s.Authentication.refreshToken = null;
-				s.Authentication.username = null;
-				s.Authentication.isAuthenticated = false;
-			});
-		},
+		onClick: () => IdentityService.logOut(),
 	},
 ];
 
 const LoggedInUser = () => {
+	const state = DataStore.useState((s) => s.Authentication);
+	const { data, loading, error } = useQuery(WHO_AM_I);
+
+	if (loading) return <Text>Loading</Text>;
+	console.log(data);
+
 	const { palette } = getTheme();
 
 	// Persona Settings
 	const examplePersona: IPersonaSharedProps = {
 		// imageUrl: TestImages.personaFemale,
 		imageInitials: 'MO',
-		text: 'Marcus Orciuch',
-		secondaryText: 'Administrator',
+		text: data?.username ?? 'notloggedin',
+		secondaryText: data?.group?.name ?? 'nogroup',
 		tertiaryText: 'On Audex desktop client (MacOS)',
 		showSecondaryText: true,
 	};
@@ -78,9 +77,6 @@ const LoggedInUser = () => {
 					},
 				}).persona
 			}
-			// style={{
-			// 	cursor: 'pointer',
-			// }}
 		>
 			<Persona
 				{...examplePersona}

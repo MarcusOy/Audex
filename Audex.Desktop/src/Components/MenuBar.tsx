@@ -1,6 +1,6 @@
 import { CommandBar, ICommandBarItemProps } from '@fluentui/react';
 import React, { useEffect, useState } from 'react';
-import { DataStore } from '../Data/DataStore';
+import ModalService from '../Data/Services/ModalService';
 
 const _baseItems: ICommandBarItemProps[] = [
 	{
@@ -14,19 +14,15 @@ const _baseItems: ICommandBarItemProps[] = [
 					text: 'File Upload',
 					iconProps: { iconName: 'OpenFile' },
 					onClick: () =>
-						DataStore.update((s) => {
-							s.Modals.FileTransfer.isOpen = true;
-							s.Modals.FileTransfer.mode = 'upload';
-						}),
+						ModalService.openFileTransferModal({ mode: 'upload' }),
 				},
 				{
 					key: 'transfer',
 					text: 'File Transfer',
 					iconProps: { iconName: 'ChangeEntitlements' },
 					onClick: () =>
-						DataStore.update((s) => {
-							s.Modals.FileTransfer.isOpen = true;
-							s.Modals.FileTransfer.mode = 'transfer';
+						ModalService.openFileTransferModal({
+							mode: 'transfer',
 						}),
 				},
 			],
