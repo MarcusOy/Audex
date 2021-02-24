@@ -31,18 +31,14 @@ const accountMenuItems: IContextualMenuItem[] = [
 const LoggedInUser = () => {
 	const state = DataStore.useState((s) => s.Authentication);
 	const { data, loading, error } = useQuery(WHO_AM_I);
-
-	if (loading) return <Text>Loading</Text>;
-	console.log(data);
-
 	const { palette } = getTheme();
 
 	// Persona Settings
 	const examplePersona: IPersonaSharedProps = {
 		// imageUrl: TestImages.personaFemale,
 		imageInitials: 'MO',
-		text: data?.username ?? 'notloggedin',
-		secondaryText: data?.group?.name ?? 'nogroup',
+		text: data?.whoAmI?.username ?? 'notloggedin',
+		secondaryText: data?.whoAmI?.group?.name ?? 'nogroup',
 		tertiaryText: 'On Audex desktop client (MacOS)',
 		showSecondaryText: true,
 	};
@@ -61,6 +57,8 @@ const LoggedInUser = () => {
 		() => setShowContextualMenu(false),
 		[]
 	);
+
+	if (loading) return <Text>Loading</Text>;
 
 	return (
 		<div

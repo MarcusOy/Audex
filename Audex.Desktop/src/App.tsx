@@ -21,41 +21,48 @@ import './App.css';
 const App = () => {
 	const { isLoading, isError } = useLoader();
 	const state = DataStore.useState();
-	const client = useAudexApolloClient();
 
 	initializeIcons();
 	initializeFileTypeIcons();
 
-	if (isLoading) return <p>loading</p>;
-	if (isError) return <p>error</p>;
+	const client = useAudexApolloClient();
+
+	let body;
+	if (isError) body = <p>error</p>;
+	if (isLoading) body = <p>loading</p>;
+	if (!state.Authentication) body = <p>DataStore is loading...</p>;
+
+	console.log(state);
 
 	return (
-		// <ThemeProvider theme={appTheme}>
-		<ApolloProvider client={client}>
-			<ThemeProvider>
-				<Router>
-					<Modals />
-					{!state.Authentication.isAuthenticated ? (
-						<LoginPage />
-					) : (
-						<>
-							<HeaderBar />
-							<Switch>
-								<Route path='/' exact>
-									<Redirect to='/Home/Recent' />
-								</Route>
+		body ?? (
+			// <ThemeProvider theme={appTheme}>
+			<ApolloProvider client={client}>
+				<ThemeProvider>
+					<Router>
+						<Modals />
+						{!state.Authentication.isAuthenticated ? (
+							<LoginPage />
+						) : (
+							<>
+								<HeaderBar />
+								<Switch>
+									<Route path='/' exact>
+										<Redirect to='/Home/Recent' />
+									</Route>
 
-								<Route path='/Home/:tab'>
-									<HomePage />
-								</Route>
-								<Route path='/Users'></Route>
-								<Route path='/Settings'></Route>
-							</Switch>
-						</>
-					)}
-				</Router>
-			</ThemeProvider>
-		</ApolloProvider>
+									<Route path='/Home/:tab'>
+										<HomePage />
+									</Route>
+									<Route path='/Users'></Route>
+									<Route path='/Settings'></Route>
+								</Switch>
+							</>
+						)}
+					</Router>
+				</ThemeProvider>
+			</ApolloProvider>
+		)
 	);
 };
 

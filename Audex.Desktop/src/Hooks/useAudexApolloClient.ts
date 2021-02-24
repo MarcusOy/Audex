@@ -1,26 +1,33 @@
 import {
 	ApolloClient,
+	ApolloLink,
 	ApolloProvider,
 	createHttpLink,
 	from,
 	fromPromise,
 	InMemoryCache,
+	NextLink,
+	Operation,
+	RequestHandler,
 } from '@apollo/client';
+import { onError } from 'apollo-link-error';
 import { ApolloLinkJWT } from 'apollo-link-jwt';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { REAUTHENTICATE } from '../Data/Mutations';
 import IdentityService from '../Data/Services/IdentityService';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, createRef } from 'react';
 
 const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const authState = DataStore.useState((s) => s.Authentication);
 	const serverState = DataStore.useState((s) => s.Servers);
 
-	const [client, setClient] = useState<ApolloClient<any>>();
+	const [client, setClient] = useState<ApolloClient<any> | null>(null);
 
 	const getTokens = useCallback(async () => {
 		const accessToken = authState.accessToken;
 		const refreshToken = authState.refreshToken;
+
+		console.log('Tokens Accessed...');
 
 		return {
 			accessToken,
@@ -31,7 +38,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const onRefreshComplete = useCallback(
 		async (data: any) => {
 			// Find and return the access token and refresh token from the provided fetch callback
-			console.log(data);
+			console.log(`onRefreshComplete: ${data}`);
 			const newAccessToken = data?.data?.token?.accessToken;
 			const newRefreshToken = data?.data?.token?.refreshToken;
 
@@ -40,13 +47,12 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 				console.log(
 					'Redirect back to login, because the refresh token was expired!'
 				);
-
 				IdentityService.logOut();
-
 				return;
 			}
 
 			// Update tokens in DataStore
+			// TODO: use IdentityService
 			DataStore.update((s) => {
 				(s.Authentication.accessToken = newAccessToken),
 					(s.Authentication.refreshToken = newRefreshToken);
@@ -74,35 +80,66 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 		[authState]
 	);
 
+	// const authLink = new ApolloLink((operation, forward) => {
+	// 	if (authState.accessToken) {
+	// 		operation.setContext({
+	// 			headers: {
+	// 				Authorization: `Bearer ${authState.accessToken}`,
+	// 			},
+	// 		});
+	// 	}
+	// 	return forward(operation);
+	// });
+
+	// const authErrorLink = onError(
+	// 	({ graphQLErrors, networkError, operation, forward }) => {
+	// 		if (graphQLErrors) {
+	// 			for (const err of graphQLErrors) {
+	// 				if (err.extensions!.code == 'UNAUTHENTICATED')
+	// 					IdentityService.logOut();
+	// 			}
+	// 		}
+	// 	}
+	// );
+
 	/**
 	 * Change the api endpoint ONLY when user changes servers
 	 */
 	useEffect(() => {
+		const uri = `${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`;
+
+		if (!serverState) {
+			setClient(null);
+			return;
+		}
 		/**
 		 * Create Apollo Link JWT
 		 */
 		const apolloLinkJWT = ApolloLinkJWT({
-			apiUrl: `${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
+			apiUrl: uri,
 			getTokens,
 			fetchBody,
 			onRefreshComplete,
+			fetchHeaders: {
+				'Content-Type': 'application/json',
+			},
 			debugMode: true,
 		});
 
 		const httpLink = createHttpLink({
-			uri: `${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
+			uri: uri,
 		});
+
+		const links = [httpLink];
+		if (authState.isAuthenticated) links.unshift(apolloLinkJWT);
 
 		setClient(
 			new ApolloClient({
-				link: from([
-					apolloLinkJWT,
-					httpLink, // Add terminating link last
-				]),
+				link: from(links),
 				cache: new InMemoryCache(),
 			})
 		);
-	}, [serverState]);
+	}, [serverState, authState.isAuthenticated]);
 
 	return (
 		client ??

@@ -2,12 +2,12 @@ import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
 import { IModal } from '../../Components/Modals/Modals';
 import { IFilePanel } from '../../Components/Modals/FilePanel';
 import { Store } from 'pullstate';
-import { useEffect, useState } from 'react';
 import { IFileUnit } from '../../Components/Uploading/FileUnit';
 import { IServer } from '../Services/ServerService';
 
 export interface AudexStore {
 	Servers: {
+		officialServerList: IServer[];
 		serverList: IServer[];
 		selectedServer: IServer;
 	};
@@ -28,15 +28,22 @@ export interface AudexStore {
 	};
 }
 
-const devServer = {
+const devServer: IServer = {
 	hostName: 'http://localhost:5000',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
 	online: true,
 };
+const officialServer: IServer = {
+	hostName: 'https://audex.app',
+	apiVersion: 'v1',
+	apiEndpoint: '/api/v1/graphql',
+	online: false,
+};
 
 const initialState: AudexStore = {
 	Servers: {
+		officialServerList: [officialServer],
 		serverList: [devServer],
 		selectedServer: devServer,
 	},

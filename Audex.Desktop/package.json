@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.3.6",
-    "@fluentui/react": "8.0.0-beta.28",
+    "@fluentui/react": "8.0.0-beta.49",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -12,6 +12,7 @@
     "@types/react-dom": "^17.0.0",
     "@uifabric/file-type-icons": "^7.6.23",
     "ahooks": "^2.9.3",
+    "apollo-link-error": "^1.1.13",
     "apollo-link-jwt": "^1.1.5",
     "axios": "^0.21.0",
     "axios-hooks": "^2.2.0",
@@ -33,12 +34,15 @@
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
+    "@rescripts/cli": "^0.0.15",
+    "@rescripts/rescript-env": "^0.0.12",
     "@types/faker": "^5.1.5",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^14.14.14",
     "@types/react-router-dom": "^5.1.6",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "electron-builder": "^22.9.1",
+    "electron-devtools-installer": "^3.1.1",
     "electron-rebuild": "^2.3.4",
     "eslint-config-prettier": "^7.0.0",
     "eslint-plugin-import": "^2.22.1",
@@ -53,12 +57,12 @@
   "main": "src/Initialization/Startup.js",
   "scripts": {
     "start": "nf start -p 3000",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
+    "build": "rescripts build",
+    "test": "rescripts test --env=jsdom",
+    "eject": "rescripts eject",
     "electron": "electron .",
     "electron-start": "node src/Initialization/StartupReact.js",
-    "react-start": "BROWSER=none react-scripts start",
+    "react-start": "BROWSER=none rescripts start",
     "pack": "build --dir",
     "dist": "npm run build && build",
     "postinstall": "install-app-deps"
@@ -83,5 +87,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "rescripts": [
+    "env"
+  ]
 }

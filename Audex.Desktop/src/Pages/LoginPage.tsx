@@ -2,11 +2,15 @@ import {
 	Checkbox,
 	ComboBox,
 	Dropdown,
+	Icon,
 	IDropdownOption,
 	Label,
 	Link,
 	MessageBar,
 	MessageBarType,
+	Persona,
+	PersonaPresence,
+	PersonaSize,
 	PrimaryButton,
 	SelectableOptionMenuItemType,
 	Spinner,
@@ -37,18 +41,59 @@ const serverOptions: IDropdownOption[] = [
 		text: 'Official servers',
 		itemType: SelectableOptionMenuItemType.Header,
 	},
-	{ key: 'default', text: 'audex.app' },
+	{ key: 'default', text: 'audex.app', data: { online: false } },
 	{
-		key: 'listHeader',
+		key: 'unofficialHeader',
 		text: 'Other servers',
 		itemType: SelectableOptionMenuItemType.Header,
 	},
-	{ key: '1', text: 'localhost:5001' },
+	{ key: '1', text: 'localhost:5001', data: { online: true } },
 	{
-		key: 'addServer',
+		key: 'add',
 		text: 'Add server...',
 	},
 ];
+
+const onServerRenderOption = (option: IDropdownOption): JSX.Element => {
+	if (option.itemType == SelectableOptionMenuItemType.Header)
+		return <span>{option.text}</span>;
+
+	const online = (option.data && option.data.online) ?? false;
+
+	return (
+		<div style={{ margin: '5px 10px' }}>
+			{option.data && (
+				<Persona
+					text={option.text}
+					size={PersonaSize.size8}
+					presence={
+						online ? PersonaPresence.online : PersonaPresence.busy
+					}
+				/>
+			)}
+		</div>
+	);
+};
+
+const onServerRenderSelectedItem = (
+	options: IDropdownOption[]
+): JSX.Element => {
+	const option = options[0];
+	const online = option.data.online ?? false;
+	return (
+		<div style={{ marginTop: 5 }}>
+			{option.data && (
+				<Persona
+					text={option.text}
+					size={PersonaSize.size8}
+					presence={
+						online ? PersonaPresence.online : PersonaPresence.busy
+					}
+				/>
+			)}
+		</div>
+	);
+};
 
 const LoginPage = () => {
 	const {
@@ -66,14 +111,14 @@ const LoginPage = () => {
 			},
 		})
 			.then((r) => {
-				console.log(r.data);
+				console.log(r);
 				IdentityService.setUser(r.data.authenticate);
 			})
 			.catch((r) => {
 				console.log(r);
 			});
 
-	const [authenticate, { data, loading, error }] = useMutation(AUTHENTICATE);
+	const [authenticate, { loading, error }] = useMutation(AUTHENTICATE);
 
 	const { screenIsAtLeast } = useResponsive();
 
@@ -147,6 +192,10 @@ const LoginPage = () => {
 									{ invalid, isTouched, isDirty }
 								) => (
 									<Dropdown
+										onRenderOption={onServerRenderOption}
+										onRenderTitle={
+											onServerRenderSelectedItem
+										}
 										ref={ref}
 										selectedKey={value}
 										onBlur={onBlur}
