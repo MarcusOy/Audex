@@ -9,11 +9,14 @@ import {
 	IPersonaSharedProps,
 	IContextualMenuItem,
 	Text,
+	Spinner,
+	SpinnerSize,
 } from '@fluentui/react';
 import React, { useEffect } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import IdentityService from '../../Data/Services/IdentityService';
 import { WHO_AM_I } from '../../Data/Queries';
+import Spacer from '../Spacer';
 
 const accountMenuItems: IContextualMenuItem[] = [
 	{
@@ -28,15 +31,32 @@ const accountMenuItems: IContextualMenuItem[] = [
 	},
 ];
 
+const getInitials = (fullName) => {
+	const allNames = fullName.trim().split(' ');
+	const initials = allNames.reduce(
+		(acc, curr, index) => {
+			if (index === 0 || index === allNames.length - 1) {
+				acc = `${acc}${curr.charAt(0).toUpperCase()}`;
+			}
+			return acc;
+		},
+		['']
+	);
+	return initials;
+};
+
 const LoggedInUser = () => {
-	const state = DataStore.useState((s) => s.Authentication);
+	// const state = DataStore.useState((s) => s.Authentication);
 	const { data, loading, error } = useQuery(WHO_AM_I);
 	const { palette } = getTheme();
+	console.log(data);
 
 	// Persona Settings
 	const examplePersona: IPersonaSharedProps = {
 		// imageUrl: TestImages.personaFemale,
-		imageInitials: 'MO',
+		imageInitials: data?.whoAmI?.username
+			? getInitials(data?.whoAmI?.username)
+			: 'NLI',
 		text: data?.whoAmI?.username ?? 'notloggedin',
 		secondaryText: data?.whoAmI?.group?.name ?? 'nogroup',
 		tertiaryText: 'On Audex desktop client (MacOS)',
@@ -58,7 +78,13 @@ const LoggedInUser = () => {
 		[]
 	);
 
-	if (loading) return <Text>Loading</Text>;
+	if (loading)
+		return (
+			<>
+				<Spinner size={SpinnerSize.small} />
+				<Spacer orientation='horizontal' />
+			</>
+		);
 
 	return (
 		<div

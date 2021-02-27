@@ -27,6 +27,7 @@ import useResponsive from '../Hooks/useResponsive';
 import { useMutation } from '@apollo/client';
 import IdentityService from '../Data/Services/IdentityService';
 import { AUTHENTICATE } from '../Data/Mutations';
+import { DataStore } from '../Data/DataStore/DataStore';
 
 interface FormFields {
 	username: string;
@@ -112,14 +113,16 @@ const LoginPage = () => {
 		})
 			.then((r) => {
 				console.log(r);
-				IdentityService.setUser(r.data.authenticate);
+				IdentityService.setUser({
+					...r.data.authenticate,
+					username: data.username,
+				});
 			})
 			.catch((r) => {
 				console.log(r);
 			});
-
+	const authState = DataStore.useState((s) => s.Authentication);
 	const [authenticate, { loading, error }] = useMutation(AUTHENTICATE);
-
 	const { screenIsAtLeast } = useResponsive();
 
 	return (
@@ -171,6 +174,7 @@ const LoginPage = () => {
 								<Controller
 									control={control}
 									name='username'
+									defaultValue={authState.username}
 									render={(
 										{ onChange, onBlur, value, name, ref },
 										{ invalid, isTouched, isDirty }
@@ -180,6 +184,7 @@ const LoginPage = () => {
 											placeholder='Username'
 											suffix='@'
 											onChange={onChange}
+											value={value}
 										/>
 									)}
 								/>

@@ -1,21 +1,15 @@
 import {
 	ApolloClient,
-	ApolloLink,
-	ApolloProvider,
 	createHttpLink,
 	from,
-	fromPromise,
 	InMemoryCache,
-	NextLink,
-	Operation,
-	RequestHandler,
 } from '@apollo/client';
-import { onError } from 'apollo-link-error';
-import { ApolloLinkJWT } from 'apollo-link-jwt';
+import { ApolloLinkJWT } from './jwt/index';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { REAUTHENTICATE } from '../Data/Mutations';
 import IdentityService from '../Data/Services/IdentityService';
-import { useCallback, useEffect, useState, createRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { getGqlString } from '../Data/Helpers';
 
 const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const authState = DataStore.useState((s) => s.Authentication);
@@ -38,9 +32,9 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const onRefreshComplete = useCallback(
 		async (data: any) => {
 			// Find and return the access token and refresh token from the provided fetch callback
-			console.log(`onRefreshComplete: ${data}`);
-			const newAccessToken = data?.data?.token?.accessToken;
-			const newRefreshToken = data?.data?.token?.refreshToken;
+			console.log(data);
+			const newAccessToken = data?.data?.reauthenticate?.authToken;
+			const newRefreshToken = data?.data?.reauthenticate?.refreshToken;
 
 			// Handle sign out logic if the refresh token attempt failed
 			if (!newAccessToken || !newRefreshToken) {
@@ -51,11 +45,11 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 				return;
 			}
 
-			// Update tokens in DataStore
-			// TODO: use IdentityService
-			DataStore.update((s) => {
-				(s.Authentication.accessToken = newAccessToken),
-					(s.Authentication.refreshToken = newRefreshToken);
+			// Update Identity
+			IdentityService.setUser({
+				username: authState.username,
+				authToken: newAccessToken,
+				refreshToken: newRefreshToken,
 			});
 
 			// Return the tokens back to the lib to cache for later use
@@ -72,35 +66,13 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	 */
 	const fetchBody = useCallback(
 		async () => ({
-			query: REAUTHENTICATE,
+			query: getGqlString(REAUTHENTICATE),
 			variables: {
 				token: authState.refreshToken,
 			},
 		}),
 		[authState]
 	);
-
-	// const authLink = new ApolloLink((operation, forward) => {
-	// 	if (authState.accessToken) {
-	// 		operation.setContext({
-	// 			headers: {
-	// 				Authorization: `Bearer ${authState.accessToken}`,
-	// 			},
-	// 		});
-	// 	}
-	// 	return forward(operation);
-	// });
-
-	// const authErrorLink = onError(
-	// 	({ graphQLErrors, networkError, operation, forward }) => {
-	// 		if (graphQLErrors) {
-	// 			for (const err of graphQLErrors) {
-	// 				if (err.extensions!.code == 'UNAUTHENTICATED')
-	// 					IdentityService.logOut();
-	// 			}
-	// 		}
-	// 	}
-	// );
 
 	/**
 	 * Change the api endpoint ONLY when user changes servers
@@ -130,6 +102,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			uri: uri,
 		});
 
+		// Bypass JWT authentication ONLY when logged out
 		const links = [httpLink];
 		if (authState.isAuthenticated) links.unshift(apolloLinkJWT);
 

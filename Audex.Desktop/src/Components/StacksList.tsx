@@ -196,27 +196,6 @@ export class DetailsListDocumentsExample extends React.Component<
 
 		return (
 			<>
-				{/* <div className={classNames.controlWrapper}>
-					<Toggle
-						label='Enable modal selection'
-						checked={isModalSelection}
-						onChange={this._onChangeModalSelection}
-						onText='Modal'
-						offText='Normal'
-						styles={controlStyles}
-					/>
-					<TextField
-						label='Filter by name:'
-						onChange={this._onChangeText}
-						styles={controlStyles}
-					/>
-					<Announced
-						message={`Number of items after filter applied: ${items.length}.`}
-					/>
-				</div> */}
-				{/* <div className={classNames.selectionDetails}>
-					{selectionDetails}
-				</div> */}
 				<Announced message={selectionDetails} />
 				{announcedMessage ? (
 					<Announced message={announcedMessage} />
@@ -439,7 +418,7 @@ function _lorem(wordCount: number): string {
 	return LOREM_IPSUM.slice(startIndex, loremIndex).join(' ');
 }
 
-const FilesList = () => {
+const StacksList = () => {
 	return (
 		<div>
 			<MenuBar type='Files' />
@@ -448,4 +427,4 @@ const FilesList = () => {
 	);
 };
 
-export default FilesList;
+export default StacksList;

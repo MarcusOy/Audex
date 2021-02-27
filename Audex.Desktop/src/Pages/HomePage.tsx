@@ -2,7 +2,7 @@ import { Pivot, PivotItem, Label } from '@fluentui/react';
 import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import BackToTop from '../Components/BackToTop';
-import FilesList from '../Components/FilesList';
+import StacksList from '../Components/StacksList';
 import MenuBar from '../Components/MenuBar';
 import RecentFiles from '../Components/RecentFiles';
 import FileDrop from '../Components/Uploading/FileDrop';
@@ -30,8 +30,8 @@ const HomePage = () => {
 					<PivotItem itemKey='Recent' headerText='Recent'>
 						<RecentFiles />
 					</PivotItem>
-					<PivotItem itemKey='Files' headerText='Files'>
-						<FilesList />
+					<PivotItem itemKey='Stacks' headerText='Stacks'>
+						<StacksList />
 					</PivotItem>
 					<PivotItem itemKey='Devices' headerText='Devices'>
 						<MenuBar type='Devices' />

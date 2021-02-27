@@ -8,7 +8,7 @@ const useLoader = () => {
 
 	useEffect(() => {
 		try {
-			// Using IIFE here
+			// Using JS IIFE here (look it up if you don't remember)
 			(async function load() {
 				console.log('Loader is processsing...');
 				const u =
@@ -16,6 +16,8 @@ const useLoader = () => {
 				const a = (await PersistenceService.getSecured('auth')) ?? '';
 				const r =
 					(await PersistenceService.getSecured('refresh')) ?? '';
+
+				console.log(`Getting auth from storage... ${u} ${a} ${r}`);
 				DataStore.update((s) => {
 					// Authentication
 					s.Authentication.username = u;
