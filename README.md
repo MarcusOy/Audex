@@ -19,6 +19,7 @@ To be done.
 ## Dev Quick Start
 Clone the repository and run the following commands in the root directory:
 ```bash
+docker-compose up -d # Starts MySQL database
 yarn api # Starts Audex Server (in watch mode)
 yarn desktop # Starts Electron Client (in watch mode)
 ```
