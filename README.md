@@ -16,6 +16,16 @@ To be done.
 
 To be done.
 
+## Dev Quick Start
+Clone the repository and run the following commands in the root directory:
+```bash
+yarn api # Starts Audex Server (in watch mode)
+yarn desktop # Starts Electron Client (in watch mode)
+```
+> I'll usually split the terminal right in VSCode and run each command on each side.
+> 
+> -Marcus
+
 ## Projects
 
 This repository contains several different projects. Below are links to each projects README.md for further instructions.

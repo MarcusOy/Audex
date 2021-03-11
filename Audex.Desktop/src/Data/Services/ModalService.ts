@@ -1,4 +1,4 @@
-import { IFilePanel } from '../../Components/Modals/FilePanel';
+import { IStackPanel } from '../../Components/Modals/StackPanel';
 import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
 import { DataStore } from '../DataStore/DataStore';
 
@@ -16,15 +16,15 @@ class ModalService {
 		});
 	}
 
-	static openFileModal({ fileId }: IFilePanel) {
+	static openStackModal({ stackId }: IStackPanel) {
 		DataStore.update((s) => {
-			s.Modals.FilePanel.fileId = fileId;
-			s.Modals.FilePanel.isOpen = true;
+			s.Modals.StackPanel.stackId = stackId;
+			s.Modals.StackPanel.isOpen = true;
 		});
 	}
 	static closeFileModal() {
 		DataStore.update((s) => {
-			s.Modals.FilePanel.isOpen = false;
+			s.Modals.StackPanel.isOpen = false;
 		});
 	}
 }

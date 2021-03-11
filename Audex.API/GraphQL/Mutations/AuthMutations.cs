@@ -8,10 +8,10 @@ namespace Audex.API.GraphQL.Mutations
 {
     public class AuthMutations
     {
-        public GetTokenResponse Authenticate(string username, string password, [Service] IIdentityService identityService)
+        public GetTokenResponse Authenticate(string username, string password, string device, [Service] IIdentityService identityService)
         {
             Thread.Sleep(1000);
-            var tokens = identityService.Authenticate(username, password);
+            var tokens = identityService.Authenticate(username, password, device);
             return new GetTokenResponse
             {
                 AuthToken = tokens.AuthToken,

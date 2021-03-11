@@ -64,7 +64,7 @@ const FileUnit = (props: Props) => {
 
 	useEffect(() => {
 		if (data) {
-			setUid(data.uid);
+			setUid(data.id);
 			setFileState(FileState.Successful);
 			setProgress(1);
 		} else {

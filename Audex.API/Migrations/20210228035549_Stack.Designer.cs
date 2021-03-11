@@ -3,14 +3,16 @@ using System;
 using Audex.API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210228035549_Stack")]
+    partial class Stack
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,9 +66,6 @@ namespace Audex.API.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("char(36)");
-
                     b.Property<DateTime>("ExpiresOn")
                         .HasColumnType("datetime(6)");
 
@@ -91,8 +90,6 @@ namespace Audex.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
-
                     b.HasIndex("ReplacedByTokenId");
 
                     b.HasIndex("UserId");
@@ -111,9 +108,6 @@ namespace Audex.API.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("NotificationIdentifier")
                         .HasColumnType("longtext");
 
                     b.Property<Guid>("UserId")
@@ -431,12 +425,6 @@ namespace Audex.API.Migrations
 
             modelBuilder.Entity("Audex.API.AuthToken", b =>
                 {
-                    b.HasOne("Audex.API.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Audex.API.AuthToken", "ReplacedByToken")
                         .WithMany()
                         .HasForeignKey("ReplacedByTokenId");
@@ -446,8 +434,6 @@ namespace Audex.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Device");
 
                     b.Navigation("ReplacedByToken");
 

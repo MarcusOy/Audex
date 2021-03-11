@@ -1,0 +1,7 @@
+{
+    "name": "my-package",
+    "scripts": {
+      "api": "cd Audex.API && dotnet watch run",
+      "desktop": "cd Audex.Desktop && yarn start"
+    }
+  }

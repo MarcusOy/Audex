@@ -35,7 +35,11 @@ const HeaderBar = () => {
 	return (
 		<>
 			<Stack
-				style={{ marginBottom: 20 }}
+				style={{
+					// marginBottom: 20,
+					padding: '10px 0',
+					borderBottom: '1px solid rgb(243, 242, 241)',
+				}}
 				tokens={{ childrenGap: 8 }}
 				horizontal
 				verticalAlign='center'

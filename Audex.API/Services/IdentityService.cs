@@ -20,7 +20,7 @@ namespace Audex.API.Services
 {
     public interface IIdentityService
     {
-        public (string AuthToken, string RefreshToken) Authenticate(string username, string password);
+        public (string AuthToken, string RefreshToken) Authenticate(string username, string password, string deviceId);
         public (string AuthToken, string RefreshToken) Reauthenticate(string refreshToken);
     }
 
@@ -41,17 +41,21 @@ namespace Audex.API.Services
             _dbContext = dbContext;
             _settings = settings.Value;
         }
-        public (string AuthToken, string RefreshToken) Authenticate(string username, string password)
+        public (string AuthToken, string RefreshToken) Authenticate(string username, string password, string deviceId)
         {
             var roles = new List<string>();
             var u = _dbContext.Users
                     .Include(u => u.Group)
                     .Include(u => u.Group.GroupRoles)
                         .ThenInclude(gr => gr.Role)
+                    .Include(u => u.Devices)
                     .FirstOrDefault(u => u.Username == username);
 
             if (u is null || u.Password != SecurityHelpers.GenerateHashedPassword(password, Convert.FromBase64String(u.Salt)))
                 throw new AuthenticationException("Credentials not valid.");
+
+            if (u.Devices.FirstOrDefault(d => d.Id == new Guid(deviceId)) is null)
+                throw new AuthenticationException("Device is not valid.");
 
             foreach (GroupRole gR in u.Group.GroupRoles)
             {
@@ -59,8 +63,8 @@ namespace Audex.API.Services
             }
 
             return (
-                GenerateAuthToken(username, u.Id, roles.ToArray()).Token,
-                GenerateRefreshToken(u.Id).Token
+                GenerateAuthToken(username, u.Id, new Guid(deviceId), roles.ToArray()).Token,
+                GenerateRefreshToken(u.Id, new Guid(deviceId)).Token
             );
         }
 
@@ -87,7 +91,7 @@ namespace Audex.API.Services
             if (t is null || !t.IsActive)
                 throw new AuthenticationException("Refresh token not valid.");
 
-            var newToken = GenerateRefreshToken(u.Id);
+            var newToken = GenerateRefreshToken(u.Id, t.DeviceId);
             t.RevokedOn = DateTime.UtcNow;
             t.RevokedByIP = GetIPAddress();
             t.ReplacedByTokenId = newToken.EntityId;
@@ -98,13 +102,13 @@ namespace Audex.API.Services
             }
 
             return (
-                GenerateAuthToken(u.Username, u.Id, roles.ToArray()).Token,
+                GenerateAuthToken(u.Username, u.Id, t.DeviceId, roles.ToArray()).Token,
                 newToken.Token
             );
 
         }
 
-        private (string Token, Guid EntityId) GenerateAuthToken(string username, Guid userId, string[] roles)
+        private (string Token, Guid EntityId) GenerateAuthToken(string username, Guid userId, Guid deviceId, string[] roles)
         {
             var key = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
@@ -112,7 +116,8 @@ namespace Audex.API.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username)
+                new Claim(ClaimTypes.Name, username),
+                new Claim("deviceId", deviceId.ToString())
             };
 
             var expiry = DateTime.UtcNow.AddMinutes(1);
@@ -137,13 +142,14 @@ namespace Audex.API.Services
                 ExpiresOn = expiry,
                 CreatedOn = DateTime.UtcNow,
                 CreatedByIP = GetIPAddress(),
-                UserId = userId
+                UserId = userId,
+                DeviceId = deviceId
             });
             _dbContext.SaveChanges();
 
             return (signedToken, e.Entity.Id);
         }
-        private (string Token, Guid EntityId) GenerateRefreshToken(Guid userId)
+        private (string Token, Guid EntityId) GenerateRefreshToken(Guid userId, Guid deviceId)
         {
             using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
             {
@@ -158,7 +164,8 @@ namespace Audex.API.Services
                     ExpiresOn = DateTime.UtcNow.AddDays(7),
                     CreatedOn = DateTime.UtcNow,
                     CreatedByIP = GetIPAddress(),
-                    UserId = userId
+                    UserId = userId,
+                    DeviceId = deviceId
                 });
                 _dbContext.SaveChanges();
 

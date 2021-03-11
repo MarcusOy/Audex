@@ -2,10 +2,13 @@ namespace Audex.API.Services
 {
     public interface IUserService
     {
-        public (User, Drive, FileNode) CreateUser();
+        public User CreateUser();
     }
-    public class UserService
+    public class UserService : IUserService
     {
-
+        public User CreateUser()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

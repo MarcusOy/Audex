@@ -6,11 +6,14 @@ import {
 	Selection,
 	SelectionMode,
 	IColumn,
-	MarqueeSelection,
 	mergeStyleSets,
+	TooltipHost,
+	TooltipDelay,
+	DirectionalHint,
 } from '@fluentui/react';
 import MenuBar from './MenuBar';
 import ModalService from '../Data/Services/ModalService';
+import faker from 'faker';
 
 const classNames = mergeStyleSets({
 	fileIconHeaderIcon: {
@@ -65,8 +68,8 @@ export interface IDocument {
 	iconName: string;
 	fileType: string;
 	modifiedBy: string;
-	dateModified: string;
-	dateModifiedValue: number;
+	dateAdded: string;
+	dateAddedValue: number;
 	fileSize: string;
 	fileSizeRaw: number;
 }
@@ -94,16 +97,46 @@ export class DetailsListDocumentsExample extends React.Component<
 				iconName: 'Page',
 				isIconOnly: true,
 				fieldName: 'name',
-				minWidth: 16,
-				maxWidth: 16,
+				minWidth: 20,
+				maxWidth: 20,
 				onColumnClick: this._onColumnClick,
 				onRender: (item: IDocument) => {
 					return (
-						<img
-							src={item.iconName}
-							className={classNames.fileIconImg}
-							alt={item.fileType + ' file icon'}
-						/>
+						<TooltipHost
+							tooltipProps={{
+								onRenderContent: () => (
+									<ol style={{ margin: 10, padding: 10 }}>
+										<li>asdf.docx</li>
+										<li>asdf.docx</li>
+										<li>asdf.docx</li>
+										<li>asdf.docx</li>
+										<li>asdf.docx</li>
+										<li>asdf.docx</li>
+									</ol>
+								),
+							}}
+							delay={TooltipDelay.zero}
+							directionalHint={DirectionalHint.rightCenter}
+						>
+							{Array.from(new Array(3).fill(3).keys()).map(
+								(i) => {
+									return (
+										<img
+											key={faker.random.number()}
+											src={item.iconName}
+											className={classNames.fileIconImg}
+											alt={item.fileType + ' file icon'}
+											style={{
+												position: 'relative',
+												top: i,
+												left: -12 * i,
+												zIndex: 5 - i,
+											}}
+										/>
+									);
+								}
+							)}
+						</TooltipHost>
 					);
 				},
 			},
@@ -125,15 +158,16 @@ export class DetailsListDocumentsExample extends React.Component<
 			},
 			{
 				key: 'column3',
-				name: 'Date Modified',
-				fieldName: 'dateModifiedValue',
+				name: 'Date Added',
+				fieldName: 'dateAddedValue',
 				minWidth: 70,
 				maxWidth: 90,
 				isResizable: true,
+				isCollapsible: true,
 				onColumnClick: this._onColumnClick,
 				data: 'number',
 				onRender: (item: IDocument) => {
-					return <span>{item.dateModified}</span>;
+					return <span>{item.dateAdded}</span>;
 				},
 				isPadded: true,
 			},
@@ -159,7 +193,7 @@ export class DetailsListDocumentsExample extends React.Component<
 				minWidth: 70,
 				maxWidth: 90,
 				isResizable: true,
-				isCollapsible: true,
+				isCollapsible: false,
 				data: 'number',
 				onColumnClick: this._onColumnClick,
 				onRender: (item: IDocument) => {
@@ -200,27 +234,27 @@ export class DetailsListDocumentsExample extends React.Component<
 				{announcedMessage ? (
 					<Announced message={announcedMessage} />
 				) : undefined}
-				<MarqueeSelection
+				{/* <MarqueeSelection
 					selection={this._selection}
 					style={{ marginLeft: 40, marginRight: 40 }}
-				>
-					<DetailsList
-						items={items}
-						columns={columns}
-						selectionMode={SelectionMode.multiple}
-						getKey={this._getKey}
-						setKey='multiple'
-						layoutMode={DetailsListLayoutMode.justified}
-						isHeaderVisible={true}
-						selection={this._selection}
-						selectionPreservedOnEmptyClick={true}
-						onItemInvoked={this._onItemInvoked}
-						enterModalSelectionOnTouch={true}
-						ariaLabelForSelectionColumn='Toggle selection'
-						ariaLabelForSelectAllCheckbox='Toggle selection for all items'
-						checkButtonAriaLabel='Row checkbox'
-					/>
-				</MarqueeSelection>
+				> */}
+				<DetailsList
+					items={items}
+					columns={columns}
+					selectionMode={SelectionMode.multiple}
+					getKey={this._getKey}
+					setKey='multiple'
+					layoutMode={DetailsListLayoutMode.justified}
+					isHeaderVisible={true}
+					selection={this._selection}
+					selectionPreservedOnEmptyClick={true}
+					onItemInvoked={this._onItemInvoked}
+					enterModalSelectionOnTouch={true}
+					ariaLabelForSelectionColumn='Toggle selection'
+					ariaLabelForSelectAllCheckbox='Toggle selection for all items'
+					checkButtonAriaLabel='Row checkbox'
+				/>
+				{/* </MarqueeSelection> */}
 			</>
 		);
 	}
@@ -242,7 +276,7 @@ export class DetailsListDocumentsExample extends React.Component<
 	}
 
 	private _onItemInvoked(item: IDocument): void {
-		ModalService.openFileModal({ fileId: item.name });
+		ModalService.openStackModal({ stackId: item.name });
 	}
 
 	private _getSelectionDetails(): string {
@@ -333,8 +367,8 @@ function _generateDocuments() {
 			iconName: randomFileType.url,
 			fileType: randomFileType.docType,
 			modifiedBy: userName,
-			dateModified: randomDate.dateFormatted,
-			dateModifiedValue: randomDate.value,
+			dateAdded: randomDate.dateFormatted,
+			dateAddedValue: randomDate.value,
 			fileSize: randomFileSize.value,
 			fileSizeRaw: randomFileSize.rawSize,
 		});
@@ -422,6 +456,7 @@ const StacksList = () => {
 	return (
 		<div>
 			<MenuBar type='Files' />
+
 			<DetailsListDocumentsExample />
 		</div>
 	);

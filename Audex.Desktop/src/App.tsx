@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { initializeIcons, ThemeProvider } from '@fluentui/react';
+import {
+	initializeIcons,
+	Spinner,
+	SpinnerSize,
+	ThemeProvider,
+} from '@fluentui/react';
 import { initializeFileTypeIcons } from '@uifabric/file-type-icons';
 import {
 	BrowserRouter as Router,
@@ -29,7 +34,7 @@ const App = () => {
 
 	let body;
 	if (isError) body = <p>error</p>;
-	if (isLoading) body = <p>loading</p>;
+	if (isLoading) body = <Spinner size={SpinnerSize.large} />;
 	if (!state.Authentication) body = <p>DataStore is loading...</p>;
 
 	console.log(state);
@@ -40,7 +45,6 @@ const App = () => {
 			<ApolloProvider client={client}>
 				<ThemeProvider>
 					<Router>
-						<Modals />
 						{!state.Authentication.isAuthenticated ? (
 							<LoginPage />
 						) : (
@@ -59,6 +63,7 @@ const App = () => {
 								</Switch>
 							</>
 						)}
+						<Modals />
 					</Router>
 				</ThemeProvider>
 			</ApolloProvider>

@@ -14,7 +14,8 @@ namespace Audex.API
         public DbSet<Role> Roles { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceType> DeviceTypes { get; set; }
-        public DbSet<Drive> Drives { get; set; }
+        public DbSet<Stack> Stack { get; set; }
+        public DbSet<StackCategory> StackCategory { get; set; }
         public DbSet<FileNode> FileNodes { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Share> Shares { get; set; }
@@ -82,6 +83,10 @@ namespace Audex.API
         public Guid UserId { get; set; }
         public User User { get; set; }
 
+        // Device relationship
+        public Guid DeviceId { get; set; }
+        public Device Device { get; set; }
+
         // Token relationship
         public Guid? ReplacedByTokenId { get; set; }
         public AuthToken ReplacedByToken { get; set; }
@@ -136,6 +141,7 @@ namespace Audex.API
         public Guid Id { get; set; }
         [Required]
         public string Name { get; set; }
+        public string NotificationIdentifier { get; set; }
 
         // DeviceType Relationship
         [Required]
@@ -159,32 +165,55 @@ namespace Audex.API
         public List<Device> Devices { get; set; }
     }
 
-    public class Drive
+    public class Stack
     {
         [Required]
         public Guid Id { get; set; }
+        public string Name { get; set; }
+        [Required]
+        public DateTime DateCreated { get; set; }
+        public DateTime? ExpiryDate { get; set; }
 
+        // StackCategory Relationship
+        public Guid StackCategoryId { get; set; }
+        public StackCategory StackCategory { get; set; }
+
+        // User Relationship
         [Required]
         public Guid OwnerUserId { get; set; }
         public User OwnerUser { get; set; }
+
+        // Device Relationship
+        public Guid UploadedByDeviceId { get; set; }
+        public Device UploadedByDevice { get; set; }
+
+        // FileNode Relationship
+        public List<FileNode> Files { get; set; }
+    }
+    public class StackCategory
+    {
         [Required]
-        public Guid RootFileNodeId { get; set; }
-        public FileNode RootFileNode { get; set; }
+        public Guid Id { get; set; }
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Color { get; set; }
+
+        // User Relationship
+        [Required]
+        public Guid OwnerUserId { get; set; }
+        public User OwnerUser { get; set; }
     }
     public class FileNode
     {
         [Required]
         public Guid Id { get; set; }
         [Required]
-        public bool IsDirectory { get; set; }
-        [Required]
         public string Name { get; set; }
         public string FileExtension { get; set; }
         public long FileSize { get; set; }
         [Required]
         public DateTime DateCreated { get; set; }
-
-        public DateTime? ExpiryDate { get; set; }
 
         // User Relationship
         [Required]
@@ -196,11 +225,8 @@ namespace Audex.API
         public Device UploadedByDevice { get; set; }
 
         // FileNode Relationship - Parent
-        public Guid? ParentFileNodeId { get; set; }
-        public FileNode ParentFileNode { get; set; }
-
-        // FileNode Relationship - Children
-        public List<FileNode> ChildrenFileNodes { get; set; }
+        public Guid? ParentStackId { get; set; }
+        public Stack ParentStack { get; set; }
     }
     // public class File
     // {

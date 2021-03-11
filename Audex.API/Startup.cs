@@ -112,9 +112,12 @@ namespace Audex.API
                 o.SaveToken = true;
             });
 
+            // Setting up GraphQL server
             services.AddGraphQLServer()
-                    .AddMutationType<Audex.API.GraphQL.Mutations.AuthMutations>()
-                    .AddQueryType<Audex.API.GraphQL.Query>()
+                    .AddMutationType<GraphQL.Mutations.AuthMutations>()
+                    .AddQueryType(d => d.Name("Query"))
+                        .AddTypeExtension<GraphQL.Queries.TestQueries>()
+                        .AddTypeExtension<GraphQL.Queries.UserQueries>()
                     .AddAuthorization()
                     .AddHttpRequestInterceptor(
                         (context, executer, builder, ct) =>
@@ -136,6 +139,12 @@ namespace Audex.API
                     .AddErrorFilter<GraphQLErrorFilter>() // For debugging purposes
                     .AddFiltering()
                     .AddSorting();
+
+            // Adding entity services
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFileNodeService, FileNodeService>();
+            services.AddScoped<IInitializationService, InitializationService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -143,6 +152,7 @@ namespace Audex.API
                              IWebHostEnvironment env,
                              AudexDBContext dbContext,
                              IIdentityService identityService,
+                             IInitializationService initializationService,
                              ILogger<Startup> logger)
         {
             using (logger.BeginScope("Audex is configuring..."))
@@ -173,9 +183,8 @@ namespace Audex.API
 
                 app.UsePlayground("/api/v1/graphql");
 
+                initializationService.InitializeDatabase();
             }
-
-            dbContext.EnsureInitialData(identityService, logger); // TODO: use proper DI
         }
     }
 }

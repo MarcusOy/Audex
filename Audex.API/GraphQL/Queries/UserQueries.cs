@@ -10,22 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using HotChocolate.AspNetCore.Authorization;
 
-namespace Audex.API.GraphQL
+namespace Audex.API.GraphQL.Queries
 {
-    public class Query
+    [ExtendObjectType(Name = "Query")]
+    public class UserQueries
     {
-
-        public string Test()
-        {
-            return "This is a test query. It works!";
-        }
-
-        [Authorize]
-        public string TestAuthorized()
-        {
-            return "This is a test query. You are authorized!";
-        }
-
         [Authorize]
         public User WhoAmI([CurrentUserGlobalState] CurrentUser user,
                            [Service] AudexDBContext context)

@@ -1,17 +1,35 @@
+using System.Runtime.Intrinsics.X86;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Audex.API.Helpers;
-using Audex.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Audex.API.Migrations
+namespace Audex.API.Services
 {
-    public static class InitialMigrationData
+    public interface IInitializationService
     {
-        public static void EnsureInitialData(this AudexDBContext dbContext,
-                                             IIdentityService identityService,
-                                             ILogger<Startup> logger)
+        public void InitializeDatabase();
+    }
+    public class InitializationService : IInitializationService
+    {
+        private readonly AudexDBContext dbContext;
+        private readonly IIdentityService identityService;
+        private readonly ILogger<InitializationService> logger;
+        private readonly IFileNodeService fnService;
+        public InitializationService(AudexDBContext dbContext,
+                                     IIdentityService identityService,
+                                     ILogger<InitializationService> logger,
+                                     IFileNodeService fnService)
+        {
+            this.dbContext = dbContext;
+            this.identityService = identityService;
+            this.logger = logger;
+            this.fnService = fnService;
+        }
+        public void InitializeDatabase()
         {
             // Database initial data checks
             using (logger.BeginScope("Audex is checking the configured database..."))
@@ -19,14 +37,12 @@ namespace Audex.API.Migrations
                 // Apply pending migrations
                 dbContext.Database.Migrate();
 
-
                 // Checking Role entities
                 if (dbContext.Roles.Count() < 7)
                 {
                     logger.LogWarning("Roles may not be initialized.");
                     string[] r = {"Login",
                                   "UploadFiles",
-                                //   "UploadFiles",
                                   "ViewFiles",
                                   "UserManagement",
                                   "DeviceManagement",
@@ -176,27 +192,23 @@ namespace Audex.API.Migrations
                     dbContext.Devices.Add(d);
                     dbContext.SaveChanges();
 
-                    // Adding starting drive and a root file node
-                    var fn = new FileNode
+                    // Starting Stack (as an example)
+                    var sS = new Stack
                     {
-                        Id = Guid.NewGuid(),
-                        IsDirectory = true,
-                        Name = $"{un}'s Root",
-                        DateCreated = DateTime.UtcNow,
                         OwnerUser = u,
-                        ParentFileNodeId = null,
-                        UploadedByDevice = d
                     };
-                    dbContext.FileNodes.Add(fn);
+
+                    var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                    var fs = new List<FileNode>();
+                    foreach (string path in Directory.GetFiles(Path.Combine(root, "Assets/StarterFiles")))
+                    {
+                        fs.Add(fnService.Create(path).Result);
+                    }
+
+                    sS.Files = fs;
                     dbContext.SaveChanges();
 
-                    var dr = new Drive
-                    {
-                        Id = Guid.NewGuid(),
-                        OwnerUser = u,
-                        RootFileNode = fn
-                    };
-                    dbContext.Drives.Add(dr);
                     logger.LogInformation($@"
                         Admin account was not initialized, so a new one has been created.
                         Use the following account to login:

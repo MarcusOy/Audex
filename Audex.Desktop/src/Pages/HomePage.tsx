@@ -6,6 +6,7 @@ import StacksList from '../Components/StacksList';
 import MenuBar from '../Components/MenuBar';
 import RecentFiles from '../Components/RecentFiles';
 import FileDrop from '../Components/Uploading/FileDrop';
+import DevicesList from '../Components/DevicesList';
 
 interface HomePageParams {
 	tab: string;
@@ -22,6 +23,7 @@ const HomePage = () => {
 	return (
 		<>
 			<FileDrop>
+				<DevicesList />
 				<Pivot
 					linkSize={'large'}
 					selectedKey={tab}

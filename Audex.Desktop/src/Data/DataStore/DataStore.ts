@@ -1,9 +1,10 @@
 import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
 import { IModal } from '../../Components/Modals/Modals';
-import { IFilePanel } from '../../Components/Modals/FilePanel';
+import { IStackPanel } from '../../Components/Modals/StackPanel';
 import { Store } from 'pullstate';
 import { IFileUnit } from '../../Components/Uploading/FileUnit';
 import { IServer } from '../Services/ServerService';
+import { IToasts } from '../../Components/Modals/Toasts';
 
 export interface AudexStore {
 	Servers: {
@@ -19,7 +20,8 @@ export interface AudexStore {
 		deviceId: string;
 	};
 	Modals: {
-		FilePanel: IFilePanel;
+		Toasts: IToasts;
+		StackPanel: IStackPanel;
 		FilePreview: IModal;
 		FileTransfer: IFileTransferPanel;
 	};
@@ -52,12 +54,15 @@ const initialState: AudexStore = {
 		username: '',
 		accessToken: '',
 		refreshToken: '',
-		deviceId: 'ae3848f7-7f20-4287-aba5-15531d3a1dbf', //TODO: use deviceId from server
+		deviceId: 'ae3848f7-7f20-4287-aba5-15531d3a1dbf', //TODO: generate DeviceId on first launch
 	},
 	Modals: {
-		FilePanel: {
+		Toasts: {
+			toasts: [],
+		},
+		StackPanel: {
 			isOpen: false,
-			fileId: '',
+			stackId: '',
 		},
 		FilePreview: {
 			isOpen: false,

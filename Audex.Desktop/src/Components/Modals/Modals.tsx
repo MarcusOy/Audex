@@ -1,5 +1,6 @@
 import React from 'react';
-import FilePanel from './FilePanel';
+import StackPanel from './StackPanel';
+import Toasts from './Toasts';
 import { FileTransferPanel } from './FileTransferPanel';
 
 export interface IModal {
@@ -9,7 +10,8 @@ export interface IModal {
 const Modals = () => {
 	return (
 		<>
-			<FilePanel />
+			<Toasts />
+			<StackPanel />
 			<FileTransferPanel />
 		</>
 	);

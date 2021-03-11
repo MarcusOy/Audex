@@ -49,7 +49,6 @@ const LoggedInUser = () => {
 	// const state = DataStore.useState((s) => s.Authentication);
 	const { data, loading, error } = useQuery(WHO_AM_I);
 	const { palette } = getTheme();
-	console.log(data);
 
 	// Persona Settings
 	const examplePersona: IPersonaSharedProps = {

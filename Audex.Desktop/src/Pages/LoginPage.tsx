@@ -109,6 +109,7 @@ const LoginPage = () => {
 			variables: {
 				username: data.username,
 				password: data.password,
+				device: authState.deviceId,
 			},
 		})
 			.then((r) => {
