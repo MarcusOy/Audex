@@ -47,9 +47,9 @@ namespace Audex.API.GraphQL.Extensions
                     return ConnectionStatus.Reject("Unauthorized");
 
                 var token = jwtHeader.Replace("Bearer ", "");
-                var opts = connection.HttpContext.RequestServices.GetRequiredService<JwtBearerOptions>();
+                var validator = connection.HttpContext.RequestServices.GetRequiredService<TokenValidationParameters>();
 
-                var claims = new JwtBearerBacker(opts).IsJwtValid(token);
+                var claims = new JwtBearerBacker(validator).IsJwtValid(token);
                 if (claims == null)
                     return ConnectionStatus.Reject("Unauthoized(invalid token)");
 
@@ -76,9 +76,14 @@ namespace Audex.API.GraphQL.Extensions
     {
         public JwtBearerOptions Options { get; private set; }
 
-        public JwtBearerBacker(JwtBearerOptions options)
+        public JwtBearerBacker(TokenValidationParameters tokenValidator)
         {
-            this.Options = options;
+            this.Options = new JwtBearerOptions
+            {
+                TokenValidationParameters = tokenValidator,
+                RequireHttpsMetadata = false,
+                SaveToken = true,
+            };
         }
 
         public ClaimsPrincipal IsJwtValid(string token)

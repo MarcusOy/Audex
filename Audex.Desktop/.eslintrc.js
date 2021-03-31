@@ -42,6 +42,7 @@ module.exports = {
 		'import/no-dynamic-require': 'off', // https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-dynamic-require.md
 		'no-inner-declarations': 'off', // https://eslint.org/docs/rules/no-inner-declarations// New rules
 		'class-methods-use-this': 'off',
+		'react/display-name': 'off',
 		'import/extensions': 'off',
 		'import/prefer-default-export': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',

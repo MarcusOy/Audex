@@ -87,28 +87,28 @@ namespace Audex.API
             services.AddHttpContextAccessor();
 
             // Added JWT authenitcation
-            var jwtOpts = new JwtBearerOptions
+            var tokenValidator = new TokenValidationParameters
             {
-                TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = true,
-                    ValidateIssuer = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidAudience = Configuration["Audex:Jwt:Audience"], // TODO: dynamically change audience based on user
-                    ValidIssuer = Configuration["Audex:Jwt:Issuer"], // TODO: dynamically change audience based on user
-                    // RequireSignedTokens = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Audex:Jwt:Key"])) // TODO: generate random secret on initialization
-                },
-                RequireHttpsMetadata = false,
-                SaveToken = true,
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                ValidAudience = Configuration["Audex:Jwt:Audience"], // TODO: dynamically change audience based on user
+                ValidIssuer = Configuration["Audex:Jwt:Issuer"], // TODO: dynamically change audience based on user
+                // RequireSignedTokens = false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Audex:Jwt:Key"])) // TODO: generate random secret on initialization
             };
-            services.AddSingleton(jwtOpts);
             services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(o => o = jwtOpts);
+            }).AddJwtBearer(o =>
+            {
+                o.TokenValidationParameters = tokenValidator;
+                o.RequireHttpsMetadata = false;
+                o.SaveToken = true;
+            });
+            services.AddSingleton<TokenValidationParameters>(tokenValidator);
 
             // Setting up GraphQL server
             services.AddGraphQLServer()
@@ -139,7 +139,7 @@ namespace Audex.API
                             return new ValueTask(Task.CompletedTask);
                         }
                     )
-                    // .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
+                    .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
                     .AddInMemorySubscriptions()
                     .AddErrorFilter<GraphQLErrorFilter>()
                     .AddFiltering()
