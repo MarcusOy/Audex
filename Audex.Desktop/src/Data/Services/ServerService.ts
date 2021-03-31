@@ -1,4 +1,5 @@
 export interface IServer {
+	prefix: string;
 	hostName: string;
 	apiVersion: string;
 	apiEndpoint: string;

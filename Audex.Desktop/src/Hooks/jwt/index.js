@@ -82,8 +82,6 @@ export const ApolloLinkJWT = ({
 		// if (isJwtExpired(cachedRefreshToken))
 		// 	return null, null, 'Refresh token has expired';
 
-		console.log('Refresh token is not expired.');
-
 		// Construct the fetch body
 		const body = await addRefreshTokenToBody(fetchBody, cachedRefreshToken);
 
@@ -96,8 +94,6 @@ export const ApolloLinkJWT = ({
 			headers,
 			body,
 		});
-
-		console.log(response);
 
 		// Allow configurable function to indicate if the endpoint returned the correct response
 		const onRefreshResponse = await onRefreshComplete(response);

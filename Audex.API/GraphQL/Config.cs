@@ -6,7 +6,9 @@ namespace Audex.API.GraphQL
     {
         public IError OnError(IError error)
         {
-            return error.WithMessage(error.Exception.Message);
+            return error.WithMessage(error.Exception is null
+            ? error.Message
+            : error.Exception.Message);
         }
     }
 }

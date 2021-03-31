@@ -21,5 +21,11 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\StarterAssets\*.*" CopyToOutputDirectory="PreserveNewest">
+    </Content>
+    <ContentWithTargetPath Include="$(MSBuildThisFileDirectory)\Assets\StarterStack\*.*" CopyToOutputDirectory="PreserveNewest" TargetPath="Assets\StarterStack\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 
 </Project>

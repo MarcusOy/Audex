@@ -37,66 +37,6 @@ const _baseItems: ICommandBarItemProps[] = [
 const numSelected = 1;
 const zeroOrOneSelected = false;
 
-const _filesItems: ICommandBarItemProps[] = [
-	{
-		key: 'download',
-		text: `Download ${numSelected}`,
-		iconProps: { iconName: 'Download' },
-		onClick: () => console.log('Download'),
-		split: true,
-		subMenuProps: {
-			items: [
-				{
-					key: 'zip',
-					text: `Download ${numSelected} as .zip`,
-				},
-				{
-					key: 'unencrypted',
-					text: `Download ${numSelected} as encrypted`,
-				},
-			],
-		},
-	},
-	{
-		key: 'transfer',
-		text: 'Transfer stack',
-		iconProps: { iconName: 'Send' },
-		onClick: () => console.log('Transfer'),
-		split: true,
-	},
-	{
-		key: 'share',
-		text: 'Share stack',
-		iconProps: { iconName: 'Share' },
-		onClick: () => console.log('Share'),
-		subMenuProps: {
-			items: [
-				{
-					key: 'link',
-					text: 'Share as Link',
-				},
-				{
-					key: 'pin',
-					text: 'Share with PIN',
-				},
-			],
-		},
-	},
-	{
-		key: 'delete',
-		text: `Delete ${numSelected}...`,
-		onClick: () => console.log('delete'),
-		iconProps: { iconName: 'Trash' },
-	},
-	{
-		key: 'rename',
-		text: `Rename ${zeroOrOneSelected}...`,
-		onClick: () => console.log('Rename'),
-		// disabled: selection.length > 1,
-		iconProps: { iconName: 'Edit' },
-	},
-];
-
 const _devicesItems: ICommandBarItemProps[] = [
 	{
 		key: 'upload',
@@ -138,12 +78,9 @@ const MenuBar = (props: Props) => {
 	const [items, setItems] = useState<ICommandBarItemProps[]>();
 
 	useEffect(() => {
-		let i = [];
+		let i: ICommandBarItemProps[] = [];
 		i = i.concat(_baseItems);
 		switch (props.type) {
-			case 'Files':
-				i = i.concat(_filesItems);
-				break;
 			case 'Devices':
 				i = i.concat(_devicesItems);
 				break;
@@ -154,7 +91,7 @@ const MenuBar = (props: Props) => {
 	return (
 		<CommandBar
 			style={{ marginTop: 10, position: 'sticky', top: 0, zIndex: 100 }}
-			items={items}
+			items={items!}
 			// overflowItems={_overflowItems}
 			farItems={_farItems}
 			ariaLabel='Use left and right arrow keys to navigate between commands'

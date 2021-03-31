@@ -9,6 +9,8 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using HotChocolate.AspNetCore.Authorization;
+using Audex.API.Models.Auth;
+using Audex.API.Data;
 
 namespace Audex.API.GraphQL.Queries
 {
@@ -30,7 +32,7 @@ namespace Audex.API.GraphQL.Queries
                               // Excluding Password and Salt
                               Password = "***",
                               Salt = "***",
-                              DateCreated = u.DateCreated,
+                              CreatedOn = u.CreatedOn,
                               Active = u.Active,
                               GroupId = u.GroupId,
                               Group = u.Group,
@@ -54,7 +56,7 @@ namespace Audex.API.GraphQL.Queries
                               // Excluding Password and Salt
                               Password = "***",
                               Salt = "***",
-                              DateCreated = u.DateCreated,
+                              CreatedOn = u.CreatedOn,
                               Active = u.Active,
                               GroupId = u.GroupId,
                               Group = u.Group,

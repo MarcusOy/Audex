@@ -1,3 +1,5 @@
+using Audex.API.Models.Auth;
+
 namespace Audex.API.Services
 {
     public interface IUserService

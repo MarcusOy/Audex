@@ -31,13 +31,15 @@ export interface AudexStore {
 }
 
 const devServer: IServer = {
-	hostName: 'http://localhost:5000',
+	prefix: 'http://',
+	hostName: 'localhost:5000',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
 	online: true,
 };
 const officialServer: IServer = {
-	hostName: 'https://audex.app',
+	prefix: 'https://',
+	hostName: 'audex.app',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
 	online: false,
@@ -54,7 +56,7 @@ const initialState: AudexStore = {
 		username: '',
 		accessToken: '',
 		refreshToken: '',
-		deviceId: 'ae3848f7-7f20-4287-aba5-15531d3a1dbf', //TODO: generate DeviceId on first launch
+		deviceId: 'dd3bba8a-9e02-4866-90a9-1d8814285aa2', //TODO: generate DeviceId on first launch
 	},
 	Modals: {
 		Toasts: {

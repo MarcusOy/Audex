@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Audex.API.Data;
 using Audex.API.Helpers;
+using Audex.API.Models.Stacks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,14 +19,14 @@ namespace Audex.API.Services
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public Task<FileNode> Create(string path);
+        public Task<FileNode> CreateAsync(string path);
         /// <summary>
         /// Create FileNode from an upload. DeviceId not needed
         /// as usually the Audex Server device will use this method.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public Task<FileNode> Create(IFormFile file);
+        public Task<FileNode> CreateAsync(IFormFile file);
     }
 
     public class FileNodeService : IFileNodeService
@@ -44,12 +46,15 @@ namespace Audex.API.Services
             _settings = settings.Value;
         }
 
-        public async Task<FileNode> Create(IFormFile file)
+        public async Task<FileNode> CreateAsync(IFormFile file)
         {
-            // Get User
-            var user = _dbContext.Users.FirstOrDefault(
-                        u => u.Username == _context.HttpContext.User.Identity.Name);
-            var deviceId = _context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "deviceId").Value;
+            // Get User and Device
+            var uname = _context.HttpContext.User.Identity.Name ?? "admin";
+            var user = _dbContext.Users.FirstOrDefault(u => u.Username == uname);
+            var deviceId = _context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == "deviceId").Value
+                ?? _dbContext.Devices.
+                     FirstOrDefault(d => d.Name == "Audex Server").Id.ToString();
 
             var fileNameParts = file.FileName.Split(".");
             var fileExtension = fileNameParts[fileNameParts.Length - 1];
@@ -60,14 +65,13 @@ namespace Audex.API.Services
                 Name = file.FileName,
                 FileExtension = fileExtension,
                 FileSize = file.Length,
-                DateCreated = DateTime.UtcNow,
                 OwnerUser = user,
                 UploadedByDeviceId = new Guid(deviceId),
                 // ParentFileNodeId = _context.Drives.FirstOrDefault(
                 //     d => d.OwnerUserId == user.Id).RootFileNodeId,
             };
-            _dbContext.FileNodes.Add(fn);
-            _dbContext.SaveChanges();
+            await _dbContext.FileNodes.AddAsync(fn);
+            await _dbContext.SaveChangesAsync();
 
             try
             {
@@ -77,7 +81,7 @@ namespace Audex.API.Services
             catch (Exception e)
             {
                 _dbContext.FileNodes.Remove(fn);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 throw new InvalidOperationException(e.Message);
             }
@@ -85,15 +89,18 @@ namespace Audex.API.Services
             return fn;
         }
 
-        public async Task<FileNode> Create(string path)
+        public async Task<FileNode> CreateAsync(string path)
         {
-            // Get User
-            var user = _dbContext.Users.FirstOrDefault(
-                        u => u.Username == _context.HttpContext.User.Identity.Name);
-            var deviceId = _context.HttpContext.User.Claims
-                    .FirstOrDefault(c => c.Type == "deviceId").Value
-                ?? _dbContext.Devices.
-                     FirstOrDefault(d => d.Name == "Audex Server").Id.ToString();
+            // Get User and Device
+            var uname = _context.HttpContext is null ? "admin"
+                : _context.HttpContext.User.Identity.Name;
+            var user = _dbContext.Users.FirstOrDefault(u => u.Username == uname);
+            var deviceId = _context.HttpContext is null ?
+                _dbContext.Devices.
+                    FirstOrDefault(d => d.Name == "Audex Server").Id.ToString()
+                : _context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == "deviceId").Value;
+
 
             if (!File.Exists(path))
                 throw new FileNotFoundException("File does not exist");
@@ -106,14 +113,13 @@ namespace Audex.API.Services
                 Name = file.Name,
                 FileExtension = file.Extension,
                 FileSize = file.Length,
-                DateCreated = DateTime.UtcNow,
                 OwnerUser = user,
                 UploadedByDeviceId = new Guid(deviceId),
                 // ParentFileNodeId = _context.Drives.FirstOrDefault(
                 //     d => d.OwnerUserId == user.Id).RootFileNodeId,
             };
-            _dbContext.FileNodes.Add(fn);
-            _dbContext.SaveChanges();
+            await _dbContext.FileNodes.AddAsync(fn);
+            await _dbContext.SaveChangesAsync();
 
             try
             {
@@ -123,7 +129,7 @@ namespace Audex.API.Services
             catch (Exception e)
             {
                 _dbContext.FileNodes.Remove(fn);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 throw new InvalidOperationException(e.Message);
             }

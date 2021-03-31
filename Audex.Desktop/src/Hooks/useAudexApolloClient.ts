@@ -3,13 +3,16 @@ import {
 	createHttpLink,
 	from,
 	InMemoryCache,
+	split,
 } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
 import { ApolloLinkJWT } from './jwt/index';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { REAUTHENTICATE } from '../Data/Mutations';
 import IdentityService from '../Data/Services/IdentityService';
 import { useCallback, useEffect, useState } from 'react';
 import { getGqlString } from '../Data/Helpers';
+import { getMainDefinition } from '@apollo/client/utilities';
 
 const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const authState = DataStore.useState((s) => s.Authentication);
@@ -78,7 +81,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	 * Change the api endpoint ONLY when user changes servers
 	 */
 	useEffect(() => {
-		const uri = `${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`;
+		const uri = `${serverState.selectedServer.prefix}${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`;
 
 		if (!serverState) {
 			setClient(null);
@@ -102,8 +105,30 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			uri: uri,
 		});
 
+		const wsLink = new WebSocketLink({
+			uri: `ws://${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
+			options: {
+				reconnect: true,
+				connectionParams: {
+					authToken: authState.accessToken,
+				},
+			},
+		});
+
+		const splitLink = split(
+			({ query }) => {
+				const definition = getMainDefinition(query);
+				return (
+					definition.kind === 'OperationDefinition' &&
+					definition.operation === 'subscription'
+				);
+			},
+			wsLink,
+			httpLink
+		);
+
 		// Bypass JWT authentication ONLY when logged out
-		const links = [httpLink];
+		const links = [splitLink];
 		if (authState.isAuthenticated) links.unshift(apolloLinkJWT);
 
 		setClient(

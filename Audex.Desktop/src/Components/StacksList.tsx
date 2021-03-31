@@ -1,463 +1,363 @@
-import * as React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-	Announced,
-	DetailsList,
-	DetailsListLayoutMode,
-	Selection,
-	SelectionMode,
 	IColumn,
-	mergeStyleSets,
 	TooltipHost,
 	TooltipDelay,
 	DirectionalHint,
+	Spinner,
+	CommandBar,
+	ICommandBarItemProps,
+	Text,
 } from '@fluentui/react';
-import MenuBar from './MenuBar';
+import { formatDistance } from 'date-fns';
 import ModalService from '../Data/Services/ModalService';
 import faker from 'faker';
+import DetailedList, { ListClassNames } from './DetailedList';
+import { useLazyQuery, useQuery, useSubscription } from '@apollo/client';
+import { GET_STACKS } from '../Data/Queries';
+import fileSize from 'filesize';
+import ToastService, {
+	TestBlocked,
+	TestInfo,
+} from '../Data/Services/ToastService';
+import RenameDialog from './Dialogs/RenameDialog';
+import { ON_STACKS_UPDATE } from '../Data/Services/Subscriptions';
 
-const classNames = mergeStyleSets({
-	fileIconHeaderIcon: {
-		padding: 0,
-		fontSize: '16px',
-	},
-	fileIconCell: {
-		textAlign: 'center',
-		selectors: {
-			'&:before': {
-				content: '.',
-				display: 'inline-block',
-				verticalAlign: 'middle',
-				height: '100%',
-				width: '0px',
-				visibility: 'hidden',
-			},
-		},
-	},
-	fileIconImg: {
-		verticalAlign: 'middle',
-		maxHeight: '16px',
-		maxWidth: '16px',
-	},
-	controlWrapper: {
-		display: 'flex',
-		flexWrap: 'wrap',
-	},
-	exampleToggle: {
-		display: 'inline-block',
-		marginBottom: '10px',
-		marginRight: '30px',
-	},
-	selectionDetails: {
-		marginBottom: '20px',
-	},
-});
-
-export interface IDetailsListDocumentsExampleState {
-	columns: IColumn[];
-	items: IDocument[];
-	selectionDetails: string;
-	isModalSelection: boolean;
-	isCompactMode: boolean;
-	announcedMessage?: string;
-}
-
-export interface IDocument {
+export interface IStackRow {
 	key: string;
+	rawName: string;
 	name: string;
-	value: string;
-	iconName: string;
-	fileType: string;
-	modifiedBy: string;
-	dateAdded: string;
-	dateAddedValue: number;
+	nameComponent: React.ReactNode;
+	noName: string;
+	createdByDevice: string;
+	createdOn: Date;
+	files: string[];
+	fileIcons: string[];
 	fileSize: string;
 	fileSizeRaw: number;
 }
 
-export class DetailsListDocumentsExample extends React.Component<
-	any,
-	IDetailsListDocumentsExampleState
-> {
-	private _selection: Selection;
-	private _allItems: IDocument[];
-
-	constructor(props) {
-		super(props);
-
-		this._allItems = _generateDocuments();
-
-		const columns: IColumn[] = [
-			{
-				key: 'column1',
-				name: 'File Type',
-				className: classNames.fileIconCell,
-				iconClassName: classNames.fileIconHeaderIcon,
-				ariaLabel:
-					'Column operations for File type, Press to sort on File type',
-				iconName: 'Page',
-				isIconOnly: true,
-				fieldName: 'name',
-				minWidth: 20,
-				maxWidth: 20,
-				onColumnClick: this._onColumnClick,
-				onRender: (item: IDocument) => {
-					return (
-						<TooltipHost
-							tooltipProps={{
-								onRenderContent: () => (
-									<ol style={{ margin: 10, padding: 10 }}>
-										<li>asdf.docx</li>
-										<li>asdf.docx</li>
-										<li>asdf.docx</li>
-										<li>asdf.docx</li>
-										<li>asdf.docx</li>
-										<li>asdf.docx</li>
-									</ol>
-								),
-							}}
-							delay={TooltipDelay.zero}
-							directionalHint={DirectionalHint.rightCenter}
-						>
-							{Array.from(new Array(3).fill(3).keys()).map(
-								(i) => {
-									return (
-										<img
-											key={faker.random.number()}
-											src={item.iconName}
-											className={classNames.fileIconImg}
-											alt={item.fileType + ' file icon'}
-											style={{
-												position: 'relative',
-												top: i,
-												left: -12 * i,
-												zIndex: 5 - i,
-											}}
-										/>
-									);
-								}
-							)}
-						</TooltipHost>
-					);
-				},
-			},
-			{
-				key: 'column2',
-				name: 'Name',
-				fieldName: 'name',
-				minWidth: 210,
-				maxWidth: 350,
-				isRowHeader: true,
-				isResizable: true,
-				isSorted: true,
-				isSortedDescending: false,
-				sortAscendingAriaLabel: 'Sorted A to Z',
-				sortDescendingAriaLabel: 'Sorted Z to A',
-				onColumnClick: this._onColumnClick,
-				data: 'string',
-				isPadded: true,
-			},
-			{
-				key: 'column3',
-				name: 'Date Added',
-				fieldName: 'dateAddedValue',
-				minWidth: 70,
-				maxWidth: 90,
-				isResizable: true,
-				isCollapsible: true,
-				onColumnClick: this._onColumnClick,
-				data: 'number',
-				onRender: (item: IDocument) => {
-					return <span>{item.dateAdded}</span>;
-				},
-				isPadded: true,
-			},
-			{
-				key: 'column4',
-				name: 'Modified By',
-				fieldName: 'modifiedBy',
-				minWidth: 70,
-				maxWidth: 90,
-				isResizable: true,
-				isCollapsible: true,
-				data: 'string',
-				onColumnClick: this._onColumnClick,
-				onRender: (item: IDocument) => {
-					return <span>{item.modifiedBy}</span>;
-				},
-				isPadded: true,
-			},
-			{
-				key: 'column5',
-				name: 'File Size',
-				fieldName: 'fileSizeRaw',
-				minWidth: 70,
-				maxWidth: 90,
-				isResizable: true,
-				isCollapsible: false,
-				data: 'number',
-				onColumnClick: this._onColumnClick,
-				onRender: (item: IDocument) => {
-					return <span>{item.fileSize}</span>;
-				},
-			},
-		];
-
-		this._selection = new Selection({
-			onSelectionChanged: () => {
-				this.setState({
-					selectionDetails: this._getSelectionDetails(),
-				});
-			},
-		});
-
-		this.state = {
-			items: this._allItems,
-			columns: columns,
-			selectionDetails: this._getSelectionDetails(),
-			isModalSelection: false,
-			isCompactMode: false,
-			announcedMessage: undefined,
-		};
-	}
-
-	public render() {
-		const {
-			columns,
-			items,
-			selectionDetails,
-			announcedMessage,
-		} = this.state;
-
-		return (
-			<>
-				<Announced message={selectionDetails} />
-				{announcedMessage ? (
-					<Announced message={announcedMessage} />
-				) : undefined}
-				{/* <MarqueeSelection
-					selection={this._selection}
-					style={{ marginLeft: 40, marginRight: 40 }}
-				> */}
-				<DetailsList
-					items={items}
-					columns={columns}
-					selectionMode={SelectionMode.multiple}
-					getKey={this._getKey}
-					setKey='multiple'
-					layoutMode={DetailsListLayoutMode.justified}
-					isHeaderVisible={true}
-					selection={this._selection}
-					selectionPreservedOnEmptyClick={true}
-					onItemInvoked={this._onItemInvoked}
-					enterModalSelectionOnTouch={true}
-					ariaLabelForSelectionColumn='Toggle selection'
-					ariaLabelForSelectAllCheckbox='Toggle selection for all items'
-					checkButtonAriaLabel='Row checkbox'
-				/>
-				{/* </MarqueeSelection> */}
-			</>
-		);
-	}
-
-	public componentDidUpdate(
-		previousProps: any,
-		previousState: IDetailsListDocumentsExampleState
-	) {
-		if (
-			previousState.isModalSelection !== this.state.isModalSelection &&
-			!this.state.isModalSelection
-		) {
-			this._selection.setAllSelected(false);
-		}
-	}
-
-	private _getKey(item: any): string {
-		return item.key;
-	}
-
-	private _onItemInvoked(item: IDocument): void {
-		ModalService.openStackModal({ stackId: item.name });
-	}
-
-	private _getSelectionDetails(): string {
-		const selectionCount = this._selection.getSelectedCount();
-
-		switch (selectionCount) {
-			case 0:
-				return 'No items selected';
-			case 1:
-				return (
-					'1 item selected: ' +
-					(this._selection.getSelection()[0] as IDocument).name
-				);
-			default:
-				return `${selectionCount} items selected`;
-		}
-	}
-
-	private _onColumnClick = (
-		ev: React.MouseEvent<HTMLElement>,
-		column: IColumn
-	): void => {
-		const { columns, items } = this.state;
-		const newColumns: IColumn[] = columns.slice();
-		const currColumn: IColumn = newColumns.filter(
-			(currCol) => column.key === currCol.key
-		)[0];
-		newColumns.forEach((newCol: IColumn) => {
-			if (newCol === currColumn) {
-				currColumn.isSortedDescending = !currColumn.isSortedDescending;
-				currColumn.isSorted = true;
-				this.setState({
-					announcedMessage: `${currColumn.name} is sorted ${
-						currColumn.isSortedDescending
-							? 'descending'
-							: 'ascending'
-					}`,
-				});
-			} else {
-				newCol.isSorted = false;
-				newCol.isSortedDescending = true;
-			}
-		});
-		const newItems = _copyAndSort(
-			items,
-			currColumn.fieldName!,
-			currColumn.isSortedDescending
-		);
-		this.setState({
-			columns: newColumns,
-			items: newItems,
-		});
-	};
-}
-
-function _copyAndSort<T>(
-	items: T[],
-	columnKey: string,
-	isSortedDescending?: boolean
-): T[] {
-	const key = columnKey as keyof T;
-	return items
-		.slice(0)
-		.sort((a: T, b: T) =>
-			(isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
-		);
-}
-
-function _generateDocuments() {
-	const items: IDocument[] = [];
-	for (let i = 0; i < 500; i++) {
-		const randomDate = _randomDate(new Date(2012, 0, 1), new Date());
-		const randomFileSize = _randomFileSize();
-		const randomFileType = _randomFileIcon();
-		let fileName = _lorem(2);
-		fileName =
-			fileName.charAt(0).toUpperCase() +
-			fileName.slice(1).concat(`.${randomFileType.docType}`);
-		let userName = _lorem(2);
-		userName = userName
-			.split(' ')
-			.map((name: string) => name.charAt(0).toUpperCase() + name.slice(1))
-			.join(' ');
-		items.push({
-			key: i.toString(),
-			name: fileName,
-			value: fileName,
-			iconName: randomFileType.url,
-			fileType: randomFileType.docType,
-			modifiedBy: userName,
-			dateAdded: randomDate.dateFormatted,
-			dateAddedValue: randomDate.value,
-			fileSize: randomFileSize.value,
-			fileSizeRaw: randomFileSize.rawSize,
-		});
-	}
-	return items;
-}
-
-function _randomDate(
-	start: Date,
-	end: Date
-): { value: number; dateFormatted: string } {
-	const date: Date = new Date(
-		start.getTime() + Math.random() * (end.getTime() - start.getTime())
-	);
-	return {
-		value: date.valueOf(),
-		dateFormatted: date.toLocaleDateString(),
-	};
-}
-
-const FILE_ICONS: { name: string }[] = [
-	{ name: 'accdb' },
-	{ name: 'audio' },
-	{ name: 'code' },
-	{ name: 'csv' },
-	{ name: 'docx' },
-	{ name: 'dotx' },
-	{ name: 'mpp' },
-	{ name: 'mpt' },
-	{ name: 'model' },
-	{ name: 'one' },
-	{ name: 'onetoc' },
-	{ name: 'potx' },
-	{ name: 'ppsx' },
-	{ name: 'pdf' },
-	{ name: 'photo' },
-	{ name: 'pptx' },
-	{ name: 'presentation' },
-	{ name: 'potx' },
-	{ name: 'pub' },
-	{ name: 'rtf' },
-	{ name: 'spreadsheet' },
-	{ name: 'txt' },
-	{ name: 'vector' },
-	{ name: 'vsdx' },
-	{ name: 'vssx' },
-	{ name: 'vstx' },
-	{ name: 'xlsx' },
-	{ name: 'xltx' },
-	{ name: 'xsn' },
+const stackColumns: IColumn[] = [
+	{
+		key: 'column1',
+		name: 'File Type',
+		className: ListClassNames.fileIconCell,
+		iconClassName: ListClassNames.fileIconHeaderIcon,
+		ariaLabel:
+			'Column operations for File type, Press to sort on File type',
+		iconName: 'Page',
+		isIconOnly: true,
+		fieldName: 'name',
+		minWidth: 25,
+		maxWidth: 25,
+		onRender: (item: IStackRow) => {
+			return (
+				<TooltipHost
+					tooltipProps={{
+						onRenderContent: () => (
+							<Text variant='small'>{item.files.join(', ')}</Text>
+						),
+					}}
+					delay={TooltipDelay.zero}
+					directionalHint={DirectionalHint.rightCenter}
+				>
+					{item.fileIcons.map((i, index) => {
+						return (
+							<img
+								key={faker.random.number()}
+								src={faker.image.imageUrl()}
+								className={ListClassNames.fileIconImg}
+								alt={i + ' file icon'}
+								style={{
+									position: 'relative',
+									top: i,
+									left: -13 * index,
+									transform: `rotate(${15 + -15 * index}deg)`,
+									transformOrigin: 'bottom left',
+									zIndex: 5 - index,
+								}}
+							/>
+						);
+					})}
+				</TooltipHost>
+			);
+		},
+	},
+	{
+		key: 'column2',
+		name: 'Name',
+		fieldName: 'name',
+		minWidth: 210,
+		maxWidth: 350,
+		isRowHeader: true,
+		isResizable: true,
+		sortAscendingAriaLabel: 'Sorted A to Z',
+		sortDescendingAriaLabel: 'Sorted Z to A',
+		data: 'string',
+		isPadded: true,
+		onRender: (item: IStackRow) => {
+			return item.nameComponent;
+		},
+	},
+	{
+		key: 'column3',
+		name: 'File Size',
+		fieldName: 'fileSizeRaw',
+		minWidth: 70,
+		maxWidth: 90,
+		isResizable: true,
+		isCollapsible: false,
+		data: 'number',
+		onRender: (item: IStackRow) => {
+			return <span>{item.fileSize}</span>;
+		},
+	},
+	{
+		key: 'column4',
+		name: 'Date Created',
+		fieldName: 'createdOn',
+		minWidth: 90,
+		maxWidth: 150,
+		isResizable: true,
+		isSorted: true,
+		isSortedDescending: true,
+		sortAscendingAriaLabel: 'Sorted by oldest',
+		sortDescendingAriaLabel: 'Sorted by latest',
+		data: 'number',
+		isPadded: true,
+		onRender: (item: IStackRow) => {
+			return (
+				<span>{formatDistance(item.createdOn, new Date())} ago</span>
+			);
+		},
+	},
+	{
+		key: 'column5',
+		name: 'Created by',
+		fieldName: 'createdByDevice',
+		minWidth: 90,
+		maxWidth: 150,
+		isResizable: true,
+		sortAscendingAriaLabel: 'Sorted A to Z',
+		sortDescendingAriaLabel: 'Sorted Z to A',
+		data: 'string',
+		isPadded: true,
+	},
 ];
 
-function _randomFileIcon(): { docType: string; url: string } {
-	const docType: string =
-		FILE_ICONS[Math.floor(Math.random() * FILE_ICONS.length)].name;
-	return {
-		docType,
-		url: `https://static2.sharepointonline.com/files/fabric/assets/item-types/16/${docType}.svg`,
-	};
-}
+const _farItems: ICommandBarItemProps[] = [
+	{
+		key: 'tile',
+		text: 'Grid view',
+		ariaLabel: 'Grid view',
+		iconOnly: true,
+		iconProps: { iconName: 'Tiles' },
+		onClick: () => ToastService.push(TestInfo(), 3),
+	},
+	{
+		key: 'help',
+		text: 'Help',
+		ariaLabel: 'Help',
+		iconOnly: true,
+		iconProps: { iconName: 'Help' },
+		onClick: () => ToastService.push(TestBlocked()),
+	},
+];
 
-function _randomFileSize(): { value: string; rawSize: number } {
-	const fileSize: number = Math.floor(Math.random() * 100) + 30;
-	return {
-		value: `${fileSize} KB`,
-		rawSize: fileSize,
-	};
-}
-
-const LOREM_IPSUM = (
-	'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut ' +
-	'labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut ' +
-	'aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore ' +
-	'eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt '
-).split(' ');
-let loremIndex = 0;
-function _lorem(wordCount: number): string {
-	const startIndex =
-		loremIndex + wordCount > LOREM_IPSUM.length ? 0 : loremIndex;
-	loremIndex = startIndex + wordCount;
-	return LOREM_IPSUM.slice(startIndex, loremIndex).join(' ');
-}
+export const makeStackName = (s: any) => {
+	return (
+		<>
+			{s.name ? (
+				<span style={{ fontWeight: 600 }}>{s.name}</span>
+			) : (
+				<span>
+					<span style={{ fontWeight: 600 }}>{s.files[0].name}</span>{' '}
+					{(s.files as Array<any>).length > 1
+						? `and ${s.files.length} other files`
+						: `${s.files[0].name} by itself`}
+				</span>
+			)}
+		</>
+	);
+};
 
 const StacksList = () => {
+	const [getStacks, { data, loading, error }] = useLazyQuery(GET_STACKS);
+	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE);
+	const [stacks, setStacks] = useState<IStackRow[]>([]);
+	const [columns, setColumns] = useState(stackColumns);
+	const [selectedStacks, setSelectedStacks] = useState<IStackRow[]>([]);
+
+	const numSelected =
+		selectedStacks.length > 1 ? `${selectedStacks.length} stacks` : 'stack';
+	const zeroOrOneSelected =
+		selectedStacks.length == 0 || selectedStacks.length > 1
+			? 'stack'
+			: 'file';
+
+	useEffect(() => {
+		console.log('loading stacks...');
+		getStacks();
+	}, [onStacksUpdate.data]);
+	useEffect(() => {
+		if (data) {
+			const s: IStackRow[] = (data.stacks
+				.nodes as Array<any>).map<IStackRow>((s) => {
+				return {
+					key: s.id,
+					rawName: s.name,
+					name:
+						s.name ??
+						((s.files as Array<any>).length > 1
+							? `${s.files[0].name} and ${s.files.length} other files`
+							: `${s.files[0].name} by itself`),
+					nameComponent: makeStackName(s),
+					noName:
+						(s.files as Array<any>).length > 1
+							? `${s.files[0].name} and ${s.files.length} other files`
+							: `${s.files[0].name} by itself`,
+					createdByDevice: s.uploadedByDevice.name,
+					createdOn: new Date(s.createdOn),
+					files: (s.files as Array<any>).map<string>((f) => f.name),
+					fileIcons: (s.files as Array<any>)
+						.slice(0, 3)
+						.map<string>((f) => f.fileExtension),
+					fileSizeRaw: (s.files as Array<any>)
+						.map<number>((f) => f.fileSize)
+						.reduce((a, b) => a + b, 0),
+					fileSize: fileSize(
+						(s.files as Array<any>)
+							.map<number>((f) => f.fileSize)
+							.reduce((a, b) => a + b, 0)
+					),
+				};
+			});
+			setStacks(s);
+		}
+	}, [data]);
+
+	const menuItems: ICommandBarItemProps[] = [
+		{
+			key: 'new',
+			text: 'New stack',
+			iconProps: { iconName: 'Add' },
+			subMenuProps: {
+				items: [
+					{
+						key: 'newStack',
+						text: 'Upload files...',
+					},
+					{
+						key: 'webStack',
+						text: 'Upload from web',
+					},
+					{
+						key: 'requestStack',
+						text: 'Request stack',
+					},
+				],
+			},
+		},
+		{
+			key: 'download',
+			text: `Download ${numSelected}`,
+			iconProps: { iconName: 'Download' },
+			onClick: () => console.log('Download'),
+			disabled: selectedStacks.length == 0,
+			split: true,
+			subMenuProps: {
+				items: [
+					{
+						key: 'zip',
+						text: `Download ${numSelected} as .zip`,
+					},
+					{
+						key: 'unencrypted',
+						text: `Download ${numSelected} as encrypted`,
+					},
+				],
+			},
+		},
+		{
+			key: 'transfer',
+			text: `Transfer ${numSelected}`,
+			iconProps: { iconName: 'Send' },
+			onClick: () => console.log('Transfer'),
+			disabled: selectedStacks.length == 0,
+			split: true,
+		},
+		{
+			key: 'share',
+			text: `Share ${numSelected}`,
+			iconProps: { iconName: 'Share' },
+			onClick: () => console.log('Share'),
+			disabled: selectedStacks.length == 0,
+			subMenuProps: {
+				items: [
+					{
+						key: 'link',
+						text: 'Share as Link',
+					},
+					{
+						key: 'pin',
+						text: 'Share with PIN',
+					},
+				],
+			},
+		},
+		{
+			key: 'delete',
+			text: `Delete ${numSelected}...`,
+			onClick: () => console.log('delete'),
+			disabled: selectedStacks.length == 0,
+			iconProps: { iconName: 'Trash' },
+		},
+		{
+			key: 'rename',
+			text: `Rename stack...`,
+			onClick: () => setIsRenameVisible(true),
+			disabled: selectedStacks.length != 1,
+			iconProps: { iconName: 'Edit' },
+		},
+	];
+
+	const [isRenameVisible, setIsRenameVisible] = useState(false);
+
 	return (
 		<div>
-			<MenuBar type='Files' />
-
-			<DetailsListDocumentsExample />
+			<CommandBar
+				style={{
+					marginTop: 10,
+					position: 'sticky',
+					top: 0,
+					zIndex: 100,
+				}}
+				items={menuItems}
+				farItems={_farItems}
+				ariaLabel='Use left and right arrow keys to navigate between commands'
+			/>
+			{selectedStacks.length == 1 && (
+				<RenameDialog
+					stack={selectedStacks[0]}
+					visible={isRenameVisible}
+					setVisible={setIsRenameVisible}
+				/>
+			)}
+			{loading || error ? (
+				<Spinner />
+			) : (
+				<DetailedList<IStackRow>
+					items={stacks!}
+					setItems={setStacks}
+					columns={columns!}
+					setColumns={setColumns}
+					selection={selectedStacks!}
+					setSelection={setSelectedStacks}
+					invoke={(i: IStackRow) => {
+						ModalService.openStackModal({ stackId: i.key });
+					}}
+				/>
+			)}
 		</div>
 	);
 };

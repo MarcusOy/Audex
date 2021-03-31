@@ -6,6 +6,8 @@ using System.Linq;
 using Audex.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Audex.API.Models.Auth;
+using Audex.API.Data;
 
 namespace Audex.API.Services
 {
@@ -18,16 +20,16 @@ namespace Audex.API.Services
         private readonly AudexDBContext dbContext;
         private readonly IIdentityService identityService;
         private readonly ILogger<InitializationService> logger;
-        private readonly IFileNodeService fnService;
+        private readonly IStackService stackService;
         public InitializationService(AudexDBContext dbContext,
                                      IIdentityService identityService,
                                      ILogger<InitializationService> logger,
-                                     IFileNodeService fnService)
+                                     IStackService stackService)
         {
             this.dbContext = dbContext;
             this.identityService = identityService;
             this.logger = logger;
-            this.fnService = fnService;
+            this.stackService = stackService;
         }
         public void InitializeDatabase()
         {
@@ -37,135 +39,11 @@ namespace Audex.API.Services
                 // Apply pending migrations
                 dbContext.Database.Migrate();
 
-                // Checking Role entities
-                if (dbContext.Roles.Count() < 7)
-                {
-                    logger.LogWarning("Roles may not be initialized.");
-                    string[] r = {"Login",
-                                  "UploadFiles",
-                                  "ViewFiles",
-                                  "UserManagement",
-                                  "DeviceManagement",
-                                  "PrivatelyShareFiles",
-                                  "PubliclyShareFiles"};
-                    var m = "";
-                    foreach (string s in r)
-                    {
-                        if (dbContext.Roles.FirstOrDefault(r => r.Name == s) == null)
-                        {
-                            dbContext.Roles.Add(new Role
-                            {
-                                Name = s
-                            });
-                            m += $"The {s} role has been initialized.\n";
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    logger.LogInformation(m);
-
-                }
-
-                // Checking Group entities
-                if (dbContext.Groups.Count() < 3)
-                {
-                    logger.LogWarning("Groups may not be initialized.");
-                    string[] g = {"Administrator",
-                                  "Member",
-                                  "Viewer"};
-                    var m = "";
-                    foreach (string s in g)
-                    {
-                        if (dbContext.Groups.FirstOrDefault(g => g.Name == s) == null)
-                        {
-                            dbContext.Groups.Add(new Group
-                            {
-                                Name = s
-                            });
-                            m += $"The {s} group has been initialized.\n";
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    logger.LogInformation(m);
-                }
-
-                // Checking GroupRole entities
-                if (dbContext.GroupRoles.Count() < 11)
-                {
-                    logger.LogWarning("GroupRoles may not be initialized.");
-                    var gr = new (string Group, string Role)[]
-                    {
-                        ("Administrator", "Login"),
-                        ("Administrator", "UploadFiles"),
-                        ("Administrator", "ViewFiles"),
-                        ("Administrator", "UserManagement"),
-                        ("Administrator", "DeviceManagement"),
-                        ("Administrator", "PrivatelyShareFiles"),
-                        ("Administrator", "PubliclyShareFiles"),
-
-                        ("Member", "Login"),
-                        ("Member", "UploadFiles"),
-                        ("Member", "ViewFiles"),
-                        ("Member", "PrivatelyShareFiles"),
-                    };
-                    var m = "";
-
-                    foreach ((string Group, string Role) s in gr)
-                    {
-                        if (dbContext.GroupRoles
-                            .Include(gr => gr.Group)
-                            .Include(gr => gr.Role)
-                            .FirstOrDefault(gr => gr.Group.Name == s.Group
-                                              && gr.Role.Name == s.Role) == null)
-                        {
-                            dbContext.Add(new GroupRole
-                            {
-                                GroupId = dbContext.Groups.FirstOrDefault(g => g.Name == s.Group).Id,
-                                RoleId = dbContext.Roles.FirstOrDefault(r => r.Name == s.Role).Id,
-                            });
-                        }
-                        m += $"The role {s.Role} has been added to group {s.Group}.\n";
-                    }
-                    dbContext.SaveChanges();
-
-                    logger.LogInformation(m);
-                }
-
-                // Checking Device entities
-                if (dbContext.DeviceTypes.Count() < 10)
-                {
-                    logger.LogWarning("DeviceTypes may not be initialized.");
-                    string[] d = {"Audex Server",
-                                  "Windows",
-                                  "MacOS",
-                                  "Linux",
-                                  "Web",
-                                  "iOS",
-                                  "Android",
-                                  "Other"};
-                    var m = "";
-                    foreach (string s in d)
-                    {
-                        if (dbContext.DeviceTypes.FirstOrDefault(d => d.Name == s) == null)
-                        {
-                            dbContext.DeviceTypes.Add(new DeviceType
-                            {
-                                Name = s
-                            });
-                            m += $"The {s} DeviceType has been initialized.\n";
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    logger.LogInformation(m);
-                }
-
                 // Checking admin account
                 if (dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
                 {
                     // Adding admin user and saving to get id
-                    var un = "admin"; //TODO: Allow user to specify
+                    var un = "admin";
                     var p = SecurityHelpers.GenerateRandomPassword(16);
                     var s = SecurityHelpers.GenerateSalt();
                     var u = new User
@@ -173,7 +51,6 @@ namespace Audex.API.Services
                         Id = Guid.NewGuid(),
                         Username = un,
                         Password = SecurityHelpers.GenerateHashedPassword(p, s.AsBytes),
-                        DateCreated = DateTime.UtcNow,
                         Active = true,
                         Salt = s.AsString,
                         Group = dbContext.Groups.FirstOrDefault(g => g.Name == "Administrator")
@@ -193,21 +70,7 @@ namespace Audex.API.Services
                     dbContext.SaveChanges();
 
                     // Starting Stack (as an example)
-                    var sS = new Stack
-                    {
-                        OwnerUser = u,
-                    };
-
-                    var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-                    var fs = new List<FileNode>();
-                    foreach (string path in Directory.GetFiles(Path.Combine(root, "Assets/StarterFiles")))
-                    {
-                        fs.Add(fnService.Create(path).Result);
-                    }
-
-                    sS.Files = fs;
-                    dbContext.SaveChanges();
+                    stackService.CreateStartingStackAsync(u.Id).Wait();
 
                     logger.LogInformation($@"
                         Admin account was not initialized, so a new one has been created.

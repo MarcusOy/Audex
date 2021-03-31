@@ -9,17 +9,23 @@ import {
 	PanelType,
 	PrimaryButton,
 	Separator,
+	Spinner,
 	Stack,
 	Text,
 } from '@fluentui/react';
+import { IStackRow, makeStackName } from '../StacksList';
 import { useStoreState } from 'pullstate';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import ModalService from '../../Data/Services/ModalService';
 import Spacer from '../Spacer';
 import { IModal } from './Modals';
-import FileList, { ListClassNames } from '../FilesList';
+import { ListClassNames } from '../DetailedList';
 import faker from 'faker';
+import DetailedList from '../DetailedList';
+import { useQuery } from '@apollo/client';
+import { GET_STACK } from '../../Data/Queries';
+import fileSize from 'filesize';
 
 export interface IStackPanel extends IModal {
 	stackId: string;
@@ -69,7 +75,6 @@ const onDetailRender = (i: IStackDetail | undefined) => {
 export interface IFileRow {
 	key: string;
 	name: string;
-	value: string;
 	iconName: string;
 	fileType: string;
 	fileSize: string;
@@ -129,44 +134,59 @@ const fileColumns: IColumn[] = [
 	},
 ];
 
-const files: IFileRow[] = [
-	{
-		key: faker.random.uuid(),
-		name: faker.system.fileName(),
-		value: faker.random.alpha(),
-		iconName: faker.image.imageUrl(),
-		fileType: faker.system.commonFileExt(),
-		fileSize: `${faker.random.number(200)} KB`,
-		fileSizeRaw: faker.random.number(200),
-	},
-	{
-		key: faker.random.uuid(),
-		name: faker.system.fileName(),
-		value: faker.random.alpha(),
-		iconName: faker.image.imageUrl(),
-		fileType: faker.system.commonFileExt(),
-		fileSize: `${faker.random.number(200)} KB`,
-		fileSizeRaw: faker.random.number(200),
-	},
-	{
-		key: faker.random.uuid(),
-		name: faker.system.fileName(),
-		value: faker.random.alpha(),
-		iconName: faker.image.imageUrl(),
-		fileType: faker.system.commonFileExt(),
-		fileSize: `${faker.random.number(200)} KB`,
-		fileSizeRaw: faker.random.number(200),
-	},
-];
+// const files: IFileRow[] = [
+
+// 	{
+// 		key: faker.random.uuid(),
+// 		name: faker.system.fileName(),
+// 		value: faker.random.alpha(),
+// 		iconName: faker.image.imageUrl(),
+// 		fileType: faker.system.commonFileExt(),
+// 		fileSize: `${faker.random.number(200)} KB`,
+// 		fileSizeRaw: faker.random.number(200),
+// 	},
+// 	{
+// 		key: faker.random.uuid(),
+// 		name: faker.system.fileName(),
+// 		value: faker.random.alpha(),
+// 		iconName: faker.image.imageUrl(),
+// 		fileType: faker.system.commonFileExt(),
+// 		fileSize: `${faker.random.number(200)} KB`,
+// 		fileSizeRaw: faker.random.number(200),
+// 	},
+// ];
 
 const StackPanel = () => {
 	const modalState = useStoreState(DataStore, (s) => s.Modals.StackPanel);
 	const onDismissed = () => ModalService.closeFileModal();
 
-	// Files in Stack state
-	const [items, setItems] = useState<IFileRow[]>(files);
+	const { data, loading, error } = useQuery(GET_STACK, {
+		variables: {
+			stackId: modalState.stackId,
+		},
+	});
+	const [stack, setStack] = useState<IStackRow>();
+	const [files, setFiles] = useState<IFileRow[]>([]);
 	const [columns, setColumns] = useState<IColumn[]>(fileColumns);
 	const [selection, setSelection] = useState<IFileRow[]>([]);
+
+	useEffect(() => {
+		if (data) {
+			setStack(data.stacks.nodes[0]);
+			const fs: IFileRow[] = (data.stacks.nodes[0]
+				.files as Array<any>).map<IFileRow>((f) => {
+				return {
+					key: f.id,
+					name: f.name,
+					iconName: faker.image.imageUrl(),
+					fileType: f.fileExtension,
+					fileSize: fileSize(f.fileSize),
+					fileSizeRaw: f.fileSize,
+				};
+			});
+			setFiles(fs);
+		}
+	}, data);
 
 	const numSelected =
 		selection.length > 0 ? `${selection.length} files` : 'stack';
@@ -240,76 +260,75 @@ const StackPanel = () => {
 	];
 
 	return (
-		<Panel
-			onRenderHeader={() => {
-				return (
-					<>
-						<Spacer orientation='horizontal' size={30} />
-
-						<Text variant='xLarge'>
-							<b>{modalState.stackId}</b> and 5 other files
-						</Text>
-						<Spacer grow />
-					</>
-				);
-			}}
-			type={PanelType.medium}
-			isOpen={modalState.isOpen}
-			onDismiss={onDismissed}
-			isLightDismiss
-		>
-			<Spacer />
-			<CommandBar
-				style={{
-					padding: 0,
-					margin: 0,
-					position: 'sticky',
-					top: 0,
-					zIndex: 100,
+		<>
+			<Panel
+				onRenderHeader={() => {
+					return (
+						<>
+							<Spacer orientation='horizontal' size={30} />
+							<Text variant='xLarge'>
+								{stack ? makeStackName(stack) : <></>}
+							</Text>
+							<Spacer grow />
+						</>
+					);
 				}}
-				styles={{ root: { paddingLeft: 0 } }}
-				items={menuItems}
-			/>
-			{/* <PrimaryButton text='Transfer' iconProps={{ iconName: 'Send' }} />
-			<Spacer orientation='horizontal' />
-			<DefaultButton text='Share' iconProps={{ iconName: 'Share' }} /> */}
-
-			<Spacer />
-			<Stack>
-				<Separator alignContent='start'>
-					<Text variant='large'>Files in stack</Text>
-				</Separator>
-				<FileList<IFileRow>
-					items={items!}
-					setItems={setItems}
-					columns={columns!}
-					setColumns={setColumns}
-					selection={selection!}
-					setSelection={setSelection}
-				/>
-			</Stack>
-
-			<Spacer size={30} />
-
-			<Stack>
-				<Separator alignContent='start'>
-					<Text variant='large'>Details</Text>
-				</Separator>
-				<List
-					style={{ marginLeft: 20 }}
-					items={stackDetails}
-					onRenderCell={onDetailRender}
-				/>
-			</Stack>
-
-			<Spacer size={30} />
-
-			<Stack>
-				<Separator alignContent='start'>
-					<Text variant='large'>Activity</Text>
-				</Separator>
-			</Stack>
-		</Panel>
+				type={PanelType.medium}
+				isOpen={modalState.isOpen}
+				onDismiss={onDismissed}
+				isLightDismiss
+			>
+				{loading ? (
+					<Spinner />
+				) : (
+					<>
+						<Spacer />
+						<CommandBar
+							style={{
+								padding: 0,
+								margin: 0,
+								position: 'sticky',
+								top: 0,
+								zIndex: 100,
+							}}
+							styles={{ root: { paddingLeft: 0 } }}
+							items={menuItems}
+						/>
+						<Spacer />
+						<Stack>
+							<Separator alignContent='start'>
+								<Text variant='large'>Files in stack</Text>
+							</Separator>
+							<DetailedList<IFileRow>
+								items={files!}
+								setItems={setFiles}
+								columns={columns!}
+								setColumns={setColumns}
+								selection={selection!}
+								setSelection={setSelection}
+							/>
+						</Stack>
+						<Spacer size={30} />
+						<Stack>
+							<Separator alignContent='start'>
+								<Text variant='large'>Details</Text>
+							</Separator>
+							<List
+								style={{ marginLeft: 20 }}
+								items={stackDetails}
+								onRenderCell={onDetailRender}
+							/>
+						</Stack>
+						<Spacer size={30} />
+						<Stack>
+							<Separator alignContent='start'>
+								<Text variant='large'>Activity</Text>
+							</Separator>
+						</Stack>
+					</>
+				)}
+			</Panel>
+		</>
 	);
 };
 export default StackPanel;

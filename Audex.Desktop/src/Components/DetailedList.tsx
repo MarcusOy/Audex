@@ -102,7 +102,7 @@ const copyAndSort = <T,>(
 		);
 };
 
-const FilesList = <T,>(props: PropsWithChildren<Props<T>>) => {
+const DetailedList = <T,>(props: PropsWithChildren<Props<T>>) => {
 	const [announcedMessage, setAnnouncedMessage] = useState<string>();
 	const [selectionDetails, setSelectionDetails] = useState<string>();
 	const [selection, setSelection] = useState<Selection>(
@@ -183,4 +183,4 @@ const FilesList = <T,>(props: PropsWithChildren<Props<T>>) => {
 	);
 };
 
-export default FilesList;
+export default DetailedList;

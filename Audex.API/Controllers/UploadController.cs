@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Audex.API.Services;
 using Audex.API.Helpers;
+using Audex.API.Data;
 
 namespace Audex.API.Controllers
 {
@@ -53,7 +54,7 @@ namespace Audex.API.Controllers
         {
             if (model.File != null && model.File.Length > 0)
             {
-                var fn = await _fileNodeService.Create(model.File);
+                var fn = await _fileNodeService.CreateAsync(model.File);
                 return Ok(new { fn.Id });
             }
             return BadRequest("Not a file.");

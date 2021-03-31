@@ -1,16 +1,11 @@
-using System.Security.AccessControl;
 using System.Text;
-using System.Reflection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Audex.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,12 +15,13 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using HotChocolate;
 using HotChocolate.AspNetCore;
-using HotChocolate.AspNetCore.Interceptors;
 using Audex.API.GraphQL;
-using Audex.API.Migrations;
 using System.Security.Claims;
 using Audex.API.GraphQL.Extensions;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Audex.API.GraphQL.Mutations;
+using Audex.API.GraphQL.Queries;
+using Audex.API.Data;
+using Audex.API.GraphQL.Subscriptions;
 
 namespace Audex.API
 {
@@ -91,14 +87,9 @@ namespace Audex.API
             services.AddHttpContextAccessor();
 
             // Added JWT authenitcation
-            services.AddAuthentication(o =>
+            var jwtOpts = new JwtBearerOptions
             {
-                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(o =>
-            {
-                o.TokenValidationParameters = new TokenValidationParameters
+                TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
                     ValidateIssuer = true,
@@ -107,17 +98,29 @@ namespace Audex.API
                     ValidIssuer = Configuration["Audex:Jwt:Issuer"], // TODO: dynamically change audience based on user
                     // RequireSignedTokens = false,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Audex:Jwt:Key"])) // TODO: generate random secret on initialization
-                };
-                o.RequireHttpsMetadata = false;
-                o.SaveToken = true;
-            });
+                },
+                RequireHttpsMetadata = false,
+                SaveToken = true,
+            };
+            services.AddSingleton(jwtOpts);
+            services.AddAuthentication(o =>
+            {
+                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(o => o = jwtOpts);
 
             // Setting up GraphQL server
             services.AddGraphQLServer()
-                    .AddMutationType<GraphQL.Mutations.AuthMutations>()
+                    .AddMutationType(d => d.Name("Mutation"))
+                        .AddTypeExtension<AuthMutations>()
+                        .AddTypeExtension<StackMutations>()
                     .AddQueryType(d => d.Name("Query"))
-                        .AddTypeExtension<GraphQL.Queries.TestQueries>()
-                        .AddTypeExtension<GraphQL.Queries.UserQueries>()
+                        .AddTypeExtension<TestQueries>()
+                        .AddTypeExtension<UserQueries>()
+                        .AddTypeExtension<StackQueries>()
+                    .AddSubscriptionType(d => d.Name("Subscription"))
+                        .AddTypeExtension<StackSubscriptions>()
                     .AddAuthorization()
                     .AddHttpRequestInterceptor(
                         (context, executer, builder, ct) =>
@@ -136,13 +139,16 @@ namespace Audex.API
                             return new ValueTask(Task.CompletedTask);
                         }
                     )
-                    .AddErrorFilter<GraphQLErrorFilter>() // For debugging purposes
+                    // .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
+                    .AddInMemorySubscriptions()
+                    .AddErrorFilter<GraphQLErrorFilter>()
                     .AddFiltering()
                     .AddSorting();
 
             // Adding entity services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFileNodeService, FileNodeService>();
+            services.AddScoped<IStackService, StackService>();
             services.AddScoped<IInitializationService, InitializationService>();
 
         }
@@ -165,7 +171,7 @@ namespace Audex.API
                 }
 
                 // app.UseHttpsRedirection(); //TODO: Reenable this
-
+                app.UseWebSockets();
                 app.UseRouting();
 
                 app.UseCors("APICors");

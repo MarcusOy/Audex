@@ -25,3 +25,15 @@ export const REAUTHENTICATE = gql`
 		}
 	}
 `;
+
+export const RENAME_STACK = gql`
+	mutation($stackId: Uuid!, $newName: String) {
+		renameStack(stackId: $stackId, newName: $newName)
+	}
+`;
+
+export const RENAME_FILE = gql`
+	mutation($fileId: Uuid!, $newName: String) {
+		renameFile(fileId: $fileId, newName: $newName)
+	}
+`;

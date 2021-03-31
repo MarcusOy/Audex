@@ -3,15 +3,17 @@ using System.Threading.Tasks;
 using System.Threading;
 using Audex.API.Services;
 using HotChocolate;
+using HotChocolate.Types;
 
 namespace Audex.API.GraphQL.Mutations
 {
+    [ExtendObjectType(Name = "Mutation")]
     public class AuthMutations
     {
-        public GetTokenResponse Authenticate(string username, string password, string device, [Service] IIdentityService identityService)
+        public async Task<GetTokenResponse> Authenticate(string username, string password, string device, [Service] IIdentityService identityService)
         {
             Thread.Sleep(1000);
-            var tokens = identityService.Authenticate(username, password, device);
+            var tokens = await identityService.Authenticate(username, password, device);
             return new GetTokenResponse
             {
                 AuthToken = tokens.AuthToken,
@@ -19,10 +21,10 @@ namespace Audex.API.GraphQL.Mutations
             };
         }
 
-        public GetTokenResponse Reauthenticate(string token, [Service] IIdentityService identityService)
+        public async Task<GetTokenResponse> Reauthenticate(string token, [Service] IIdentityService identityService)
         {
             Thread.Sleep(1000);
-            var tokens = identityService.Reauthenticate(token);
+            var tokens = await identityService.Reauthenticate(token);
             return new GetTokenResponse
             {
                 AuthToken = tokens.AuthToken,
