@@ -46,13 +46,12 @@ namespace Audex.API.GraphQL.Mutations
         public async Task<string> RenameStack(
             Guid stackId,
             string newName,
-            [CurrentUserGlobalState] CurrentUser user,
             [Service] AudexDBContext dbContext,
-            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
             var stack = await dbContext.Stack
-                .Where(s => s.OwnerUserId == user.UserId)
+                .Where(s => s.OwnerUser.Username == context.HttpContext.User.Identity.Name)
                 .FirstOrDefaultAsync(s => s.Id == stackId);
 
             if (stack is null)
@@ -62,7 +61,7 @@ namespace Audex.API.GraphQL.Mutations
             await dbContext.SaveChangesAsync();
 
             await eventSender.SendAsync(
-                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
+                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
                 stack.Id
             );
 

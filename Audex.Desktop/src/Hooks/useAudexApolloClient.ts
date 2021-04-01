@@ -35,7 +35,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const onRefreshComplete = useCallback(
 		async (data: any) => {
 			// Find and return the access token and refresh token from the provided fetch callback
-			console.log(data);
+			// console.log(data);
 			const newAccessToken = data?.data?.reauthenticate?.authToken;
 			const newRefreshToken = data?.data?.reauthenticate?.refreshToken;
 
@@ -108,9 +108,10 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 		const wsLink = new WebSocketLink({
 			uri: `ws://${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
 			options: {
-				reconnect: true,
+				// reconnect: true,
+				lazy: true,
 				connectionParams: {
-					authToken: authState.accessToken,
+					Authorization: authState.accessToken,
 				},
 			},
 		});

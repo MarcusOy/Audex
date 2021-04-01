@@ -182,8 +182,9 @@ export const makeStackName = (s: any) => {
 };
 
 const StacksList = () => {
-	const [getStacks, { data, loading, error }] = useLazyQuery(GET_STACKS);
-	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE);
+	const { data, loading, error, refetch } = useQuery(GET_STACKS);
+	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE, {});
+
 	const [stacks, setStacks] = useState<IStackRow[]>([]);
 	const [columns, setColumns] = useState(stackColumns);
 	const [selectedStacks, setSelectedStacks] = useState<IStackRow[]>([]);
@@ -196,10 +197,12 @@ const StacksList = () => {
 			: 'file';
 
 	useEffect(() => {
-		console.log('loading stacks...');
-		getStacks();
+		console.log('(re)loading stacks...');
+		refetch();
 	}, [onStacksUpdate.data]);
+
 	useEffect(() => {
+		console.log('making stack rows...');
 		if (data) {
 			const s: IStackRow[] = (data.stacks
 				.nodes as Array<any>).map<IStackRow>((s) => {
@@ -233,6 +236,7 @@ const StacksList = () => {
 				};
 			});
 			setStacks(s);
+			setSelectedStacks([]);
 		}
 	}, [data]);
 

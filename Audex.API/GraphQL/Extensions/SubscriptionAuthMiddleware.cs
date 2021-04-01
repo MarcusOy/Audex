@@ -41,33 +41,32 @@ namespace Audex.API.GraphQL.Extensions
         {
             try
             {
-                var jwtHeader = message.Payload["Authorization"] as string;
+                // Get JWT token from payload
+                var jwtHeader = message.Payload["Authorization"] as string ?? "";
 
-                if (string.IsNullOrEmpty(jwtHeader) || !jwtHeader.StartsWith("Bearer "))
-                    return ConnectionStatus.Reject("Unauthorized");
+                // Check if token is provided
+                if (string.IsNullOrEmpty(jwtHeader))
+                    return ConnectionStatus.Reject("WSAuth: No token provided.");
 
+                // Remove 'Bearer' from token if necessary
                 var token = jwtHeader.Replace("Bearer ", "");
-                var validator = connection.HttpContext.RequestServices.GetRequiredService<TokenValidationParameters>();
 
+                // Validate JWT token based on validation parameters from Startup.cs
+                var validator = connection.HttpContext.RequestServices.GetRequiredService<TokenValidationParameters>();
                 var claims = new JwtBearerBacker(validator).IsJwtValid(token);
                 if (claims == null)
-                    return ConnectionStatus.Reject("Unauthoized(invalid token)");
+                    return ConnectionStatus.Reject("WSAuth: Invalid token.");
 
-                // Grab our User ID
-                var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-
-                // Add it to our HttpContext
-                connection.HttpContext.Items["userId"] = userId;
+                // Set authenticated user as resulting ClaimsPrinciple
+                connection.HttpContext.User = claims;
 
                 // Accept the websocket connection
                 return ConnectionStatus.Accept();
             }
             catch (Exception ex)
             {
-                // If we catch any exceptions, reject the connection.
-                // This is probably not ideal, there is likely a way to return a message
-                // but I didn't look that far into it.
-                return ConnectionStatus.Reject(ex.Message);
+                // Maybe make more robust error reporting here...?
+                return ConnectionStatus.Reject($"WSAuth: Something went wrong: {ex.Message}");
             }
         }
     }

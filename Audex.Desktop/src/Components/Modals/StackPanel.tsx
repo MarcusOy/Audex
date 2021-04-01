@@ -23,7 +23,7 @@ import { IModal } from './Modals';
 import { ListClassNames } from '../DetailedList';
 import faker from 'faker';
 import DetailedList from '../DetailedList';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import { GET_STACK } from '../../Data/Queries';
 import fileSize from 'filesize';
 
@@ -160,15 +160,22 @@ const StackPanel = () => {
 	const modalState = useStoreState(DataStore, (s) => s.Modals.StackPanel);
 	const onDismissed = () => ModalService.closeFileModal();
 
-	const { data, loading, error } = useQuery(GET_STACK, {
+	const [getStack, { data, loading, error }] = useLazyQuery(GET_STACK, {
 		variables: {
 			stackId: modalState.stackId,
 		},
 	});
+
 	const [stack, setStack] = useState<IStackRow>();
 	const [files, setFiles] = useState<IFileRow[]>([]);
 	const [columns, setColumns] = useState<IColumn[]>(fileColumns);
 	const [selection, setSelection] = useState<IFileRow[]>([]);
+
+	useEffect(() => {
+		if (modalState.isOpen && modalState.stackId) {
+			getStack();
+		}
+	}, [modalState.stackId]);
 
 	useEffect(() => {
 		if (data) {
