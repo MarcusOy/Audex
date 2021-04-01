@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Dialog,
 	DialogFooter,
@@ -28,6 +28,8 @@ const RenameDialog = (props: Props) => {
 	const [renameFile, fileRenameResult] = useMutation(RENAME_FILE);
 
 	const loading = stackRenameResult.loading || fileRenameResult.loading;
+
+	useEffect(() => setNewName(props.stack?.name ?? ''), [props.stack]);
 
 	const onSubmit = () => {
 		if (props.stack) {
@@ -63,13 +65,14 @@ const RenameDialog = (props: Props) => {
 			</Text>
 			<Spacer />
 			<TextField
-				// label='New name'
 				placeholder={
 					props.stack ? props.stack.noName : props.file?.name
 				}
 				defaultValue={props.stack?.rawName ?? ''}
-				// value={newName}
 				onChange={(_, n) => setNewName(n!)}
+				onKeyDown={(e) => {
+					if (e.key == 'Enter') onSubmit();
+				}}
 			/>
 			<DialogFooter>
 				<PrimaryButton
