@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Audex.API.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class StackQueries
     {
         [Authorize, UsePaging, UseFiltering, UseSorting]

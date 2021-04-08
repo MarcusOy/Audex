@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Audex.API.GraphQL.Subscriptions
 {
-    [ExtendObjectType(Name = "Subscription")]
+    [ExtendObjectType("Subscription")]
     public class StackSubscriptions
     {
         [Subscribe(With = nameof(SubscribeOnStacksUpdateAsync)), Topic]

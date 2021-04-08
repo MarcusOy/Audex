@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace Audex.API.GraphQL.Mutations
 {
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
 
     public class StackMutations
     {

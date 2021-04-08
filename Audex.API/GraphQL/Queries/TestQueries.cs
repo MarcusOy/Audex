@@ -3,7 +3,7 @@ using HotChocolate.Types;
 
 namespace Audex.API.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class TestQueries
     {
 

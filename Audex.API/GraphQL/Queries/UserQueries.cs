@@ -14,7 +14,7 @@ using Audex.API.Data;
 
 namespace Audex.API.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class UserQueries
     {
         [Authorize]

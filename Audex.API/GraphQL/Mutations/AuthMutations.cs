@@ -7,7 +7,7 @@ using HotChocolate.Types;
 
 namespace Audex.API.GraphQL.Mutations
 {
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class AuthMutations
     {
         public async Task<GetTokenResponse> Authenticate(string username, string password, string device, [Service] IIdentityService identityService)
