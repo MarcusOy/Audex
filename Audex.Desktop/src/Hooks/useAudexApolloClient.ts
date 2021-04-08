@@ -108,7 +108,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 		const wsLink = new WebSocketLink({
 			uri: `ws://${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
 			options: {
-				// reconnect: true,
+				reconnect: true,
 				lazy: true,
 				connectionParams: {
 					Authorization: authState.accessToken,

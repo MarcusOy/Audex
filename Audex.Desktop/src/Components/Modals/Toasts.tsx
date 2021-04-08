@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import ToastService from '../../Data/Services/ToastService';
 import Spacer from '../Spacer';
+import UploadToast from '../Modals/UploadToast';
 
 export interface IToasts {
 	toasts: IMessageBarProps[];
@@ -68,6 +69,7 @@ const Toasts = () => {
 					</div>
 				);
 			})}
+			<UploadToast />
 		</div>
 	);
 };

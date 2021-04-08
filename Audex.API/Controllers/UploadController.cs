@@ -55,8 +55,11 @@ namespace Audex.API.Controllers
             if (model.File != null && model.File.Length > 0)
             {
                 var fn = await _fileNodeService.CreateAsync(model.File);
-                return Ok(new { fn.Id });
+
+                _logger.LogInformation($"File '{model.File.FileName} uploaded.'");
+                return Ok(new { Id = fn.Id.ToString("N") });
             }
+            _logger.LogError($"File '{model.File.FileName} failed to upload.'");
             return BadRequest("Not a file.");
         }
 

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Audex.API.Data;
+using Audex.API.Helpers;
 using Audex.API.Models.Auth;
 using Audex.API.Models.Stacks;
 using Microsoft.AspNetCore.Http;
@@ -17,12 +19,11 @@ namespace Audex.API.Services
         /// <summary>
         /// Create a stack from existing FileNodes
         /// </summary>
-        /// <param name="stack"></param>
         /// <param name="files"></param>
         /// <returns></returns>
-        public Task<Stack> CreateAsync(Stack stack, List<FileNode> files);
-
+        public Task<Stack> CreateAsync(List<Guid> fileIds);
         public Task<Stack> CreateAsync(Stack stack, string[] filePaths, Guid? userId = null);
+        public Task<Stack> Ensure(Guid stackId, List<Guid> fileIds);
         public Task<Stack> CreateStartingStackAsync(Guid userId);
 
     }
@@ -33,25 +34,43 @@ namespace Audex.API.Services
         private readonly ILogger<StackService> _logger;
         private readonly AudexDBContext _dbContext;
         private readonly AudexSettings _settings;
-
         private readonly IFileNodeService _fnService;
+        private readonly IStorageService _storageService;
+
 
         public StackService(IHttpContextAccessor context,
                             ILogger<StackService> logger,
                             AudexDBContext dbContext,
                             IOptions<AudexSettings> settings,
-                            IFileNodeService fnService)
+                            IFileNodeService fnService,
+                            IStorageService storageService)
         {
             _context = context;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
             _fnService = fnService;
+            _storageService = storageService;
         }
 
-        public async Task<Stack> CreateAsync(Stack stack, List<FileNode> files)
+        public async Task<Stack> CreateAsync(List<Guid> filesIds)
         {
-            throw new NotImplementedException();
+            var stack = new Stack
+            {
+                OwnerUserId = new Guid(_context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Value),
+                UploadedByDeviceId = new Guid(_context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == "deviceId")
+                    .Value),
+                Files = _dbContext.FileNodes
+                    .Where(fn => filesIds.Contains(fn.Id))
+                    .ToList()
+            };
+            await _dbContext.SaveChangesAsync();
+            PersistFileNodes(stack.Files);
+
+            return stack;
         }
 
         public async Task<Stack> CreateAsync(Stack stack, string[] filePaths, Guid? userId = null)
@@ -73,6 +92,27 @@ namespace Audex.API.Services
             return stack;
         }
 
+        public async Task<Stack> Ensure(Guid stackId, List<Guid> fileIds)
+        {
+            var stack = _dbContext.Stack
+                .Where(s => s.OwnerUserId == new Guid(_context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value))
+                .FirstOrDefault(s => s.Id == stackId);
+
+            if (stack is null)
+                throw new InvalidOperationException("Invalid stack id.");
+
+            stack.Files = stack.Files
+                .Intersect(_dbContext.FileNodes
+                    .Where(fn => fileIds.Contains(fn.Id)))
+                .ToList();
+            await _dbContext.SaveChangesAsync();
+            PersistFileNodes(stack.Files);
+
+
+            return stack;
+        }
+
         public async Task<Stack> CreateStartingStackAsync(Guid userId)
         {
             var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -87,6 +127,14 @@ namespace Audex.API.Services
             };
 
             return await CreateAsync(s, paths, userId);
+        }
+
+        private async void PersistFileNodes(List<FileNode> files)
+        {
+            foreach (FileNode fn in files)
+            {
+                await _storageService.PersistFile(fn);
+            }
         }
     }
 }

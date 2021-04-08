@@ -26,6 +26,22 @@ export const REAUTHENTICATE = gql`
 	}
 `;
 
+export const CREATE_STACK = gql`
+	mutation($fileIds: [Uuid!]) {
+		createStack(fileIds: $fileIds) {
+			id
+		}
+	}
+`;
+
+export const ENSURE_STACK = gql`
+	mutation($stackId: Uuid!, $fileIds: [Uuid!]!) {
+		ensureInStack(stackId: $stackId, fileIds: $fileIds) {
+			id
+		}
+	}
+`;
+
 export const RENAME_STACK = gql`
 	mutation($stackId: Uuid!, $newName: String) {
 		renameStack(stackId: $stackId, newName: $newName)

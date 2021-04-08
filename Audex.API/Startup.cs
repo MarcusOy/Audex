@@ -115,6 +115,7 @@ namespace Audex.API
                     .AddMutationType(d => d.Name("Mutation"))
                         .AddTypeExtension<AuthMutations>()
                         .AddTypeExtension<StackMutations>()
+                    // .AddTypeExtension<FileMutations>()
                     .AddQueryType(d => d.Name("Query"))
                         .AddTypeExtension<TestQueries>()
                         .AddTypeExtension<UserQueries>()
@@ -147,6 +148,7 @@ namespace Audex.API
 
             // Adding entity services
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IStorageService, LocalStorageService>();
             services.AddScoped<IFileNodeService, FileNodeService>();
             services.AddScoped<IStackService, StackService>();
             services.AddScoped<IInitializationService, InitializationService>();

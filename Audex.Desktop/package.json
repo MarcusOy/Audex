@@ -12,6 +12,8 @@
     "@types/react-dom": "^17.0.0",
     "@uifabric/file-type-icons": "^7.6.23",
     "ahooks": "^2.9.3",
+    "aphrodite": "^2.4.0",
+    "apollo-hooks-extended": "^1.0.0",
     "apollo-link-error": "^1.1.13",
     "apollo-link-jwt": "^1.1.5",
     "axios": "^0.21.0",

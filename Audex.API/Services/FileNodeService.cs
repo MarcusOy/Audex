@@ -35,15 +35,20 @@ namespace Audex.API.Services
         private readonly ILogger<FileNodeService> _logger;
         private readonly AudexDBContext _dbContext;
         private readonly AudexSettings _settings;
-        public FileNodeService(IHttpContextAccessor context,
-                               ILogger<FileNodeService> logger,
-                               AudexDBContext dbContext,
-                               IOptions<AudexSettings> settings)
+        private readonly IStorageService _storageService;
+
+        public FileNodeService(
+            IHttpContextAccessor context,
+            ILogger<FileNodeService> logger,
+            AudexDBContext dbContext,
+            IOptions<AudexSettings> settings,
+            IStorageService storageService)
         {
             _context = context;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
+            _storageService = storageService;
         }
 
         public async Task<FileNode> CreateAsync(IFormFile file)
@@ -76,7 +81,8 @@ namespace Audex.API.Services
             try
             {
                 // Now add the file to the filesystem with name of the FileNode's id
-                UploadFileToWorkingDirectory(file, fn.Id.ToString());
+                await _storageService.AddFile(fn, file);
+                // UploadFileToWorkingDirectory(file, fn.Id.ToString());
             }
             catch (Exception e)
             {
@@ -124,7 +130,8 @@ namespace Audex.API.Services
             try
             {
                 // Now add the file to the filesystem with name of the FileNode's id
-                CopyFileToWorkingDirectory(file, fn.Id.ToString());
+                await _storageService.AddFile(fn, file);
+                // CopyFileToWorkingDirectory(file, fn.Id.ToString());
             }
             catch (Exception e)
             {
@@ -137,40 +144,6 @@ namespace Audex.API.Services
             return fn;
 
 
-        }
-
-        private async void UploadFileToWorkingDirectory(IFormFile file, string name)
-        {
-            var fileInfo = GetNewPathInTemporary(name);
-
-            using (var stream = System.IO.File.Create(fileInfo.FullName))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Mark file as temporary in case user does not complete 
-            fileInfo.Attributes = FileAttributes.Temporary;
-        }
-
-        private void CopyFileToWorkingDirectory(FileInfo file, string name)
-        {
-            var fileInfo = GetNewPathInTemporary(name);
-
-            System.IO.File.Copy(file.FullName, fileInfo.FullName);
-
-            // Mark file as temporary in case user does not complete 
-            fileInfo.Attributes = FileAttributes.Temporary;
-        }
-
-        private FileInfo GetNewPathInTemporary(string name)
-        {
-            var path = PathHelper.GetProperPath(_settings.FileSystem.Temporary);
-            var filePath = Path.Combine(path, name.ToString());
-
-            FileInfo fileInfo = new FileInfo(filePath);
-            fileInfo.Directory.Create();
-
-            return fileInfo;
         }
     }
 }

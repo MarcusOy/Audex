@@ -12,7 +12,7 @@ const Modals = () => {
 		<>
 			<Toasts />
 			<StackPanel />
-			<FileTransferPanel />
+			{/* <FileTransferPanel /> */}
 		</>
 	);
 };

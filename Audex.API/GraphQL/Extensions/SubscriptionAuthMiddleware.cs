@@ -16,21 +16,18 @@ namespace Audex.API.GraphQL.Extensions
 {
     public class SubscriptionAuthMiddleware : ISocketSessionInterceptor
     {
+#pragma warning disable CS1998 // To remove 'no await on async' warning
         public async ValueTask OnCloseAsync(
             ISocketConnection connection,
             CancellationToken cancellationToken
         )
-        {
-
-        }
+        { }
         public async ValueTask OnRequestAsync(
             ISocketConnection connection,
             IQueryRequestBuilder requestBuilder,
             CancellationToken cancellationToken
         )
-        {
-
-        }
+        { }
 
         /* We don't need the above two methods, just this one */
         public async ValueTask<ConnectionStatus> OnConnectAsync(

@@ -37,8 +37,15 @@ const HeaderBar = () => {
 			<Stack
 				style={{
 					// marginBottom: 20,
-					padding: '10px 0',
+					paddingTop: 20,
+					paddingBottom: 10,
 					borderBottom: '1px solid rgb(243, 242, 241)',
+					position: 'sticky',
+					WebkitUserSelect: 'none',
+					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+					//@ts-ignore
+					WebkitAppRegion: 'drag',
+					// '-webkit-app-region': 'drag',
 				}}
 				tokens={{ childrenGap: 8 }}
 				horizontal

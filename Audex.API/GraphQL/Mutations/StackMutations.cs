@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Audex.API.Helpers;
+using System.Collections.Generic;
 
 namespace Audex.API.GraphQL.Mutations
 {
@@ -39,6 +40,39 @@ namespace Audex.API.GraphQL.Mutations
                 stack.Id
             );
 
+            return stack;
+        }
+
+        [Authorize]
+        public async Task<Stack> CreateStack(
+            List<Guid> fileIds,
+            [Service] IStackService stackService,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ITopicEventSender eventSender)
+        {
+            var stack = await stackService.CreateAsync(fileIds);
+
+            await eventSender.SendAsync(
+                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
+                stack.Id
+            );
+            return stack;
+        }
+
+        [Authorize]
+        public async Task<Stack> EnsureInStack(
+            Guid stackId,
+            List<Guid> fileIds,
+            [Service] IStackService stackService,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ITopicEventSender eventSender)
+        {
+            var stack = await stackService.Ensure(stackId, fileIds);
+
+            await eventSender.SendAsync(
+                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
+                stack.Id
+            );
             return stack;
         }
 
