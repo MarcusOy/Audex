@@ -1,4 +1,4 @@
-import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
+// import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
 import { IModal } from '../../Components/Modals/Modals';
 import { IStackPanel } from '../../Components/Modals/StackPanel';
 import { Store } from 'pullstate';
@@ -23,10 +23,10 @@ export interface AudexStore {
 		Toasts: IToasts;
 		StackPanel: IStackPanel;
 		FilePreview: IModal;
-		FileTransfer: IFileTransferPanel;
 	};
 	Upload: {
-		Files: IFileUnit[];
+		Files: File[];
+		FileUnits: IFileUnit[];
 		CurrentStackContext: string;
 	};
 }
@@ -70,14 +70,10 @@ const initialState: AudexStore = {
 		FilePreview: {
 			isOpen: false,
 		},
-		FileTransfer: {
-			isOpen: false,
-			fileId: '',
-			mode: 'upload',
-		},
 	},
 	Upload: {
 		Files: [],
+		FileUnits: [],
 		CurrentStackContext: '',
 	},
 };

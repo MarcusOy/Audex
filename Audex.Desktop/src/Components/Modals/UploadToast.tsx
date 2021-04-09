@@ -12,13 +12,15 @@ import faker from 'faker';
 const UploadToast = () => {
 	const [createStack, createResponse] = useResettableMutation(CREATE_STACK);
 	const [ensureStack, ensureResponse] = useResettableMutation(ENSURE_STACK);
+	const fileState = DataStore.useState((s) => s.Upload.Files);
 	const uploadState = DataStore.useState((s) => s.Upload);
 
 	const isToastShowing = uploadState.Files.length > 0;
 	const isDoneUploading =
 		uploadState.Files.length > 0
-			? uploadState.Files.filter((f) => !f.success && f.uid == undefined)
-					.length <= 0
+			? uploadState.FileUnits.filter(
+					(f) => !f.success && f.uid == undefined
+			  ).length <= 0
 			: false;
 	const isStackCreated = uploadState.CurrentStackContext != '';
 
@@ -68,10 +70,11 @@ const UploadToast = () => {
 				)}
 				<Spacer />
 				<div className={css(styles.fileUnitsContainer)}>
-					{uploadState.Files.map((f) => {
+					{fileState.map((f, i) => {
 						return (
 							<FileUnit
 								key={f.name + faker.random.alphaNumeric()}
+								fileIndex={i}
 								file={f}
 							/>
 						);

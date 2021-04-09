@@ -26,6 +26,12 @@ export const REAUTHENTICATE = gql`
 	}
 `;
 
+export const UPLOAD_FILE = gql`
+	mutation($file: Upload!) {
+		uploadFile(f: $file)
+	}
+`;
+
 export const CREATE_STACK = gql`
 	mutation($fileIds: [Uuid!]) {
 		createStack(fileIds: $fileIds) {

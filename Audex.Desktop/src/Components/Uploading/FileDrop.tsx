@@ -40,7 +40,7 @@ const FileDrop = (props: Props) => {
 		<FileDropZone
 			onDrop={(files) => {
 				setFileHover(false);
-				const f = Array.from(files) as Array<IFileUnit>;
+				const f = Array.from(files) as Array<File>;
 				FileService.addFiles(f);
 			}}
 			onDragOver={() => setFileHover(true)}

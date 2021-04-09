@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,23 +8,11 @@ namespace Audex.API.Helpers
 {
     public static class FileHelpers
     {
-        public static IFormFile ReturnFormFile(FileStreamResult result)
+        public static IFormFile ToFormFile(this IFile file)
         {
-            var ms = new MemoryStream();
-            try
-            {
-                result.FileStream.CopyTo(ms);
-                return new FormFile(ms, 0, ms.Length, result.FileDownloadName, result.FileDownloadName);
-            }
-            catch (Exception e)
-            {
-                ms.Dispose();
-                throw;
-            }
-            finally
-            {
-                ms.Dispose();
-            }
+            var f = file.GetPrivateFieldValue<IFormFile>("_file");
+            return f;
         }
+
     }
 }

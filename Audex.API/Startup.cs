@@ -22,6 +22,7 @@ using Audex.API.GraphQL.Mutations;
 using Audex.API.GraphQL.Queries;
 using Audex.API.Data;
 using Audex.API.GraphQL.Subscriptions;
+using HotChocolate.Types;
 
 namespace Audex.API
 {
@@ -112,39 +113,40 @@ namespace Audex.API
 
             // Setting up GraphQL server
             services.AddGraphQLServer()
-                    .AddMutationType(d => d.Name("Mutation"))
-                        .AddTypeExtension<AuthMutations>()
-                        .AddTypeExtension<StackMutations>()
-                    // .AddTypeExtension<FileMutations>()
-                    .AddQueryType(d => d.Name("Query"))
-                        .AddTypeExtension<TestQueries>()
-                        .AddTypeExtension<UserQueries>()
-                        .AddTypeExtension<StackQueries>()
-                    .AddSubscriptionType(d => d.Name("Subscription"))
-                        .AddTypeExtension<StackSubscriptions>()
-                    .AddAuthorization()
-                    .AddHttpRequestInterceptor(
-                        (context, executer, builder, ct) =>
+                .AddType<UploadType>()
+                .AddMutationType(d => d.Name("Mutation"))
+                    .AddTypeExtension<AuthMutations>()
+                    .AddTypeExtension<StackMutations>()
+                    .AddTypeExtension<FileMutations>()
+                .AddQueryType(d => d.Name("Query"))
+                    .AddTypeExtension<TestQueries>()
+                    .AddTypeExtension<UserQueries>()
+                    .AddTypeExtension<StackQueries>()
+                .AddSubscriptionType(d => d.Name("Subscription"))
+                    .AddTypeExtension<StackSubscriptions>()
+                .AddAuthorization()
+                .AddHttpRequestInterceptor(
+                    (context, executer, builder, ct) =>
+                    {
+                        if (context.GetUser().Identity.IsAuthenticated)
                         {
-                            if (context.GetUser().Identity.IsAuthenticated)
-                            {
-                                builder.SetProperty("CurrentUser",
-                                    new CurrentUser(
-                                        Guid.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)),
-                                        context.User.Identity.Name,
-                                        context.User.Claims.Select(x => $"{x.Type} : {x.Value}").ToList()
-                                    )
-                                );
-                            }
-
-                            return new ValueTask(Task.CompletedTask);
+                            builder.SetProperty("CurrentUser",
+                                new CurrentUser(
+                                    Guid.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                                    context.User.Identity.Name,
+                                    context.User.Claims.Select(x => $"{x.Type} : {x.Value}").ToList()
+                                )
+                            );
                         }
-                    )
-                    .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
-                    .AddInMemorySubscriptions()
-                    .AddErrorFilter<GraphQLErrorFilter>()
-                    .AddFiltering()
-                    .AddSorting();
+
+                        return new ValueTask(Task.CompletedTask);
+                    }
+                )
+                .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
+                .AddInMemorySubscriptions()
+                .AddErrorFilter<GraphQLErrorFilter>()
+                .AddFiltering()
+                .AddSorting();
 
             // Adding entity services
             services.AddScoped<IUserService, UserService>();

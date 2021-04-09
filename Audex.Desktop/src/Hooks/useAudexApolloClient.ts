@@ -5,14 +5,16 @@ import {
 	InMemoryCache,
 	split,
 } from '@apollo/client';
+import { createUploadLink } from 'apollo-upload-client';
 import { WebSocketLink } from '@apollo/client/link/ws';
-import { ApolloLinkJWT } from './jwt/index';
+import { ApolloLinkJWT } from '../Data/ApolloClient/apollo-jwt/index';
+import { useCallback, useEffect, useState } from 'react';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { DataStore } from '../Data/DataStore/DataStore';
+import { getGqlString } from '../Data/Helpers';
 import { REAUTHENTICATE } from '../Data/Mutations';
 import IdentityService from '../Data/Services/IdentityService';
-import { useCallback, useEffect, useState } from 'react';
-import { getGqlString } from '../Data/Helpers';
-import { getMainDefinition } from '@apollo/client/utilities';
+import { customFetch } from '../Data/ApolloClient/apolloCustomFetch';
 
 const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const authState = DataStore.useState((s) => s.Authentication);
@@ -101,8 +103,12 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			debugMode: true,
 		});
 
-		const httpLink = createHttpLink({
+		// const httpLink = createHttpLink({
+		// 	uri: uri,
+		// });
+		const httpLinkWithUpload = createUploadLink({
 			uri: uri,
+			fetch: customFetch as any,
 		});
 
 		const wsLink = new WebSocketLink({
@@ -125,7 +131,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 				);
 			},
 			wsLink,
-			httpLink
+			httpLinkWithUpload
 		);
 
 		// Bypass JWT authentication ONLY when logged out
