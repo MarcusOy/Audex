@@ -8,6 +8,10 @@ import {
 	CommandBar,
 	ICommandBarItemProps,
 	Text,
+	Stack,
+	Image,
+	PrimaryButton,
+	IButtonProps,
 } from '@fluentui/react';
 import { formatDistance } from 'date-fns';
 import ModalService from '../Data/Services/ModalService';
@@ -21,7 +25,8 @@ import ToastService, {
 	TestInfo,
 } from '../Data/Services/ToastService';
 import RenameDialog from './Dialogs/RenameDialog';
-import { ON_STACKS_UPDATE } from '../Data/Services/Subscriptions';
+import { ON_STACKS_UPDATE } from '../Data/Subscriptions';
+import Spacer from './Spacer';
 
 export interface IStackRow {
 	key: string;
@@ -189,6 +194,8 @@ const StacksList = () => {
 	const [columns, setColumns] = useState(stackColumns);
 	const [selectedStacks, setSelectedStacks] = useState<IStackRow[]>([]);
 
+	const [isRenameVisible, setIsRenameVisible] = useState(false);
+
 	const numSelected =
 		selectedStacks.length > 1 ? `${selectedStacks.length} stacks` : 'stack';
 	const zeroOrOneSelected =
@@ -325,7 +332,26 @@ const StacksList = () => {
 		},
 	];
 
-	const [isRenameVisible, setIsRenameVisible] = useState(false);
+	if (loading) return <Spinner />;
+
+	if (stacks.length <= 0)
+		return (
+			<Stack horizontalAlign='center'>
+				<Stack horizontalAlign='center' style={{ maxWidth: 300 }}>
+					<Image width={300} src='/images/empty.png' />
+					<Text variant='xLarge'>No stacks.</Text>
+					<Text>
+						You currently have no stacks. Drag and drop some files
+						on this window or click <b>New stack</b>.
+					</Text>
+					<Spacer />
+					<PrimaryButton
+						{...(menuItems[0] as IButtonProps)}
+						menuProps={menuItems[0].subMenuProps}
+					/>
+				</Stack>
+			</Stack>
+		);
 
 	return (
 		<div>
@@ -347,21 +373,17 @@ const StacksList = () => {
 					setVisible={setIsRenameVisible}
 				/>
 			)}
-			{loading || error ? (
-				<Spinner />
-			) : (
-				<DetailedList<IStackRow>
-					items={stacks!}
-					setItems={setStacks}
-					columns={columns!}
-					setColumns={setColumns}
-					selection={selectedStacks!}
-					setSelection={setSelectedStacks}
-					invoke={(i: IStackRow) => {
-						ModalService.openStackModal({ stackId: i.key });
-					}}
-				/>
-			)}
+			<DetailedList<IStackRow>
+				items={stacks!}
+				setItems={setStacks}
+				columns={columns!}
+				setColumns={setColumns}
+				selection={selectedStacks!}
+				setSelection={setSelectedStacks}
+				invoke={(i: IStackRow) => {
+					ModalService.openStackModal({ stackId: i.key });
+				}}
+			/>
 		</div>
 	);
 };

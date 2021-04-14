@@ -98,8 +98,6 @@ export const ApolloLinkJWT = ({
 		// Allow configurable function to indicate if the endpoint returned the correct response
 		const onRefreshResponse = await onRefreshComplete(response);
 
-		console.log(onRefreshResponse);
-
 		if (!onRefreshResponse) {
 			clearCache();
 

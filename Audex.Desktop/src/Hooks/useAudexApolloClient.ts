@@ -15,6 +15,7 @@ import { getGqlString } from '../Data/Helpers';
 import { REAUTHENTICATE } from '../Data/Mutations';
 import IdentityService from '../Data/Services/IdentityService';
 import { customFetch } from '../Data/ApolloClient/apolloCustomFetch';
+import ServerService from '../Data/Services/ServerService';
 
 const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const authState = DataStore.useState((s) => s.Authentication);
@@ -25,8 +26,6 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	const getTokens = useCallback(async () => {
 		const accessToken = authState.accessToken;
 		const refreshToken = authState.refreshToken;
-
-		console.log('Tokens Accessed...');
 
 		return {
 			accessToken,
@@ -43,10 +42,17 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 
 			// Handle sign out logic if the refresh token attempt failed
 			if (!newAccessToken || !newRefreshToken) {
-				console.log(
-					'Redirect back to login, because the refresh token was expired!'
-				);
-				IdentityService.logOut();
+				// Before we log the user out, check if server is down
+				if (await ServerService.isSelectedServerUp()) {
+					// Server is not down and user's credentials are bad
+					console.log(
+						'Server is online and rejecting user credientials.'
+					);
+					IdentityService.logOut();
+				} else {
+					// Server is down, so do not log out the user
+					console.log('Server seems to be down.');
+				}
 				return;
 			}
 
@@ -80,18 +86,21 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 	);
 
 	/**
+	 * Construct Apollo client's chain of links.
 	 * Change the api endpoint ONLY when user changes servers
 	 */
 	useEffect(() => {
-		const uri = `${serverState.selectedServer.prefix}${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`;
-
-		if (!serverState) {
+		const selectedServer = serverState.serverList.get(
+			serverState.selectedServerHostname
+		)!;
+		// If no server is selected, do not set a client
+		if (!selectedServer) {
 			setClient(null);
 			return;
 		}
-		/**
-		 * Create Apollo Link JWT
-		 */
+		const uri = `${selectedServer.prefix}${selectedServer.hostName}${selectedServer.apiEndpoint}`;
+
+		// Create Apollo Link JWT
 		const apolloLinkJWT = ApolloLinkJWT({
 			apiUrl: uri,
 			getTokens,
@@ -103,16 +112,15 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			debugMode: true,
 		});
 
-		// const httpLink = createHttpLink({
-		// 	uri: uri,
-		// });
+		// Normal Apollo HTTP link, with Upload Multi-part capability
 		const httpLinkWithUpload = createUploadLink({
 			uri: uri,
-			fetch: customFetch as any,
+			fetch: customFetch as any, // customFetch allows progress tracking
 		});
 
+		// Websocket Apollo link
 		const wsLink = new WebSocketLink({
-			uri: `ws://${serverState.selectedServer.hostName}${serverState.selectedServer.apiEndpoint}`,
+			uri: `ws://${selectedServer.hostName}${selectedServer.apiEndpoint}`,
 			options: {
 				reconnect: true,
 				lazy: true,
@@ -122,6 +130,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			},
 		});
 
+		// Split link between websocket (subscriptions) and HTTP requests (queries, mutations, etc)
 		const splitLink = split(
 			({ query }) => {
 				const definition = getMainDefinition(query);

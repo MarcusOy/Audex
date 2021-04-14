@@ -8,9 +8,8 @@ import { IToasts } from '../../Components/Modals/Toasts';
 
 export interface AudexStore {
 	Servers: {
-		officialServerList: IServer[];
-		serverList: IServer[];
-		selectedServer: IServer;
+		serverList: Map<string, IServer>;
+		selectedServerHostname: string;
 	};
 	Authentication: {
 		isAuthenticated: boolean;
@@ -36,21 +35,26 @@ const devServer: IServer = {
 	hostName: 'localhost:5000',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
-	online: true,
+	isOfficial: false,
+	isOnline: true,
 };
 const officialServer: IServer = {
 	prefix: 'https://',
 	hostName: 'audex.app',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
-	online: false,
+	isOfficial: true,
+	isOnline: false,
 };
 
 const initialState: AudexStore = {
 	Servers: {
-		officialServerList: [officialServer],
-		serverList: [devServer],
-		selectedServer: devServer,
+		// serverList: [officialServer, devServer],
+		serverList: new Map([
+			[devServer.hostName, devServer],
+			[officialServer.hostName, officialServer],
+		]),
+		selectedServerHostname: devServer.hostName,
 	},
 	Authentication: {
 		isAuthenticated: false,

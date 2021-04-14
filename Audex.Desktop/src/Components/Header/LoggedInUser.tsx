@@ -77,7 +77,7 @@ const LoggedInUser = () => {
 		[]
 	);
 
-	if (loading)
+	if (loading || !data)
 		return (
 			<>
 				<Spinner size={SpinnerSize.small} />

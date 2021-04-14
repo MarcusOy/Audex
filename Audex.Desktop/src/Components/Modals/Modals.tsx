@@ -1,6 +1,7 @@
 import React from 'react';
 import StackPanel from './StackPanel';
 import Toasts from './Toasts';
+import OfflineModal from './OfflineModal';
 
 export interface IModal {
 	isOpen?: boolean;
@@ -9,6 +10,7 @@ export interface IModal {
 const Modals = () => {
 	return (
 		<>
+			<OfflineModal />
 			<Toasts />
 			<StackPanel />
 			{/* <FileTransferPanel /> */}

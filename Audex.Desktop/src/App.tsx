@@ -12,6 +12,7 @@ import {
 	Route,
 	Redirect,
 } from 'react-router-dom';
+import { enableMapSet } from 'immer';
 import HeaderBar from './Components/Header/HeaderBar';
 import HomePage from './Pages/HomePage';
 import Modals from './Components/Modals/Modals';
@@ -22,13 +23,18 @@ import useLoader from './Data/DataStore/useLoader';
 import useAudexApolloClient from './Hooks/useAudexApolloClient';
 
 import './App.css';
+import ServerService from './Data/Services/ServerService';
 
 const App = () => {
 	const { isLoading, isError } = useLoader();
 	const state = DataStore.useState();
 
-	initializeIcons();
-	initializeFileTypeIcons();
+	React.useEffect(() => {
+		ServerService.init();
+		initializeIcons();
+		initializeFileTypeIcons();
+		enableMapSet();
+	}, []);
 
 	const client = useAudexApolloClient();
 
@@ -52,7 +58,7 @@ const App = () => {
 								<HeaderBar />
 								<Switch>
 									<Route path='/' exact>
-										<Redirect to='/Home/Recent' />
+										<Redirect to='/Home/Stacks' />
 									</Route>
 
 									<Route path='/Home/:tab'>
