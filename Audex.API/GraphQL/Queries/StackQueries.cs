@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Audex.API.Data;
 using Audex.API.GraphQL.Extensions;
@@ -19,6 +20,7 @@ namespace Audex.API.GraphQL.Queries
         {
             return context.Stack
                 .Where(s => s.OwnerUserId == user.UserId)
+                .Where(s => s.DeletedOn == null)
                 .Include(s => s.StackCategory)
                 .Include(s => s.OwnerUser)
                 .Include(s => s.UploadedByDevice)

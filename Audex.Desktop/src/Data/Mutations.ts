@@ -59,3 +59,19 @@ export const RENAME_FILE = gql`
 		renameFile(fileId: $fileId, newName: $newName)
 	}
 `;
+
+export const DELETE_STACK = gql`
+	mutation($stackIds: [Uuid!]) {
+		deleteStacks(stackIds: $stackIds) {
+			id
+		}
+	}
+`;
+
+export const DELETE_FILE = gql`
+	mutation($fileIds: [Uuid!]) {
+		deleteFiles(fileIds: $fileId) {
+			id
+		}
+	}
+`;

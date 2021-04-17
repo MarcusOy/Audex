@@ -25,6 +25,7 @@ import ToastService, {
 	TestInfo,
 } from '../Data/Services/ToastService';
 import RenameDialog from './Dialogs/RenameDialog';
+import DeleteDialog from './Dialogs/DeleteDialog';
 import { ON_STACKS_UPDATE } from '../Data/Subscriptions';
 import Spacer from './Spacer';
 
@@ -150,25 +151,6 @@ const stackColumns: IColumn[] = [
 	},
 ];
 
-const _farItems: ICommandBarItemProps[] = [
-	{
-		key: 'tile',
-		text: 'Grid view',
-		ariaLabel: 'Grid view',
-		iconOnly: true,
-		iconProps: { iconName: 'Tiles' },
-		onClick: () => ToastService.push(TestInfo(), 3),
-	},
-	{
-		key: 'help',
-		text: 'Help',
-		ariaLabel: 'Help',
-		iconOnly: true,
-		iconProps: { iconName: 'Help' },
-		onClick: () => ToastService.push(TestBlocked()),
-	},
-];
-
 export const makeStackName = (s: any) => {
 	return (
 		<>
@@ -195,6 +177,7 @@ const StacksList = () => {
 	const [selectedStacks, setSelectedStacks] = useState<IStackRow[]>([]);
 
 	const [isRenameVisible, setIsRenameVisible] = useState(false);
+	const [isDeleteVisible, setIsDeleteVisible] = useState(false);
 
 	const numSelected =
 		selectedStacks.length > 1 ? `${selectedStacks.length} stacks` : 'stack';
@@ -319,7 +302,7 @@ const StacksList = () => {
 		{
 			key: 'delete',
 			text: `Delete ${numSelected}...`,
-			onClick: () => console.log('delete'),
+			onClick: () => setIsDeleteVisible(true),
 			disabled: selectedStacks.length == 0,
 			iconProps: { iconName: 'Trash' },
 		},
@@ -329,6 +312,25 @@ const StacksList = () => {
 			onClick: () => setIsRenameVisible(true),
 			disabled: selectedStacks.length != 1,
 			iconProps: { iconName: 'Edit' },
+		},
+	];
+
+	const farItems: ICommandBarItemProps[] = [
+		{
+			key: 'refresh',
+			text: 'Refresh',
+			ariaLabel: 'Refresh',
+			iconOnly: true,
+			iconProps: { iconName: 'Refresh' },
+			onClick: () => refetch(),
+		},
+		{
+			key: 'trash',
+			text: 'View Trash',
+			ariaLabel: 'View Trash',
+			iconOnly: true,
+			iconProps: { iconName: 'RemoveFromTrash' },
+			onClick: () => ToastService.push(TestBlocked()),
 		},
 	];
 
@@ -363,14 +365,23 @@ const StacksList = () => {
 					zIndex: 100,
 				}}
 				items={menuItems}
-				farItems={_farItems}
+				farItems={farItems}
 				ariaLabel='Use left and right arrow keys to navigate between commands'
 			/>
 			{selectedStacks.length == 1 && (
-				<RenameDialog
-					stack={selectedStacks[0]}
-					visible={isRenameVisible}
-					setVisible={setIsRenameVisible}
+				<>
+					<RenameDialog
+						stack={selectedStacks[0]}
+						visible={isRenameVisible}
+						setVisible={setIsRenameVisible}
+					/>
+				</>
+			)}
+			{selectedStacks.length > 0 && (
+				<DeleteDialog
+					stacks={selectedStacks}
+					visible={isDeleteVisible}
+					setVisible={setIsDeleteVisible}
 				/>
 			)}
 			<DetailedList<IStackRow>

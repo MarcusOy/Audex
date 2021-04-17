@@ -6,6 +6,7 @@ import {
 	getTheme,
 	IconButton,
 	mergeStyleSets,
+	MessageBarType,
 	Modal,
 	PrimaryButton,
 	Spinner,
@@ -15,6 +16,7 @@ import Spacer from '../Spacer';
 import IdentityService from '../../Data/Services/IdentityService';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import ServerService from '../../Data/Services/ServerService';
+import ToastService from '../../Data/Services/ToastService';
 
 const OfflineModal = () => {
 	const selectedServer = DataStore.useState(
@@ -29,8 +31,10 @@ const OfflineModal = () => {
 
 	const onRetry = () => {
 		setIsRetrying(true);
-		setTimeout(() => {
-			ServerService.isSelectedServerUp();
+		setTimeout(async () => {
+			const u = await ServerService.isSelectedServerUp();
+			if (u)
+				ToastService.push(ReconnectedToast(serverState!.hostName), 3);
 			setIsRetrying(false);
 		}, 2000);
 	};
@@ -43,11 +47,6 @@ const OfflineModal = () => {
 		<Modal
 			isOpen={!serverState!.isOnline && authState.isAuthenticated}
 			isBlocking={true}
-			// styles={{
-			// 	root: {
-			// 		zIndex: 100000000001,
-			// 	},
-			// }}
 			containerClassName={contentStyles.container}
 		>
 			<div className={contentStyles.header}>
@@ -114,3 +113,14 @@ const contentStyles = mergeStyleSets({
 		},
 	},
 });
+
+export const ReconnectedToast = (hn: string) => {
+	return {
+		messageBarType: MessageBarType.success,
+		children: (
+			<>
+				Reconnected to <b>{hn}</b>.
+			</>
+		),
+	};
+};

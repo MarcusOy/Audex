@@ -78,6 +78,9 @@ const RenameDialog = (props: Props) => {
 				<PrimaryButton
 					disabled={loading}
 					onClick={onSubmit}
+					onRenderIcon={() => {
+						return loading ? <Spinner /> : <></>;
+					}}
 					text='Submit'
 				/>
 				<DefaultButton

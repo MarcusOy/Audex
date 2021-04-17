@@ -19,9 +19,7 @@ namespace Audex.API.Controllers
     [ApiController, Route("api/v1/[controller]"), EnableCors("APICors")]
     public class HeartbeatController : ControllerBase
     {
-        public HeartbeatController()
-        {
-        }
+        public HeartbeatController() { }
 
         [HttpGet]
         public String Get()

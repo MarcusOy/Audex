@@ -95,6 +95,7 @@ namespace Audex.API.Services
         public async Task<Stack> Ensure(Guid stackId, List<Guid> fileIds)
         {
             var stack = _dbContext.Stack
+                .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUserId == new Guid(_context.HttpContext.User.Claims
                     .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value))
                 .FirstOrDefault(s => s.Id == stackId);

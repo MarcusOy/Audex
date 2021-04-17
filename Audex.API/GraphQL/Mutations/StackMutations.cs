@@ -1,12 +1,9 @@
-using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
-using System.Threading;
 using Audex.API.Services;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
-using System.Security.Claims;
 using System;
 using HotChocolate.Types;
 using Audex.API.Models.Stacks;
@@ -14,7 +11,6 @@ using HotChocolate.Subscriptions;
 using Audex.API.GraphQL.Subscriptions;
 using Audex.API.GraphQL.Extensions;
 using Audex.API.Data;
-using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Audex.API.Helpers;
@@ -30,14 +26,14 @@ namespace Audex.API.GraphQL.Mutations
         public async Task<Stack> CreateStartingStack(
             [CurrentUserGlobalState] CurrentUser user,
             [Service] IStackService stackService,
-            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
             var stack = await stackService.CreateStartingStackAsync(user.UserId);
 
             await eventSender.SendAsync(
-                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
-                stack.Id
+                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
+                new Guid[] { stack.Id }
             );
 
             return stack;
@@ -47,14 +43,14 @@ namespace Audex.API.GraphQL.Mutations
         public async Task<Stack> CreateStack(
             List<Guid> fileIds,
             [Service] IStackService stackService,
-            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
             var stack = await stackService.CreateAsync(fileIds);
 
             await eventSender.SendAsync(
-                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
-                stack.Id
+                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
+                new Guid[] { stack.Id }
             );
             return stack;
         }
@@ -64,14 +60,14 @@ namespace Audex.API.GraphQL.Mutations
             Guid stackId,
             List<Guid> fileIds,
             [Service] IStackService stackService,
-            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
             var stack = await stackService.Ensure(stackId, fileIds);
 
             await eventSender.SendAsync(
-                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
-                stack.Id
+                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
+                new Guid[] { stack.Id }
             );
             return stack;
         }
@@ -85,6 +81,7 @@ namespace Audex.API.GraphQL.Mutations
             [Service] ITopicEventSender eventSender)
         {
             var stack = await dbContext.Stack
+                .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUser.Username == context.HttpContext.User.Identity.Name)
                 .FirstOrDefaultAsync(s => s.Id == stackId);
 
@@ -96,35 +93,40 @@ namespace Audex.API.GraphQL.Mutations
 
             await eventSender.SendAsync(
                 $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                stack.Id
+                new Guid[] { stack.Id }
             );
 
             return newName;
         }
         [Authorize]
-        public async Task<Stack> DeleteStack(
-            Guid stackId,
+        public async Task<List<Stack>> DeleteStacks(
+            List<Guid> stackIds,
             [CurrentUserGlobalState] CurrentUser user,
             [Service] AudexDBContext dbContext,
-            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
-            var stack = await dbContext.Stack
+            var stacks = await dbContext.Stack
+                .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUserId == user.UserId)
-                .FirstOrDefaultAsync(s => s.Id == stackId);
+                .Where(s => stackIds.Contains(s.Id))
+                .ToListAsync();
 
-            if (stack is null)
+            if (stacks.Count == 0)
                 throw new InvalidDataException("Stack not found.");
 
-            dbContext.Stack.Remove(stack);
+            foreach (Stack s in stacks)
+                s.DeletedOn = DateTime.UtcNow;
+
+            dbContext.Stack.UpdateRange(stacks); // TODO: integrate into StackService, mark for delete child filenodes
             await dbContext.SaveChangesAsync();
 
             await eventSender.SendAsync(
-                nameof(StackSubscriptions.OnStacksUpdate) + stack.OwnerUserId.ToString(),
-                stack.Id
+                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
+                stacks.Select(s => s.Id).ToArray()
             );
 
-            return stack;
+            return stacks;
         }
     }
 }

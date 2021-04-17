@@ -21,24 +21,25 @@ namespace Audex.API.GraphQL.Subscriptions
     public class StackSubscriptions
     {
         [Subscribe(With = nameof(SubscribeOnStacksUpdateAsync)), Topic]
-        public async Task<Stack> OnStacksUpdate(
-            [EventMessage] Guid changedStackId,
+        public async Task<List<Stack>> OnStacksUpdate(
+            [EventMessage] Guid[] changedStackIds,
             [Service] IHttpContextAccessor context,
             [Service] AudexDBContext dbContext
         )
         {
             return await dbContext.Stack
                 .Where(s => s.OwnerUser.Username == context.HttpContext.User.Identity.Name)
-                .FirstOrDefaultAsync(s => s.Id == changedStackId);
+                .Where(s => changedStackIds.Contains(s.Id))
+                .ToListAsync();
         }
         [Authorize]
-        public async ValueTask<ISourceStream<Guid>> SubscribeOnStacksUpdateAsync(
+        public async ValueTask<ISourceStream<Guid[]>> SubscribeOnStacksUpdateAsync(
             [Service] IHttpContextAccessor context,
             [Service] ITopicEventReceiver eventReceiver,
             CancellationToken cancellationToken
         )
         {
-            return await eventReceiver.SubscribeAsync<string, Guid>(
+            return await eventReceiver.SubscribeAsync<string, Guid[]>(
                 $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
                  cancellationToken
             );
