@@ -120,7 +120,6 @@ namespace Audex.API
                     .AddTypeExtension<StackMutations>()
                     .AddTypeExtension<FileMutations>()
                 .AddQueryType(d => d.Name("Query"))
-                    .AddTypeExtension<TestQueries>()
                     .AddTypeExtension<UserQueries>()
                     .AddTypeExtension<StackQueries>()
                 .AddSubscriptionType(d => d.Name("Subscription"))

@@ -40,6 +40,16 @@ export const CREATE_STACK = gql`
 	}
 `;
 
+export const CREATE_STARTER_STACK = gql`
+	mutation {
+		createStartingStack {
+			files {
+				id
+			}
+		}
+	}
+`;
+
 export const ENSURE_STACK = gql`
 	mutation($stackId: Uuid!, $fileIds: [Uuid!]!) {
 		ensureInStack(stackId: $stackId, fileIds: $fileIds) {

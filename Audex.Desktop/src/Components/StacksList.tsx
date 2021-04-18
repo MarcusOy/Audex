@@ -17,7 +17,8 @@ import { formatDistance } from 'date-fns';
 import ModalService from '../Data/Services/ModalService';
 import faker from 'faker';
 import DetailedList, { ListClassNames } from './DetailedList';
-import { useLazyQuery, useQuery, useSubscription } from '@apollo/client';
+import { useMutation, useQuery, useSubscription } from '@apollo/client';
+import { CREATE_STARTER_STACK } from '../Data/Mutations';
 import { GET_STACKS } from '../Data/Queries';
 import fileSize from 'filesize';
 import ToastService, {
@@ -171,6 +172,9 @@ export const makeStackName = (s: any) => {
 const StacksList = () => {
 	const { data, loading, error, refetch } = useQuery(GET_STACKS);
 	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE, {});
+	const [createStarterStack, createStarterStackResponse] = useMutation(
+		CREATE_STARTER_STACK
+	);
 
 	const [stacks, setStacks] = useState<IStackRow[]>([]);
 	const [columns, setColumns] = useState(stackColumns);
@@ -349,7 +353,19 @@ const StacksList = () => {
 					<Spacer />
 					<PrimaryButton
 						{...(menuItems[0] as IButtonProps)}
-						menuProps={menuItems[0].subMenuProps}
+						menuProps={{
+							...menuItems[0].subMenuProps,
+							items: [
+								{
+									key: 'newStarterStack',
+									text: 'Create starter stack',
+									onClick: () => {
+										createStarterStack();
+									},
+								},
+								...menuItems[0].subMenuProps!.items,
+							],
+						}}
 					/>
 				</Stack>
 			</Stack>

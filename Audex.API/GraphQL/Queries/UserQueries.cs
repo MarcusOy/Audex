@@ -38,6 +38,7 @@ namespace Audex.API.GraphQL.Queries
                               Group = u.Group,
                               Devices = u.Devices
                           })
+                          .OrderBy(u => u.Id)
                           .FirstOrDefault(u => u.Id == user.UserId)
 ;
         }
@@ -46,38 +47,42 @@ namespace Audex.API.GraphQL.Queries
         public IQueryable<User> GetUsers([Service] AudexDBContext context)
         {
             return context.Users
-                          .Include(u => u.Group)
-                            .ThenInclude(g => g.GroupRoles)
-                            .ThenInclude(gr => gr.Role)
-                          .Select(u => new User
-                          {
-                              Id = u.Id,
-                              Username = u.Username,
-                              // Excluding Password and Salt
-                              Password = "***",
-                              Salt = "***",
-                              CreatedOn = u.CreatedOn,
-                              Active = u.Active,
-                              GroupId = u.GroupId,
-                              Group = u.Group,
-                              Devices = u.Devices
-                          });
+                .Include(u => u.Group)
+                    .ThenInclude(g => g.GroupRoles)
+                    .ThenInclude(gr => gr.Role)
+                .Select(u => new User
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    // Excluding Password and Salt
+                    Password = "***",
+                    Salt = "***",
+                    CreatedOn = u.CreatedOn,
+                    Active = u.Active,
+                    GroupId = u.GroupId,
+                    Group = u.Group,
+                    Devices = u.Devices
+                })
+                .OrderBy(u => u.Id);
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]
         public IQueryable<Group> GetGroups([Service] AudexDBContext context)
         {
             return context.Groups
-                          .Include(g => g.Users)
-                          .Include(g => g.GroupRoles);
+                .Include(g => g.Users)
+                .Include(g => g.GroupRoles)
+                .OrderBy(g => g.Id);
+            ;
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]
         public IQueryable<GroupRole> GetGroupRoles([Service] AudexDBContext context)
         {
             return context.GroupRoles
-                          .Include(gr => gr.Group)
-                          .Include(gr => gr.Role);
+                .Include(gr => gr.Group)
+                .Include(gr => gr.Role)
+                .OrderBy(g => g.Id);
         }
 
         // [Authorize]
