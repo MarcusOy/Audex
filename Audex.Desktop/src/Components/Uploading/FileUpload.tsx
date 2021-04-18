@@ -11,7 +11,7 @@ const FileUpload = () => {
 	const inputRef = createRef<HTMLInputElement>();
 
 	const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const f = Array.from(e!.target!.files!) as Array<IFileUnit>;
+		const f = Array.from(e!.target!.files!) as Array<File>;
 		FileService.addFiles(f);
 		inputRef.current!.value = '';
 	};
@@ -19,8 +19,8 @@ const FileUpload = () => {
 	return (
 		<Stack>
 			<Label>Files</Label>
-			{uploadState.Files.map((f) => {
-				return <FileUnit key={f.name} file={f} />;
+			{uploadState.Files.map((f, i) => {
+				return <FileUnit key={f.name} fileIndex={i} file={f} />;
 			})}
 			<Spacer />
 			<input

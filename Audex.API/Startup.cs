@@ -114,6 +114,7 @@ namespace Audex.API
             // Setting up GraphQL server
             services.AddGraphQLServer()
                 .AddType<UploadType>()
+                .BindRuntimeType<DateTime, UtcDateTimeType>()
                 .AddMutationType(d => d.Name("Mutation"))
                     .AddTypeExtension<AuthMutations>()
                     .AddTypeExtension<StackMutations>()
