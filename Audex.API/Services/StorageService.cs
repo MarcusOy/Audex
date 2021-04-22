@@ -100,6 +100,7 @@ namespace Audex.API.Services
 
             await CopyFileAsync(tf.FullName, pf.FullName,
                 new CancellationTokenSource().Token);
+            tf.Delete();
 
             return file;
         }

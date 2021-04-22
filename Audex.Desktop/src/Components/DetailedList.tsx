@@ -3,12 +3,11 @@ import {
 	DetailsList,
 	DetailsListLayoutMode,
 	IColumn,
-	MarqueeSelection,
 	mergeStyleSets,
 	SelectionMode,
 	Selection,
 } from '@fluentui/react';
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 
 export const ListClassNames = mergeStyleSets({
 	fileIconHeaderIcon: {
@@ -46,19 +45,6 @@ export const ListClassNames = mergeStyleSets({
 		marginBottom: '20px',
 	},
 });
-
-// export interface IRow {
-// 	key: string;
-// 	name: string;
-// 	value: string;
-// 	iconName: string;
-// 	fileType: string;
-// 	modifiedBy: string;
-// 	dateModified: string;
-// 	dateModifiedValue: number;
-// 	fileSize: string;
-// 	fileSizeRaw: number;
-// }
 
 interface Props<T> {
 	items: T[];
@@ -105,7 +91,7 @@ const copyAndSort = <T,>(
 const DetailedList = <T,>(props: PropsWithChildren<Props<T>>) => {
 	const [announcedMessage, setAnnouncedMessage] = useState<string>();
 	const [selectionDetails, setSelectionDetails] = useState<string>();
-	const [selection, setSelection] = useState<Selection>(
+	const [selection, _] = useState<Selection>(
 		new Selection({
 			onSelectionChanged: () => {
 				setSelectionDetails(getSelectionDetails(selection));
@@ -113,6 +99,12 @@ const DetailedList = <T,>(props: PropsWithChildren<Props<T>>) => {
 			},
 		})
 	);
+
+	// Reset selection when update happens
+	// useEffect(() => {
+	// 	console.log('Resetting selection...');
+	// 	selection.setItems([]);
+	// }, [props.items]);
 
 	const onColumnClick = (
 		ev?: React.MouseEvent<HTMLElement>,

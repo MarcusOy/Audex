@@ -109,7 +109,7 @@ const useAudexApolloClient = (): ApolloClient<any> | undefined => {
 			fetchHeaders: {
 				'Content-Type': 'application/json',
 			},
-			debugMode: true,
+			debugMode: false,
 		});
 
 		// Normal Apollo HTTP link, with Upload Multi-part capability

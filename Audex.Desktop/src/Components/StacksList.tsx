@@ -152,21 +152,31 @@ const stackColumns: IColumn[] = [
 	},
 ];
 
-export const makeStackName = (s: any) => {
+export const makeStackNameComponent = (s: any) => {
 	return (
 		<>
 			{s.name ? (
 				<span style={{ fontWeight: 600 }}>{s.name}</span>
-			) : (
+			) : (s.files as Array<any>).length != 0 ? (
 				<span>
 					<span style={{ fontWeight: 600 }}>{s.files[0].name}</span>{' '}
 					{(s.files as Array<any>).length > 1
-						? `and ${s.files.length} other files`
+						? `and ${s.files.length - 1} other files`
 						: `${s.files[0].name} by itself`}
 				</span>
+			) : (
+				<span>Empty stack</span>
 			)}
 		</>
 	);
+};
+
+export const makeStackName = (s: any) => {
+	return (s.files as Array<any>).length > 1
+		? `${s.files[0].name} and ${s.files.length - 1} other files`
+		: (s.files as Array<any>).length == 1
+		? `${s.files[0].name} by itself`
+		: `Empty stack`;
 };
 
 const StacksList = () => {
@@ -191,28 +201,19 @@ const StacksList = () => {
 			: 'file';
 
 	useEffect(() => {
-		console.log('(re)loading stacks...');
 		refetch();
 	}, [onStacksUpdate.data]);
 
 	useEffect(() => {
-		console.log('making stack rows...');
 		if (data) {
 			const s: IStackRow[] = (data.stacks
 				.nodes as Array<any>).map<IStackRow>((s) => {
 				return {
 					key: s.id,
 					rawName: s.name,
-					name:
-						s.name ??
-						((s.files as Array<any>).length > 1
-							? `${s.files[0].name} and ${s.files.length} other files`
-							: `${s.files[0].name} by itself`),
-					nameComponent: makeStackName(s),
-					noName:
-						(s.files as Array<any>).length > 1
-							? `${s.files[0].name} and ${s.files.length} other files`
-							: `${s.files[0].name} by itself`,
+					name: s.name ?? makeStackName(s),
+					nameComponent: makeStackNameComponent(s),
+					noName: makeStackName(s),
 					createdByDevice: s.uploadedByDevice.name,
 					createdOn: new Date(s.createdOn),
 					files: (s.files as Array<any>).map<string>((f) => f.name),

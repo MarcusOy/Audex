@@ -67,6 +67,7 @@ namespace Audex.API.Services
                     .Where(fn => filesIds.Contains(fn.Id))
                     .ToList()
             };
+            await _dbContext.Stack.AddAsync(stack);
             await _dbContext.SaveChangesAsync();
             PersistFileNodes(stack.Files);
 

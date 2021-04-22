@@ -12,6 +12,7 @@ import {
 	Spinner,
 	Stack,
 	Text,
+	Image,
 } from '@fluentui/react';
 import { IStackRow, makeStackName } from '../StacksList';
 import { useStoreState } from 'pullstate';
@@ -36,28 +37,7 @@ export interface IStackDetail {
 	value: string;
 }
 
-const stackDetails: IStackDetail[] = [
-	{
-		name: 'Date created',
-		value: 'December 1st, 2020',
-	},
-	{
-		name: 'Total file size',
-		value: '123 KB',
-	},
-	{
-		name: 'Downloads',
-		value: '253',
-	},
-	{
-		name: 'Visibility',
-		value: 'Public (with link)',
-	},
-	{
-		name: 'Date Created',
-		value: 'December 1st, 2020',
-	},
-];
+const stackDetails: IStackDetail[] = [];
 
 const onDetailRender = (i: IStackDetail | undefined) => {
 	return (
@@ -164,34 +144,68 @@ const StackPanel = () => {
 		variables: {
 			stackId: modalState.stackId,
 		},
+		fetchPolicy: 'network-only',
 	});
 
 	const [stack, setStack] = useState<IStackRow>();
 	const [files, setFiles] = useState<IFileRow[]>([]);
 	const [columns, setColumns] = useState<IColumn[]>(fileColumns);
 	const [selection, setSelection] = useState<IFileRow[]>([]);
+	const [stackDetails, setStackDetails] = useState<IStackDetail[]>([]);
 
 	useEffect(() => {
 		if (modalState.isOpen && modalState.stackId) {
-			getStack();
+			getStack({ variables: { stackId: modalState.stackId } });
 		}
 	}, [modalState.stackId]);
 
 	useEffect(() => {
 		if (data) {
-			setStack(data.stacks.nodes[0]);
-			const fs: IFileRow[] = (data.stacks.nodes[0]
-				.files as Array<any>).map<IFileRow>((f) => {
-				return {
-					key: f.id,
-					name: f.name,
-					iconName: faker.image.imageUrl(),
-					fileType: f.fileExtension,
-					fileSize: fileSize(f.fileSize),
-					fileSizeRaw: f.fileSize,
-				};
-			});
+			if (data.stacks.nodes.length != 1) return;
+
+			const s = data.stacks.nodes[0];
+			setStack(s);
+			const fs: IFileRow[] = (s.files as Array<any>).map<IFileRow>(
+				(f) => {
+					return {
+						key: f.id,
+						name: f.name,
+						iconName: faker.image.imageUrl(),
+						fileType: f.fileExtension,
+						fileSize: fileSize(f.fileSize),
+						fileSizeRaw: f.fileSize,
+					};
+				}
+			);
 			setFiles(fs);
+
+			const ds: IStackDetail[] = [
+				{
+					name: 'Date created',
+					value: new Date(s.createdOn).toLocaleString(),
+				},
+				{
+					name: 'Created by',
+					value: s.uploadedByDevice.name,
+				},
+				{
+					name: 'Total file size',
+					value: fileSize(
+						(s.files as Array<any>)
+							.map<number>((f) => f.fileSize)
+							.reduce((a, b) => a + b, 0)
+					),
+				},
+				{
+					name: 'Downloads',
+					value: '253',
+				},
+				{
+					name: 'Visibility',
+					value: 'Public (with link)',
+				},
+			];
+			setStackDetails(ds);
 		}
 	}, data);
 
@@ -266,6 +280,67 @@ const StackPanel = () => {
 		},
 	];
 
+	let content = (
+		<>
+			<Spacer />
+			<CommandBar
+				style={{
+					padding: 0,
+					margin: 0,
+					position: 'sticky',
+					top: 0,
+					zIndex: 100,
+				}}
+				styles={{ root: { paddingLeft: 0 } }}
+				items={menuItems}
+			/>
+			<Spacer />
+			<Stack>
+				<Separator alignContent='start'>
+					<Text variant='large'>Files in stack</Text>
+				</Separator>
+				<DetailedList<IFileRow>
+					items={files!}
+					setItems={setFiles}
+					columns={columns!}
+					setColumns={setColumns}
+					selection={selection!}
+					setSelection={setSelection}
+				/>
+			</Stack>
+			<Spacer size={30} />
+			<Stack>
+				<Separator alignContent='start'>
+					<Text variant='large'>Details</Text>
+				</Separator>
+				<List
+					style={{ marginLeft: 20 }}
+					items={stackDetails}
+					onRenderCell={onDetailRender}
+				/>
+			</Stack>
+			<Spacer size={30} />
+			<Stack>
+				<Separator alignContent='start'>
+					<Text variant='large'>Activity</Text>
+				</Separator>
+			</Stack>
+		</>
+	);
+
+	if (loading || error) content = <Spinner />;
+
+	if (data && data.stacks.nodes.length != 1)
+		content = (
+			<Stack horizontalAlign='center'>
+				<Stack horizontalAlign='center' style={{ maxWidth: 300 }}>
+					<Image width={300} src='/images/not-found.png' />
+					<Text variant='xLarge'>Stack not found.</Text>
+					<Text>This stack does not exist.</Text>
+				</Stack>
+			</Stack>
+		);
+
 	return (
 		<>
 			<Panel
@@ -274,7 +349,11 @@ const StackPanel = () => {
 						<>
 							<Spacer orientation='horizontal' size={30} />
 							<Text variant='xLarge'>
-								{stack ? makeStackName(stack) : <></>}
+								{!loading && stack ? (
+									makeStackName(stack)
+								) : (
+									<></>
+								)}
 							</Text>
 							<Spacer grow />
 						</>
@@ -285,55 +364,7 @@ const StackPanel = () => {
 				onDismiss={onDismissed}
 				isLightDismiss
 			>
-				{loading ? (
-					<Spinner />
-				) : (
-					<>
-						<Spacer />
-						<CommandBar
-							style={{
-								padding: 0,
-								margin: 0,
-								position: 'sticky',
-								top: 0,
-								zIndex: 100,
-							}}
-							styles={{ root: { paddingLeft: 0 } }}
-							items={menuItems}
-						/>
-						<Spacer />
-						<Stack>
-							<Separator alignContent='start'>
-								<Text variant='large'>Files in stack</Text>
-							</Separator>
-							<DetailedList<IFileRow>
-								items={files!}
-								setItems={setFiles}
-								columns={columns!}
-								setColumns={setColumns}
-								selection={selection!}
-								setSelection={setSelection}
-							/>
-						</Stack>
-						<Spacer size={30} />
-						<Stack>
-							<Separator alignContent='start'>
-								<Text variant='large'>Details</Text>
-							</Separator>
-							<List
-								style={{ marginLeft: 20 }}
-								items={stackDetails}
-								onRenderCell={onDetailRender}
-							/>
-						</Stack>
-						<Spacer size={30} />
-						<Stack>
-							<Separator alignContent='start'>
-								<Text variant='large'>Activity</Text>
-							</Separator>
-						</Stack>
-					</>
-				)}
+				{content}
 			</Panel>
 		</>
 	);
