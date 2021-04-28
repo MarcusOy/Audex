@@ -14,7 +14,7 @@ import faker from 'faker';
 import MenuBar from './MenuBar';
 import ModalService from '../Data/Services/ModalService';
 
-const RecentFiles = () => {
+const ActivityFeed = () => {
 	const moreFakeRecent = () => {
 		return new Array(50).fill(null).map(
 			(e) =>
@@ -58,13 +58,11 @@ const RecentFiles = () => {
 	// );
 	// const [file]
 	const inspectFile = (id: string) => {
-		ModalService.openFileModal({ fileId: id });
+		// ModalService.openFileModal({ fileId: id });
 	};
 
 	return (
 		<div>
-			<MenuBar type='Recent' />
-
 			<InfiniteScroll
 				dataLength={activity.length} //This is important field to render the next data
 				next={fetchData}
@@ -99,4 +97,4 @@ const RecentFiles = () => {
 	);
 };
 
-export default RecentFiles;
+export default ActivityFeed;

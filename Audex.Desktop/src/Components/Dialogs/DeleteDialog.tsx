@@ -11,7 +11,7 @@ import { DELETE_FILE, DELETE_STACK } from '../../Data/Mutations';
 import { useMutation } from '@apollo/client';
 import Spacer from '../Spacer';
 import { IFileRow } from '../Modals/StackPanel';
-import { IStackRow } from '../StacksList';
+import { IStackRow } from '../../Pages/Tabs/StacksTab';
 
 interface Props {
 	stacks?: IStackRow[];
@@ -25,6 +25,16 @@ const DeleteDialog = (props: Props) => {
 	const [deleteFile, fileDeleteResult] = useMutation(DELETE_FILE);
 
 	const loading = stackDeleteResult.loading || fileDeleteResult.loading;
+
+	const objectType = props.stacks
+		? props.stacks.length > 1
+			? 'stacks'
+			: 'stack'
+		: props.files
+		? props.files.length > 1
+			? 'files'
+			: 'file'
+		: '';
 
 	const onSubmit = () => {
 		if (props.stacks) {
@@ -54,14 +64,10 @@ const DeleteDialog = (props: Props) => {
 			hidden={!props.visible}
 			onDismiss={() => props.setVisible(false)}
 			type={DialogType.normal}
-			title={`Delete ${props.stacks ? 'stack' : 'file'}${
-				(props.stacks && props.stacks?.length > 1) ||
-				(props.files && props.files?.length > 1 && 's')
-			}`}
+			title={`Delete ${objectType}`}
 		>
 			<Text>
-				Are you sure you want to delete the selected{' '}
-				{props.stacks ? 'stacks' : 'files'}?
+				Are you sure you want to delete the selected {objectType}?
 			</Text>
 			<Spacer />
 			<DialogFooter>

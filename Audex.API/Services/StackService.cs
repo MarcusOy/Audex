@@ -9,6 +9,7 @@ using Audex.API.Helpers;
 using Audex.API.Models.Auth;
 using Audex.API.Models.Stacks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -95,19 +96,19 @@ namespace Audex.API.Services
 
         public async Task<Stack> Ensure(Guid stackId, List<Guid> fileIds)
         {
+            var userid = new Guid(_context.HttpContext.User.Claims
+                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
             var stack = _dbContext.Stack
+                .Include(s => s.Files)
                 .Where(s => s.DeletedOn == null)
-                .Where(s => s.OwnerUserId == new Guid(_context.HttpContext.User.Claims
-                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value))
+                .Where(s => s.OwnerUserId == userid)
                 .FirstOrDefault(s => s.Id == stackId);
 
             if (stack is null)
                 throw new InvalidOperationException("Invalid stack id.");
 
-            stack.Files = stack.Files
-                .Intersect(_dbContext.FileNodes
-                    .Where(fn => fileIds.Contains(fn.Id)))
-                .ToList();
+            stack.Files = _dbContext.FileNodes
+                .Where(fn => fileIds.Contains(fn.Id)).ToList();
             await _dbContext.SaveChangesAsync();
             PersistFileNodes(stack.Files);
 

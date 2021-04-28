@@ -26,7 +26,7 @@ export interface AudexStore {
 	Upload: {
 		Files: File[];
 		FileUnits: IFileUnit[];
-		CurrentStackContext: string;
+		CurrentStackContext?: string;
 	};
 }
 
@@ -78,7 +78,7 @@ const initialState: AudexStore = {
 	Upload: {
 		Files: [],
 		FileUnits: [],
-		CurrentStackContext: '',
+		CurrentStackContext: undefined,
 	},
 };
 

@@ -37,8 +37,6 @@ class FileService {
 						};
 					})
 				);
-			console.log(f);
-			console.log(fu);
 			s.Upload.FileUnits = fu;
 			s.Upload.Files = f;
 		});
@@ -67,6 +65,13 @@ class FileService {
 			s.Upload.FileUnits = DataStore.getRawState().Upload.FileUnits.filter(
 				(_, index) => i != index
 			);
+		});
+	}
+	static removeAllFiles(): void {
+		DataStore.update((s) => {
+			s.Upload.FileUnits = [];
+			s.Upload.Files = [];
+			s.Upload.CurrentStackContext = undefined;
 		});
 	}
 }

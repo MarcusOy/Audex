@@ -14,7 +14,7 @@ import {
 	Text,
 	Image,
 } from '@fluentui/react';
-import { IStackRow, makeStackName } from '../StacksList';
+import { IStackRow, makeStackName } from '../../Pages/Tabs/StacksTab';
 import { useStoreState } from 'pullstate';
 import React, { useEffect, useState } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
@@ -27,6 +27,7 @@ import DetailedList from '../DetailedList';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import { GET_STACK } from '../../Data/Queries';
 import fileSize from 'filesize';
+import FileIcon from '../Icons/FileIcon';
 
 export interface IStackPanel extends IModal {
 	stackId: string;
@@ -75,13 +76,7 @@ const fileColumns: IColumn[] = [
 		minWidth: 20,
 		maxWidth: 20,
 		onRender: (item: IFileRow) => {
-			return (
-				<img
-					src={item.iconName}
-					className={ListClassNames.fileIconImg}
-					alt={item.fileType + ' file icon'}
-				/>
-			);
+			return <FileIcon sm extension={item.fileType} />;
 		},
 	},
 	{

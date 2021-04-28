@@ -2,12 +2,20 @@ import React, { useEffect } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { useMutation } from '@apollo/client';
 import { useResettableMutation } from 'apollo-hooks-extended';
-import { MessageBar, MessageBarType, Stack } from '@fluentui/react';
+import {
+	DefaultButton,
+	IMessageBarProps,
+	MessageBar,
+	MessageBarType,
+	Stack,
+} from '@fluentui/react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import { CREATE_STACK, ENSURE_STACK } from '../../Data/Mutations';
 import Spacer from '../Spacer';
 import FileUnit from '../Uploading/FileUnit';
 import faker from 'faker';
+import { Console } from 'console';
+import FileService from '../../Data/Services/FileService';
 
 const UploadToast = () => {
 	const [createStack, createResponse] = useResettableMutation(CREATE_STACK);
@@ -19,52 +27,69 @@ const UploadToast = () => {
 	const isDoneUploading =
 		uploadState.Files.length > 0
 			? uploadState.FileUnits.filter(
-					(f) => !f.success && f.uid == undefined
+					(f) => !f.success || f.uid == undefined
 			  ).length <= 0
 			: false;
-	const isStackCreated = uploadState.CurrentStackContext != '';
-
-	// Set stack context so that user can perform actions on the stack
-	useEffect(() => {
-		if (createResponse.data)
-			DataStore.update((s) => {
-				s.Upload.CurrentStackContext = createResponse.data.id;
-			});
-	}, [createResponse.data]);
+	const isStackCreated = uploadState.CurrentStackContext != undefined;
 
 	// Determine if to create stack or add to stack when files are added
 	useEffect(() => {
-		// if (isDoneUploading) {
-		// 	if (isStackCreated) {
-		// 		ensureStack({
-		// 			variables: {
-		// 				stackId: uploadState.CurrentStackContext,
-		// 				fileIds: uploadState.Files.map((f) => f.uid),
-		// 			},
-		// 		});
-		// 		return;
-		// 	}
-		// 	createStack({
-		// 		variables: {
-		// 			fileIds: uploadState.Files.map((f) => f.uid),
-		// 		},
-		// 	});
-		// }
-	}, [uploadState.Files]);
+		if (uploadState.FileUnits.length > 0) {
+			if (isDoneUploading) {
+				if (isStackCreated) {
+					// Add file node ids to current stack context
+					ensureStack({
+						variables: {
+							stackId: uploadState.CurrentStackContext,
+							fileIds: uploadState.FileUnits.map((f) => f.uid),
+						},
+					}).then((r) => {
+						console.log(
+							`Stack ensured: ${r.data.ensureInStack.id}`
+						);
+					});
+					return;
+				}
+				createStack({
+					variables: {
+						fileIds: uploadState.FileUnits.map((f) => f.uid),
+					},
+				}).then((r) => {
+					// Set stack context so that user can perform actions on the stack
+					console.log(`Stack Created: ${r.data.id}`);
+					DataStore.update((s) => {
+						s.Upload.CurrentStackContext = r.data.createStack.id;
+					});
+				});
+			}
+			return;
+		}
+		FileService.removeAllFiles();
+	}, [uploadState.FileUnits]);
 
-	const toastProps = {
+	const toastProps: IMessageBarProps = {
 		messageBarType:
 			createResponse.error || ensureResponse.error
 				? MessageBarType.error
-				: isStackCreated
+				: isStackCreated && isDoneUploading
 				? MessageBarType.success
 				: MessageBarType.info,
+		onDismiss: () => {
+			FileService.removeAllFiles();
+		},
 		children: (
-			<>
+			<Stack>
 				{createResponse.error || ensureResponse.error ? (
-					<b>Error creating new stack.</b>
+					<span>
+						<b>Error creating new stack.</b>{' '}
+						{createResponse.error?.message}
+						{ensureResponse.error?.message}
+					</span>
 				) : isStackCreated ? (
-					<b>Stack created.</b>
+					<span>
+						<b>Stack created.</b> To add more files to this stack,
+						keep dropping files.
+					</span>
 				) : (
 					<b>Creating new stack from dropped files...</b>
 				)}
@@ -80,10 +105,30 @@ const UploadToast = () => {
 						);
 					})}
 				</div>
-			</>
+				<Spacer />
+				<Stack horizontal>
+					{isStackCreated ? (
+						<>
+							<Stack.Item grow>
+								<DefaultButton
+									text='Transfer'
+									iconProps={{ iconName: 'Send' }}
+								/>
+							</Stack.Item>
+							<Stack.Item grow>
+								<DefaultButton
+									text='Share'
+									iconProps={{ iconName: 'Share' }}
+								/>
+							</Stack.Item>
+						</>
+					) : (
+						<></>
+					)}
+				</Stack>
+			</Stack>
 		),
 	};
-	console.log(uploadState);
 	return (
 		<>
 			{isToastShowing ? (

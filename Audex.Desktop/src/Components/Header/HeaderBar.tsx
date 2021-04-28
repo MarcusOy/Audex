@@ -39,7 +39,7 @@ const HeaderBar = () => {
 					// marginBottom: 20,
 					paddingTop: 20,
 					paddingBottom: 10,
-					borderBottom: '1px solid rgb(243, 242, 241)',
+					// borderBottom: '1px solid rgb(243, 242, 241)',
 					position: 'sticky',
 					WebkitUserSelect: 'none',
 					// eslint-disable-next-line @typescript-eslint/ban-ts-comment

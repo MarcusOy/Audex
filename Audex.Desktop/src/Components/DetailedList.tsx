@@ -16,6 +16,7 @@ export const ListClassNames = mergeStyleSets({
 	},
 	fileIconCell: {
 		textAlign: 'center',
+		overflow: 'visible !important',
 		selectors: {
 			'&:before': {
 				content: '.',

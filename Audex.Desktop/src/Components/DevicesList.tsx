@@ -41,13 +41,6 @@ const list = [
 		img: 'https://img.icons8.com/material/344/ffffff/mac-client.png',
 		color: '#000000',
 	},
-	// { name: 'item7' },
-	// { name: 'item8' },
-	// { name: 'item9' },
-	// { name: 'item6' },
-	// { name: 'item7' },
-	// { name: 'item8' },
-	// { name: 'item9' },
 ];
 
 const DevicesList = () => {
@@ -55,6 +48,7 @@ const DevicesList = () => {
 		<div
 			style={{
 				backgroundColor: 'rgba(243, 242, 241, 0.2)',
+				borderTop: '1px solid rgb(243, 242, 241)',
 				borderBottom: '1px solid rgb(243, 242, 241)',
 				padding: '10px 0',
 			}}

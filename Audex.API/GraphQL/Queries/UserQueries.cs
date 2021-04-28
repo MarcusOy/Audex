@@ -22,25 +22,24 @@ namespace Audex.API.GraphQL.Queries
                            [Service] AudexDBContext context)
         {
             return context.Users
-                          .Include(u => u.Group)
-                            .ThenInclude(g => g.GroupRoles)
-                            .ThenInclude(gr => gr.Role)
-                          .Select(u => new User
-                          {
-                              Id = u.Id,
-                              Username = u.Username,
-                              // Excluding Password and Salt
-                              Password = "***",
-                              Salt = "***",
-                              CreatedOn = u.CreatedOn,
-                              Active = u.Active,
-                              GroupId = u.GroupId,
-                              Group = u.Group,
-                              Devices = u.Devices
-                          })
-                          .OrderBy(u => u.Id)
-                          .FirstOrDefault(u => u.Id == user.UserId)
-;
+                .Include(u => u.Group)
+                    .ThenInclude(g => g.GroupRoles)
+                    .ThenInclude(gr => gr.Role)
+                .Select(u => new User
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    // Excluding Password and Salt
+                    Password = "***",
+                    Salt = "***",
+                    CreatedOn = u.CreatedOn,
+                    Active = u.Active,
+                    GroupId = u.GroupId,
+                    Group = u.Group,
+                    Devices = u.Devices
+                })
+                .OrderBy(u => u.Id)
+                .FirstOrDefault(u => u.Id == user.UserId);
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]

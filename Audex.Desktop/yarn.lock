@@ -4280,6 +4280,11 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
+classnames@^2.2.6:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
+  integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
+
 clean-css@^4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.3.tgz#507b5de7d97b48ee53d84adb0160ff6216380f78"
@@ -6638,6 +6643,13 @@ flatten@^1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.3.tgz#c1283ac9f27b368abc1e36d1ff7b04501a30356b"
   integrity sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==
+
+fluentui-react-grid@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/fluentui-react-grid/-/fluentui-react-grid-1.0.0.tgz#59e31e9018f433708275f4cd23ca50b47bec5c40"
+  integrity sha512-4opg4r4iTp/+XdqL/iiWHYoDe3FB/XYEuouhjVd/yRDh1ajLyd9rl0ZhVTzzetgplpud4mN0oFGQv+74GcK8Pw==
+  dependencies:
+    classnames "^2.2.6"
 
 flush-write-stream@^1.0.0:
   version "1.1.1"

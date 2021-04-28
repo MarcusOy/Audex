@@ -13,7 +13,7 @@ import { RENAME_FILE, RENAME_STACK } from '../../Data/Mutations';
 import { useMutation } from '@apollo/client';
 import Spacer from '../Spacer';
 import { IFileRow } from '../Modals/StackPanel';
-import { IStackRow } from '../StacksList';
+import { IStackRow } from '../../Pages/Tabs/StacksTab';
 
 interface Props {
 	stack?: IStackRow;

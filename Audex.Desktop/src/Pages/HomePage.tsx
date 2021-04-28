@@ -2,11 +2,10 @@ import { Pivot, PivotItem, Label } from '@fluentui/react';
 import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import BackToTop from '../Components/BackToTop';
-import StacksList from '../Components/StacksList';
+import StacksTab from '../Pages/Tabs/StacksTab';
 import MenuBar from '../Components/MenuBar';
-import RecentFiles from '../Components/RecentFiles';
+import DashboardTab from '../Pages/Tabs/DashboardTab';
 import FileDrop from '../Components/Uploading/FileDrop';
-import DevicesList from '../Components/DevicesList';
 
 interface HomePageParams {
 	tab: string;
@@ -23,17 +22,16 @@ const HomePage = () => {
 	return (
 		<>
 			<FileDrop>
-				<DevicesList />
 				<Pivot
 					linkSize={'large'}
 					selectedKey={tab}
 					onLinkClick={onTabClick}
 				>
-					<PivotItem itemKey='Recent' headerText='Recent'>
-						<RecentFiles />
+					<PivotItem itemKey='Dashboard' headerText='Dashboard'>
+						<DashboardTab />
 					</PivotItem>
 					<PivotItem itemKey='Stacks' headerText='Stacks'>
-						<StacksList />
+						<StacksTab />
 					</PivotItem>
 					<PivotItem itemKey='Devices' headerText='Devices'>
 						<MenuBar type='Devices' />

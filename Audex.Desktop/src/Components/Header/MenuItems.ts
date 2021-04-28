@@ -5,15 +5,14 @@ const menuLinkGroups: INavLinkGroup[] = [
 		links: [
 			{
 				name: 'Home',
-				// key: '/home/Recent',
 				links: [
 					{
-						name: 'Recent',
-						key: '/Home/Recent',
+						name: 'Dashboard',
+						key: '/Home/Dashboard',
 					},
 					{
-						name: 'Files',
-						key: '/Home/Files',
+						name: 'Stacks',
+						key: '/Home/Stacks',
 					},
 					{
 						name: 'Devices',
