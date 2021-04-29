@@ -1,5 +1,6 @@
 <div align="center">
-    <img src="./Audex.png">
+    <img src="./img/Logo.png" height="200">
+    <img src="./img/AudexDesktop1.png">
 
     A file storage server with features inspired by Apple's ecosystem.
 </div>
