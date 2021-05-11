@@ -113,14 +113,13 @@ const LoginPage = () => {
 			},
 		})
 			.then((r) => {
-				console.log(r);
 				IdentityService.setUser({
 					...r.data.authenticate,
 					username: data.username,
 				});
 			})
 			.catch((r) => {
-				console.log(r);
+				1 == 1; // god why
 			});
 	const authState = DataStore.useState((s) => s.Authentication);
 	const [authenticate, { loading, error }] = useMutation(AUTHENTICATE);

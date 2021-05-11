@@ -5,6 +5,7 @@ import { Store } from 'pullstate';
 import { IFileUnit } from '../../Components/Uploading/FileUnit';
 import { IServer } from '../Services/ServerService';
 import { IToasts } from '../../Components/Modals/Toasts';
+import { IDownload } from '../Services/DownloadService';
 
 export interface AudexStore {
 	Servers: {
@@ -27,6 +28,10 @@ export interface AudexStore {
 		Files: File[];
 		FileUnits: IFileUnit[];
 		CurrentStackContext?: string;
+	};
+	Download: {
+		Downloads: IDownload[];
+		NewItems: number;
 	};
 }
 
@@ -79,6 +84,10 @@ const initialState: AudexStore = {
 		Files: [],
 		FileUnits: [],
 		CurrentStackContext: undefined,
+	},
+	Download: {
+		Downloads: [],
+		NewItems: 0,
 	},
 };
 
