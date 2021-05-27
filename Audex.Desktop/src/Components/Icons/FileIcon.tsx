@@ -13,18 +13,19 @@ interface IFileIconProps {
 const FileIcon = (props: IFileIconProps) => {
 	const isSizeDefined = props.xs || props.sm || props.lg || props.xl;
 	const className = `file-icon${
-		isSizeDefined &&
-		` file-icon-${
-			props.xs
-				? 'xs'
-				: props.sm
-				? 'sm'
-				: props.lg
-				? 'lg'
-				: props.xl
-				? 'xl'
-				: 'invalid'
-		}`
+		isSizeDefined
+			? ` file-icon-${
+					props.xs
+						? 'xs'
+						: props.sm
+						? 'sm'
+						: props.lg
+						? 'lg'
+						: props.xl
+						? 'xl'
+						: 'invalid'
+			  }`
+			: ''
 	}`;
 	return (
 		<div

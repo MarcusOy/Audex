@@ -6,32 +6,30 @@ import {
 } from '@fluentui/react';
 import faker from 'faker';
 import React from 'react';
+import { getFileExt } from '../../Data/Helpers';
 import { IStackRow } from '../../Pages/Tabs/StacksTab';
 import FileIcon from './FileIcon';
 
 interface IFileIconStackProps {
-	stack: IStackRow;
+	stack?: IStackRow;
+	fileExtensions?: string[];
 }
 
 const FileIconStack = (props: IFileIconStackProps) => {
-	if (!props.stack) return <></>;
+	const exts: string[] | undefined =
+		(props.stack && props.stack.fileIcons) ??
+		props.fileExtensions ??
+		undefined;
+	if (exts == undefined) return <></>;
 	return (
-		<TooltipHost
-			tooltipProps={{
-				onRenderContent: () => (
-					<Text variant='small'>{props.stack.files.join(', ')}</Text>
-				),
-			}}
-			delay={TooltipDelay.zero}
-			directionalHint={DirectionalHint.rightCenter}
-		>
-			{props.stack!.fileIcons.map((i, index) => {
-				const isSingle = props.stack.fileIcons.length == 1;
+		<>
+			{exts.map((i, index) => {
+				const isSingle = exts.length == 1;
 
 				return (
 					<FileIcon
 						xs
-						extension={i.split('.')[i.split('.').length - 1]}
+						extension={getFileExt(i)}
 						key={faker.random.number()}
 						style={{
 							position: 'relative',
@@ -46,7 +44,8 @@ const FileIconStack = (props: IFileIconStackProps) => {
 					/>
 				);
 			})}
-		</TooltipHost>
+		</>
+		// </TooltipHost>
 	);
 };
 

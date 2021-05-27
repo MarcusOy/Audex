@@ -202,7 +202,7 @@ const StackPanel = () => {
 			];
 			setStackDetails(ds);
 		}
-	}, data);
+	}, [data]);
 
 	const numSelected =
 		selection.length > 0 ? `${selection.length} files` : 'stack';

@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const alert = require('alert');
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -9,24 +10,8 @@ const {
 	REACT_DEVELOPER_TOOLS,
 } = require('electron-devtools-installer');
 
-if (isDev()) {
-	try {
-		require('electron-reloader')(module, { watchRenderer: false });
-	} catch {
-		console.log('electron-reloader failed to load.');
-	}
-}
-
+//#region ElectronStartup
 let mainWindow;
-
-// const DownloadManager = require('electron-download-manager');
-// DownloadManager.register({
-// 	downloadFolder: app.getPath('downloads') + '/Audex',
-// });
-
-const electronDl = require('electron-dl');
-electronDl({ directory: app.getPath('downloads') + '/Audex' });
-
 function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: isDev() ? 1200 : 720,
@@ -68,13 +53,25 @@ app.on('activate', () => {
 		createWindow();
 	}
 });
+//#endregion
+
+//#region DevExtensions
+if (isDev()) {
+	try {
+		require('electron-reloader')(module, { watchRenderer: false });
+	} catch {
+		console.log('electron-reloader failed to load.');
+	}
+}
 
 app.whenReady().then(() => {
 	installExtension(REACT_DEVELOPER_TOOLS)
 		.then((name) => console.log(`Added Extension:  ${name}`))
 		.catch((err) => console.log('An error occurred: ', err));
 });
+//#endregion
 
+//#region KeytarHandlers
 ipcMain.handle('keytarGet', async (event, arg) => {
 	const { keytar } = require('keytar');
 	console.log(keytar);
@@ -90,38 +87,67 @@ ipcMain.handle('keytarSet', async (event, arg) => {
 	console.log(`Using keytar to store "${arg.key}"...`);
 	await keytar.setPasssword('audex', arg.key, arg.value);
 });
+//#endregion
+
+//#region DownloadHandlers
+const electronDl = require('electron-dl');
+electronDl({ directory: app.getPath('downloads') + '/Audex' });
 
 ipcMain.handle('download', async (event, { key, urls }) => {
-	let folderDir = app.getPath('downloads') + `/Audex/${key}`;
+	let downloadGroupId = require('faker').random.alphaNumeric(10);
+	let folderDir = platformPath(app.getPath('downloads') + `/Audex/${key}`);
+	let ogDir = folderDir;
+
+	let dupCount = 0;
+	while (fs.existsSync(folderDir)) {
+		dupCount++;
+		folderDir = `${ogDir} (${dupCount})`;
+	}
+
 	if (!fs.existsSync(folderDir)) fs.mkdirSync(folderDir);
 
 	Array.from(urls).map((url, index) => {
+		let savePath = ''; // For use in progress event
 		setTimeout(() => {
 			electronDl.download(mainWindow, url, {
 				directory: folderDir,
 				onStarted: (i) => {
+					savePath = i.getSavePath();
 					event.sender.send(`download-started`, {
 						item: {
+							groupId: downloadGroupId,
+							groupName: key,
 							path: i.getSavePath(),
 							size: i.getTotalBytes(),
 						},
 					});
 				},
 				onProgress: (p) => {
-					event.sender.send(`download-${key}-progress`, {
-						progress: p,
+					event.sender.send(`download-progress`, {
+						progress: {
+							...p,
+							groupId: downloadGroupId,
+							groupName: key,
+							path: savePath,
+						},
 					});
 				},
 				onCancel: (i) => {
 					event.sender.send(`download-canceled`, {
 						item: {
+							groupId: downloadGroupId,
+							groupName: key,
 							path: i.getSavePath(),
 							size: i.getTotalBytes(),
 						},
 					});
 				},
 				onCompleted: (f) => {
-					event.sender.send(`download-completed`, { file: f });
+					event.sender.send(`download-completed`, {
+						groupId: downloadGroupId,
+						groupName: key,
+						file: f,
+					});
 				},
 			});
 		}, 500 * index);
@@ -130,12 +156,40 @@ ipcMain.handle('download', async (event, { key, urls }) => {
 
 ipcMain.handle('open-downloads-folder', async (event, _) => {
 	const openExplorer = require('open-file-explorer');
-	let folderDir = app.getPath('downloads') + `/Audex/`;
-	if (!fs.existsSync(folderDir)) await fs.mkdir(folderDir);
+	let folderDir = platformPath(app.getPath('downloads') + `/Audex/`);
+	if (!fs.existsSync(folderDir)) fs.mkdirSync(folderDir);
 
 	openExplorer(folderDir, (err) => {
 		if (err) {
-			console.log(err);
+			alert(err);
+		} else {
+			//Do Something
+		}
+	});
+});
+
+ipcMain.handle('show-download', async (event, { path }) => {
+	const openExplorer = require('open-file-explorer');
+	let downloadPath = platformPath(path);
+
+	openExplorer(downloadPath, (err) => {
+		if (err) {
+			alert(err);
+		} else {
+			//Do Something
+		}
+	});
+});
+
+ipcMain.handle('show-download-in-folder', async (event, { path }) => {
+	const openExplorer = require('open-file-explorer');
+	let fullPath = normalizePath(path).split('/');
+	fullPath.pop();
+	let folderPath = platformPath(fullPath.join('/'));
+
+	openExplorer(folderPath, (err) => {
+		if (err) {
+			alert(err);
 		} else {
 			//Do Something
 		}
@@ -145,3 +199,39 @@ ipcMain.handle('open-downloads-folder', async (event, _) => {
 function isDev() {
 	return process.argv[2] == '--dev';
 }
+//#endregion
+
+//#region PlatformFunctions
+const os = require('os');
+const platforms = {
+	WINDOWS: 'WINDOWS',
+	MAC: 'MAC',
+	LINUX: 'LINUX',
+	SUN: 'SUN',
+	OPENBSD: 'OPENBSD',
+	ANDROID: 'ANDROID',
+	AIX: 'AIX',
+};
+
+const platformsNames = {
+	win32: platforms.WINDOWS,
+	darwin: platforms.MAC,
+	linux: platforms.LINUX,
+	sunos: platforms.SUN,
+	openbsd: platforms.OPENBSD,
+	android: platforms.ANDROID,
+	aix: platforms.AIX,
+};
+
+const currentPlatform = platformsNames[os.platform()];
+
+function platformPath(path) {
+	if (currentPlatform == platformsNames.win32)
+		return path.replaceAll('/', '\\');
+
+	return path.replaceAll('\\', '/');
+}
+function normalizePath(path) {
+	return path.replaceAll('\\', '/');
+}
+//#endregion

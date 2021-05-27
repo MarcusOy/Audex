@@ -23,6 +23,7 @@ namespace Audex.API.Data
         public DbSet<Stack> Stack { get; set; }
         public DbSet<StackCategory> StackCategory { get; set; }
         public DbSet<FileNode> FileNodes { get; set; }
+        public DbSet<DownloadToken> DownloadTokens { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Share> Shares { get; set; }
         public DbSet<Activity> Activity { get; set; }
@@ -140,6 +141,26 @@ namespace Audex.API.Data
     //     public int FileTypeId { get; set; }
     //     public FileType FileType { get; set; }
     // }
+
+    public class DownloadToken : BaseEntity
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public int NumberOfUses { get; set; }
+        [Required]
+        public int MaxNumberOfUses { get; set; }
+        public DateTime? ExpiresOn { get; set; }
+
+        // FileNode relationship
+        public Guid FileNodeId { get; set; }
+        public FileNode FileNode { get; set; }
+
+        // User relationship
+        public Guid? ForUserId { get; set; } // if null, token is public
+        public User ForUser { get; set; }
+
+    }
 
     public class Transfer : BaseEntity
     {

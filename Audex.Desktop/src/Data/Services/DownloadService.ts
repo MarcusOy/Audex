@@ -4,42 +4,77 @@ import { DataStore } from '../DataStore/DataStore';
 
 export interface IDownload {
 	fileName: string;
+	size: number;
+	progress: number;
+	isDownloaded: boolean;
+	isCanceled: boolean;
+	startedOn: Date;
+	groupId: string;
+	groupName: string;
 }
 
 class DownloadService {
-	static downloadFiles(fileIds: string[]): void {
-		const key = faker.random.alphaNumeric(10);
-		const links = [
-			'https://i.imgur.com/xineeuw.jpg',
-			'https://i.imgur.com/RguiWa6.jpg',
-			'https://i.imgur.com/JR4Z0aD.jpg',
-			'https://i.imgur.com/ccvEJO1.jpg',
-			'https://i.imgur.com/yqZoShd.jpg',
-		];
+	static isInit: boolean;
+
+	static init(): void {
+		if (this.isInit) return;
 
 		ipcRenderer.on(`download-started`, (_: any, { item }: any) => {
-			if (item) console.log(item);
+			if (item)
+				DataStore.update((s) => {
+					s.Download.Downloads.set(item.path, {
+						fileName: item.path,
+						size: item.size,
+						progress: 0,
+						isDownloaded: false,
+						isCanceled: false,
+						startedOn: new Date(),
+						groupId: item.groupId,
+						groupName: item.groupName,
+					});
+				});
 		});
-		ipcRenderer.on(
-			`download-${key}-progress`,
-			(_: any, { progress }: any) => {
-				if (progress) console.log(progress);
-			}
-		);
+		ipcRenderer.on(`download-progress`, (_: any, { progress }: any) => {
+			if (progress && progress.percent)
+				DataStore.update((s) => {
+					s.Download.Downloads.get(progress.path)!.progress =
+						progress.percent;
+				});
+		});
 		ipcRenderer.on(`download-canceled`, (_: any, { item }: any) => {
-			if (item) console.log(item);
+			if (item)
+				DataStore.update((s) => {
+					s.Download.Downloads.get(item.path)!.isCanceled = true;
+				});
 		});
 		ipcRenderer.on(`download-completed`, (_: any, { file }: any) => {
-			if (file) console.log(file);
+			if (file)
+				DataStore.update((s) => {
+					s.Download.Downloads.get(file.path)!.isDownloaded = true;
+				});
 		});
-		ipcRenderer.invoke('download', { key: key, urls: links });
+		this.isInit = true;
+	}
+
+	static downloadFiles(downloadTokens: string[], groupName?: string): void {
+		this.init();
+
+		const selectedServer = DataStore.getRawState().Servers.serverList.get(
+			DataStore.getRawState().Servers.selectedServerHostname
+		)!;
+		const uri = `${selectedServer.prefix}${selectedServer.hostName}${selectedServer.downloadEndpoint}`;
+		const links = downloadTokens.map((t) => {
+			return `${uri}/${t}`;
+		});
+
+		console.log(links);
+
+		ipcRenderer.invoke('download', { key: groupName, urls: links });
 
 		DataStore.update((d) => {
 			d.Download.NewItems = d.Download.NewItems + links.length;
 		});
 	}
-
-	// static downloadStacks(stackIds: string[]): void {}
 
 	static dismissNewItems(): void {
 		DataStore.update((d) => {
@@ -47,8 +82,21 @@ class DownloadService {
 		});
 	}
 
+	static clearSessionDownloads(): void {
+		DataStore.update((s) => {
+			s.Download.Downloads.clear();
+		});
+	}
+
 	static openDownloadsFolder(): void {
 		ipcRenderer.invoke('open-downloads-folder', {});
+	}
+
+	static showDownload(path: string): void {
+		ipcRenderer.invoke('show-download', { path });
+	}
+	static showDownloadInFolder(path: string): void {
+		ipcRenderer.invoke('show-download-in-folder', { path });
 	}
 }
 

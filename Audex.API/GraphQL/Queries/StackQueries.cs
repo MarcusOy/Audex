@@ -16,7 +16,7 @@ namespace Audex.API.GraphQL.Queries
     {
         [Authorize, UsePaging, UseFiltering, UseSorting]
         public IQueryable<Stack> GetStacks([CurrentUserGlobalState] CurrentUser user,
-                                            [Service] AudexDBContext context)
+                                           [Service] AudexDBContext context)
         {
             return context.Stack
                 .Where(s => s.OwnerUserId == user.UserId)

@@ -12,15 +12,23 @@ import {
 	Image,
 	PrimaryButton,
 	IButtonProps,
+	FontIcon,
+	SpinnerSize,
 } from '@fluentui/react';
 import { formatDistance } from 'date-fns';
 import ModalService from '../../Data/Services/ModalService';
 import DetailedList, { ListClassNames } from '../../Components/DetailedList';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
-import { CREATE_STARTER_STACK } from '../../Data/Mutations';
+import {
+	CREATE_STARTER_STACK,
+	GET_DOWNLOAD_TOKENS_FOR_STACK,
+} from '../../Data/Mutations';
 import { GET_STACKS } from '../../Data/Queries';
 import fileSize from 'filesize';
-import ToastService, { TestBlocked } from '../../Data/Services/ToastService';
+import ToastService, {
+	ErrorToast,
+	TestBlocked,
+} from '../../Data/Services/ToastService';
 import RenameDialog from '../../Components/Dialogs/RenameDialog';
 import DeleteDialog from '../../Components/Dialogs/DeleteDialog';
 import { ON_STACKS_UPDATE } from '../../Data/Subscriptions';
@@ -210,6 +218,32 @@ const StacksTab = () => {
 		}
 	}, [data]);
 
+	const [getDownloadTokens, getDownloadTokensResponse] = useMutation(
+		GET_DOWNLOAD_TOKENS_FOR_STACK
+	);
+
+	const getDownloadTokensHandler = () => {
+		getDownloadTokens({
+			variables: {
+				stackId: selectedStacks[0].key,
+			},
+		})
+			.then((r) => {
+				const urls = (r.data.downloadTokensForStack as Array<any>).map(
+					(t) => t.id
+				);
+				DownloadService.downloadFiles(urls, selectedStacks[0].name);
+			})
+			.catch((e: Error) => {
+				ToastService.push(
+					ErrorToast(
+						`An error occurred while trying to download: ${e.message}`
+					),
+					4
+				);
+			});
+	};
+
 	const menuItems: ICommandBarItemProps[] = [
 		{
 			key: 'new',
@@ -239,8 +273,14 @@ const StacksTab = () => {
 			key: 'download',
 			text: `Download ${numSelected}`,
 			iconProps: { iconName: 'Download' },
-			onClick: () => DownloadService.downloadFiles([]),
-			disabled: selectedStacks.length == 0,
+			onRenderIcon: getDownloadTokensResponse.loading
+				? () => {
+						return <Spinner size={SpinnerSize.small} />;
+				  }
+				: undefined,
+			onClick: getDownloadTokensHandler,
+			disabled:
+				getDownloadTokensResponse.loading || selectedStacks.length == 0,
 			split: true,
 			subMenuProps: {
 				items: [

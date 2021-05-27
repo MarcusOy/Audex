@@ -30,7 +30,7 @@ export interface AudexStore {
 		CurrentStackContext?: string;
 	};
 	Download: {
-		Downloads: IDownload[];
+		Downloads: Map<string, IDownload>;
 		NewItems: number;
 	};
 }
@@ -40,6 +40,7 @@ const devServer: IServer = {
 	hostName: 'localhost:5000',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
+	downloadEndpoint: '/api/v1/Download',
 	isOfficial: false,
 	isOnline: true,
 };
@@ -48,6 +49,7 @@ const officialServer: IServer = {
 	hostName: 'audex.app',
 	apiVersion: 'v1',
 	apiEndpoint: '/api/v1/graphql',
+	downloadEndpoint: '/api/v1/Download',
 	isOfficial: true,
 	isOnline: false,
 };
@@ -66,7 +68,7 @@ const initialState: AudexStore = {
 		username: '',
 		accessToken: '',
 		refreshToken: '',
-		deviceId: '5d968e2c-c9b3-46e9-8a08-0fd8cad237fd', //TODO: generate DeviceId on first launch
+		deviceId: 'f9422a10-b26d-4ecc-9b36-8f8a1d8554c6', //TODO: generate DeviceId on first launch
 	},
 	Modals: {
 		Toasts: {
@@ -86,7 +88,7 @@ const initialState: AudexStore = {
 		CurrentStackContext: undefined,
 	},
 	Download: {
-		Downloads: [],
+		Downloads: new Map(),
 		NewItems: 0,
 	},
 };

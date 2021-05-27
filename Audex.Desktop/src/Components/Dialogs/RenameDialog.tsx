@@ -56,7 +56,7 @@ const RenameDialog = (props: Props) => {
 		<Dialog
 			hidden={!props.visible}
 			onDismiss={() => props.setVisible(false)}
-			type={DialogType.normal}
+			dialogContentProps={{ type: DialogType.normal }}
 			title={`Rename ${props.stack ? 'stack' : 'file'}`}
 		>
 			<Text>

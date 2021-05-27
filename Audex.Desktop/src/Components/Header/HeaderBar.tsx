@@ -28,12 +28,12 @@ const HeaderBar = () => {
 	const { pathname } = useLocation();
 	const history = useHistory();
 
-	const {
-		size,
-		orientation,
-		screenIsAtLeast,
-		screenIsAtMost,
-	} = useResponsive();
+	// const {
+	// 	size,
+	// 	orientation,
+	// 	screenIsAtLeast,
+	// 	screenIsAtMost,
+	// } = useResponsive();
 
 	return (
 		<Stack>

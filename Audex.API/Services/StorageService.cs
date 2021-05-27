@@ -7,8 +7,10 @@ using Audex.API.Helpers;
 using Audex.API.Models.Stacks;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeTypes;
 
 namespace Audex.API.Services
 {
@@ -16,15 +18,13 @@ namespace Audex.API.Services
     {
         Task<FileNode> AddFile(FileNode fileNode, IFormFile uploadedFile);
         Task<FileNode> AddFile(FileNode fileNode, FileInfo file);
-
         Task<FileNode> PersistFile(FileNode file);
 
         bool TempFileExists(FileNode file);
         bool FileExists(FileNode file);
-
-        Task<string> FileDownloadLink(FileNode file);
-
         void DeleteFile(FileNode file);
+
+        Task<IActionResult> ServeFile(DownloadToken downloadToken);
     }
 
     public class LocalStorageService : IStorageService
@@ -105,15 +105,37 @@ namespace Audex.API.Services
             return file;
         }
 
-        public Task<string> FileDownloadLink(FileNode file)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public void DeleteFile(FileNode file)
         {
             throw new System.NotImplementedException();
         }
+
+        public async Task<IActionResult> ServeFile(DownloadToken downloadToken)
+        {
+            try
+            {
+                var filePath = GetFileInfoInPersistent(downloadToken.FileNode).FullName;
+
+                FileStream fs = File.Open(filePath, FileMode.Open);
+                string mimetype = MimeTypeMap.GetMimeType(downloadToken.FileNode.FileExtension);
+                return new FileStreamResult(fs, mimetype)
+                {
+                    FileDownloadName = downloadToken.FileNode.Name,
+                    LastModified = DateTime.UtcNow
+                };
+            }
+            catch (Exception e)
+            {
+                return new BadRequestObjectResult($"Something happened while retrieving your file. {e.Message}");
+            }
+            finally
+            {
+                downloadToken.NumberOfUses++;
+                _dbContext.DownloadTokens.Update(downloadToken);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
 
         private FileInfo GetFileInfoInPersistent(FileNode file)
         {

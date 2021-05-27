@@ -85,3 +85,11 @@ export const DELETE_FILE = gql`
 		}
 	}
 `;
+
+export const GET_DOWNLOAD_TOKENS_FOR_STACK = gql`
+	mutation($stackId: Uuid!) {
+		downloadTokensForStack(stackId: $stackId) {
+			id
+		}
+	}
+`;
