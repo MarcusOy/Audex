@@ -10,7 +10,7 @@
 
 # Introduction
 
-This project is a work-in-progress. Check back later.
+This project is a work-in-progress. Active development is underway under the `dev` branch. Check back later. 
 
 # Table of Contents
 
