@@ -64,6 +64,7 @@ const DevicesList = () => {
 				arrowRight={
 					<IconButton iconProps={{ iconName: 'ChevronRightMed' }} />
 				}
+				wrapperStyle={{ flexGrow: 1 }}
 				hideArrows={true}
 				hideSingleArrow={true}
 				data={list.map((i) => (

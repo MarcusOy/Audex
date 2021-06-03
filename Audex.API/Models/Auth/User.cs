@@ -17,6 +17,7 @@ namespace Audex.API.Models.Auth
         public string Salt { get; set; }
         // [Required] // TODO: reactivate this when encryption is implemented
         public string PublicKey { get; set; }
+        public string TwoFactorKey { get; set; }
         [Required]
         public Boolean Active { get; set; }
 

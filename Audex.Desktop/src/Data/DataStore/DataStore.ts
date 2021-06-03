@@ -68,7 +68,7 @@ const initialState: AudexStore = {
 		username: '',
 		accessToken: '',
 		refreshToken: '',
-		deviceId: 'f9422a10-b26d-4ecc-9b36-8f8a1d8554c6', //TODO: generate DeviceId on first launch
+		deviceId: '',
 	},
 	Modals: {
 		Toasts: {

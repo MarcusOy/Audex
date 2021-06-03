@@ -62,8 +62,6 @@ const DownloadManager = () => {
 		)
 	);
 
-	console.log(downloadGroups);
-
 	return (
 		<>
 			<IconButton

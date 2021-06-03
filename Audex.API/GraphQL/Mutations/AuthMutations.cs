@@ -10,10 +10,14 @@ namespace Audex.API.GraphQL.Mutations
     [ExtendObjectType("Mutation")]
     public class AuthMutations
     {
-        public async Task<GetTokenResponse> Authenticate(string username, string password, string device, [Service] IIdentityService identityService)
+        public async Task<GetTokenResponse> Authenticate(string username,
+                                                         string password,
+                                                         string device,
+                                                         string code,
+                                                         [Service] IIdentityService identityService)
         {
             Thread.Sleep(1000);
-            var tokens = await identityService.Authenticate(username, password, device);
+            var tokens = await identityService.Authenticate(username, password, device, code);
             return new GetTokenResponse
             {
                 AuthToken = tokens.AuthToken,
@@ -21,7 +25,8 @@ namespace Audex.API.GraphQL.Mutations
             };
         }
 
-        public async Task<GetTokenResponse> Reauthenticate(string token, [Service] IIdentityService identityService)
+        public async Task<GetTokenResponse> Reauthenticate(string token,
+                                                           [Service] IIdentityService identityService)
         {
             Thread.Sleep(1000);
             var tokens = await identityService.Reauthenticate(token);

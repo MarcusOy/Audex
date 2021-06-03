@@ -24,9 +24,9 @@ namespace Audex.API.Data
         public DbSet<StackCategory> StackCategory { get; set; }
         public DbSet<FileNode> FileNodes { get; set; }
         public DbSet<DownloadToken> DownloadTokens { get; set; }
-        public DbSet<Transfer> Transfers { get; set; }
+        // public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Share> Shares { get; set; }
-        public DbSet<Activity> Activity { get; set; }
+        // public DbSet<Activity> Activity { get; set; }
         // public DbSet<FileType> FilesTypes { get; set; }
         // public DbSet<FileExtension> FileExtensions { get; set; }
 
@@ -162,33 +162,33 @@ namespace Audex.API.Data
 
     }
 
-    public class Transfer : BaseEntity
-    {
-        [Required]
-        public Guid Id { get; set; }
+    // public class Transfer : BaseEntity
+    // {
+    //     [Required]
+    //     public Guid Id { get; set; }
 
-        public DateTime? ExpiryDate { get; set; }
-        public bool IsFullfilled { get; set; }
+    //     public DateTime? ExpiryDate { get; set; }
+    //     public bool IsFullfilled { get; set; }
 
-        // FileNode Relationship
-        [Required]
-        public Guid FileNodeId { get; set; }
-        public FileNode FileNode { get; set; }
+    //     // FileNode Relationship
+    //     [Required]
+    //     public Guid FileNodeId { get; set; }
+    //     public FileNode FileNode { get; set; }
 
-        // Device Relationship
-        [Required]
-        public Guid SenderDeviceId { get; set; }
-        public Device SenderDevice { get; set; }
-        public Guid? ReceivingDeviceId { get; set; }
-        public Device ReceivingrDevice { get; set; }
+    //     // Device Relationship
+    //     [Required]
+    //     public Guid SenderDeviceId { get; set; }
+    //     public Device SenderDevice { get; set; }
+    //     public Guid? ReceivingDeviceId { get; set; }
+    //     public Device ReceivingrDevice { get; set; }
 
-        // User Relationship
-        [Required]
-        public Guid SenderUserId { get; set; }
-        public User SenderUser { get; set; }
-        public Guid? ReceivingUserId { get; set; }
-        public User ReceivingUser { get; set; }
-    }
+    //     // User Relationship
+    //     [Required]
+    //     public Guid SenderUserId { get; set; }
+    //     public User SenderUser { get; set; }
+    //     public Guid? ReceivingUserId { get; set; }
+    //     public User ReceivingUser { get; set; }
+    // }
 
     public class Share : BaseEntity
     {
@@ -207,27 +207,23 @@ namespace Audex.API.Data
         public FileNode FileNode { get; set; }
     }
 
-    public class Activity : BaseEntity
-    {
-        [Required]
-        public int Id { get; set; }
-        public string Message { get; set; } // Will have placeholders, such as {u}, {u2}, {d}, {f}
+    // public class Activity : BaseEntity
+    // {
+    //     [Required]
+    //     public int Id { get; set; }
+    //     public string Message { get; set; } // Will have placeholders, such as {u}, {u2}, {d}, {f}
 
-        // User Relationship
-        public Guid? UserId { get; set; } // Will be activity originator
-        public User User { get; set; }
-        public Guid? User2Id { get; set; } // Will be optional receipient
-        public User User2 { get; set; }
+    //     // User Relationship
+    //     public Guid? UserId { get; set; } // Will be activity originator
+    //     public User User { get; set; }
+    //     public Guid? User2Id { get; set; } // Will be optional receipient
+    //     public User User2 { get; set; }
 
-        // Device Relationship
-        public Guid? DeviceId { get; set; } // Will be optional device receipient
-        public Device Device { get; set; }
+    //     // FileNode Relationship
+    //     public Guid? FileNodeId { get; set; } // Will be optional file node involved in activity
+    //     public FileNode FileNode { get; set; }
 
-        // FileNode Relationship
-        public Guid? FileNodeId { get; set; } // Will be optional file node involved in activity
-        public FileNode FileNode { get; set; }
-
-    }
+    // }
 
 
 }

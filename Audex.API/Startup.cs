@@ -83,6 +83,7 @@ namespace Audex.API
             });
 
             // Added custom JWT Identity Authentication Service
+            services.AddScoped<ITwoFactorService, TotpTwoFactorService>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.Configure<AudexSettings>(o => Configuration.GetSection("Audex").Bind(o));
             services.AddHttpContextAccessor();

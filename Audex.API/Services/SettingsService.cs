@@ -2,7 +2,8 @@ namespace Audex.API.Services
 {
     public class AudexSettings
     {
-        public string Test { get; set; }
+        public string DisplayName { get; set; }
+        public string DomainName { get; set; }
         public Jwt Jwt { get; set; }
         public FileSystem FileSystem { get; set; }
     }

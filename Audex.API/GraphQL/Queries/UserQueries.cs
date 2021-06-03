@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using HotChocolate.AspNetCore.Authorization;
 using Audex.API.Models.Auth;
 using Audex.API.Data;
+using Audex.API.Services;
 
 namespace Audex.API.GraphQL.Queries
 {
@@ -18,7 +19,7 @@ namespace Audex.API.GraphQL.Queries
     public class UserQueries
     {
         [Authorize]
-        public User WhoAmI([CurrentUserGlobalState] CurrentUser user,
+        public User WhoAmI([Service] IIdentityService identityService,
                            [Service] AudexDBContext context)
         {
             return context.Users
@@ -39,7 +40,7 @@ namespace Audex.API.GraphQL.Queries
                     Devices = u.Devices
                 })
                 .OrderBy(u => u.Id)
-                .FirstOrDefault(u => u.Id == user.UserId);
+                .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id);
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]

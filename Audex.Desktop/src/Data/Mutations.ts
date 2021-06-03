@@ -5,11 +5,13 @@ export const AUTHENTICATE = gql`
 		$username: String
 		$password: String
 		$device: String
+		$code: String
 	) {
 		authenticate(
 			username: $username
 			password: $password
 			device: $device
+			code: $code
 		) {
 			authToken
 			refreshToken
