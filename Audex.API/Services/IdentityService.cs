@@ -158,15 +158,20 @@ namespace Audex.API.Services
                 var deviceId = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId").Value);
                 return _dbContext.Devices
+                    .Where(u => u.Id == CurrentUser.Id)
                     .FirstOrDefault(d => d.Id == deviceId);
             }
         }
 
         private async Task<(string Token, Guid EntityId)> GenerateAuthToken(User user, Device device, string[] roles)
         {
-            var key = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
+            if (user is null)
+                throw new ArgumentNullException("Must pass a user to generate an auth token.");
+            if (device is null)
+                throw new ArgumentNullException("Must pass a device generate an auth token.");
 
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -205,6 +210,11 @@ namespace Audex.API.Services
         }
         private async Task<(string Token, Guid EntityId)> GenerateRefreshToken(User user, Device device)
         {
+            if (user is null)
+                throw new ArgumentNullException("Must pass a user to generate a refresh token.");
+            if (device is null)
+                throw new ArgumentNullException("Must pass a device generate a refresh token.");
+
             using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
             {
                 var randomBytes = new byte[64];

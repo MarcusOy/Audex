@@ -197,7 +197,8 @@ ipcMain.handle('show-download-in-folder', async (event, { path }) => {
 });
 
 function isDev() {
-	return process.argv[2] == '--dev';
+	// return process.argv[2] == '--dev';
+	return true;
 }
 //#endregion
 

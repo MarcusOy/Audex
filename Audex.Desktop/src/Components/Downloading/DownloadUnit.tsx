@@ -14,7 +14,6 @@ import Spacer from '../Spacer';
 import { getFileExt, getFileName } from '../../Data/Helpers';
 
 interface IDownloadUnitProps {
-	key: string;
 	download: IDownload;
 }
 
@@ -30,7 +29,7 @@ const DownloadUnit = (p: IDownloadUnitProps) => {
 	const ext = getFileExt(p.download.fileName);
 
 	return (
-		<Stack key={p.key} horizontal verticalAlign='center'>
+		<Stack horizontal verticalAlign='center'>
 			<div
 				onClick={() => {
 					DownloadService.showDownload(p.download.fileName);

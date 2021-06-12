@@ -7,15 +7,6 @@ import DeviceIcon from './DeviceIcon';
 // list of items
 const list = [
 	{
-		name: 'Add device',
-		img: 'https://img.icons8.com/material/344/ffffff/add-column.png',
-		color: '#46483E',
-		hasOnClick: true,
-		onClick: () => {
-			alert('asdf');
-		},
-	},
-	{
 		name: 'iPhone 6',
 		img: 'https://img.icons8.com/material/344/ffffff/ios-logo.png',
 		color: '#000000',
@@ -40,6 +31,15 @@ const list = [
 		name: 'MacOS',
 		img: 'https://img.icons8.com/material/344/ffffff/mac-client.png',
 		color: '#000000',
+	},
+	{
+		name: 'Add device',
+		img: 'https://img.icons8.com/material/344/ffffff/add-column.png',
+		color: '#46483E',
+		hasOnClick: true,
+		onClick: () => {
+			alert('asdf');
+		},
 	},
 ];
 

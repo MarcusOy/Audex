@@ -314,7 +314,7 @@ const LoginPage = () => {
 					{error && (
 						<MessageBar
 							messageBarType={MessageBarType.error}
-							isMultiline={false}
+							isMultiline
 							// onDismiss={p.resetChoice}
 						>
 							{error.message}

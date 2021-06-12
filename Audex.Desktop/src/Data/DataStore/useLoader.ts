@@ -15,7 +15,8 @@ const useLoader = () => {
 				const u =
 					(await PersistenceService.getUnsecured('username')) ?? '';
 				const d =
-					(await PersistenceService.getSecured('device')) ?? uuidv4();
+					(await PersistenceService.getSecured('device')) ??
+					(await PersistenceService.setSecured('device', uuidv4()));
 				const a = (await PersistenceService.getSecured('auth')) ?? '';
 				const r =
 					(await PersistenceService.getSecured('refresh')) ?? '';

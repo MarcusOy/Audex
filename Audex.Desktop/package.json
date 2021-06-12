@@ -77,7 +77,7 @@
     "build": "rescripts build",
     "test": "rescripts test --env=jsdom",
     "eject": "rescripts eject",
-    "electron": "electron . --dev",
+    "electron": "electron .",
     "electron-start": "node src/Initialization/StartupReact.js",
     "react-start": "cross-env BROWSER=none rescripts start",
     "pack": "build --dir",
