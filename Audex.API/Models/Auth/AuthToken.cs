@@ -26,7 +26,7 @@ namespace Audex.API.Models.Auth
         public User User { get; set; }
 
         // Device relationship
-        public Guid DeviceId { get; set; }
+        public Guid? DeviceId { get; set; }
         public Device Device { get; set; }
 
         // Token relationship

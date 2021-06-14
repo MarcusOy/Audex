@@ -106,20 +106,21 @@ namespace Audex.API.Services
             var roles = new List<string>();
             var hash = SecurityHelpers.GenerateHash(refreshToken);
             var u = _dbContext.Users
-                    .Include(u => u.Group)
-                    .Include(u => u.Group.GroupRoles)
-                        .ThenInclude(gr => gr.Role)
-                    .Include(u => u.Tokens)
-                    .SingleOrDefault(u => u.Tokens
-                        .Any(t => t.Token == hash)
-                    );
+                .Include(u => u.Group)
+                .Include(u => u.Group.GroupRoles)
+                    .ThenInclude(gr => gr.Role)
+                .Include(u => u.Tokens)
+                    .ThenInclude(t => t.Device)
+                .SingleOrDefault(u => u.Tokens
+                    .Any(t => t.Token == hash)
+                );
 
             if (u is null)
                 throw new AuthenticationException("Credential not valid.");
 
             var t = u.Tokens
-                    .Where(t => t.Type == "Refresh")
-                    .SingleOrDefault(t => t.Token == hash);
+                .Where(t => t.Type == "Refresh")
+                .SingleOrDefault(t => t.Token == hash);
 
             if (t is null || !t.IsActive)
                 throw new AuthenticationException("Refresh token not valid.");

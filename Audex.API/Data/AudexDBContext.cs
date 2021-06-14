@@ -36,6 +36,24 @@ namespace Audex.API.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            // Device composite PK and FKs
+            builder.Entity<Device>()
+                .HasKey(d => new { d.Id, d.UserId });
+            builder.Entity<AuthToken>()
+                .HasOne(t => t.Device)
+                .WithMany()
+                .HasForeignKey(t => new { t.DeviceId, t.UserId })
+                .IsRequired(false);
+            builder.Entity<FileNode>()
+                .HasOne(f => f.UploadedByDevice)
+                .WithMany()
+                .HasForeignKey(f => new { f.UploadedByDeviceId, f.OwnerUserId });
+            builder.Entity<Stack>()
+                .HasOne(s => s.UploadedByDevice)
+                .WithMany()
+                .HasForeignKey(s => new { s.UploadedByDeviceId, s.OwnerUserId });
+
+
             builder.HasAudexData();
         }
 

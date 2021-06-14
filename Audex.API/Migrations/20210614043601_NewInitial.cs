@@ -117,12 +117,10 @@ namespace Audex.API.Migrations
                 name: "Devices",
                 columns: table => new
                 {
-                    Index = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
                     Name = table.Column<string>(type: "longtext", nullable: false),
                     NotificationIdentifier = table.Column<string>(type: "longtext", nullable: true),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
                     DeviceTypeId = table.Column<int>(type: "int", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -130,7 +128,7 @@ namespace Audex.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Devices", x => x.Index);
+                    table.PrimaryKey("PK_Devices", x => new { x.Id, x.UserId });
                     table.ForeignKey(
                         name: "FK_Devices_DeviceTypes_DeviceTypeId",
                         column: x => x.DeviceTypeId,
@@ -181,7 +179,6 @@ namespace Audex.API.Migrations
                     RevokedByIP = table.Column<string>(type: "longtext", nullable: true),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false),
                     DeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    DeviceIndex = table.Column<int>(type: "int", nullable: true),
                     ReplacedByTokenId = table.Column<Guid>(type: "char(36)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -197,11 +194,11 @@ namespace Audex.API.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_AuthTokens_Devices_DeviceIndex",
-                        column: x => x.DeviceIndex,
+                        name: "FK_AuthTokens_Devices_DeviceId_UserId",
+                        columns: x => new { x.DeviceId, x.UserId },
                         principalTable: "Devices",
-                        principalColumn: "Index",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AuthTokens_Users_UserId",
                         column: x => x.UserId,
@@ -220,7 +217,6 @@ namespace Audex.API.Migrations
                     StackCategoryId = table.Column<Guid>(type: "char(36)", nullable: true),
                     OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false),
                     UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UploadedByDeviceIndex = table.Column<int>(type: "int", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -229,11 +225,11 @@ namespace Audex.API.Migrations
                 {
                     table.PrimaryKey("PK_Stack", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Stack_Devices_UploadedByDeviceIndex",
-                        column: x => x.UploadedByDeviceIndex,
+                        name: "FK_Stack_Devices_UploadedByDeviceId_OwnerUserId",
+                        columns: x => new { x.UploadedByDeviceId, x.OwnerUserId },
                         principalTable: "Devices",
-                        principalColumn: "Index",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Stack_StackCategory_StackCategoryId",
                         column: x => x.StackCategoryId,
@@ -258,7 +254,6 @@ namespace Audex.API.Migrations
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false),
                     UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UploadedByDeviceIndex = table.Column<int>(type: "int", nullable: true),
                     ParentStackId = table.Column<Guid>(type: "char(36)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -268,11 +263,11 @@ namespace Audex.API.Migrations
                 {
                     table.PrimaryKey("PK_FileNodes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FileNodes_Devices_UploadedByDeviceIndex",
-                        column: x => x.UploadedByDeviceIndex,
+                        name: "FK_FileNodes_Devices_UploadedByDeviceId_OwnerUserId",
+                        columns: x => new { x.UploadedByDeviceId, x.OwnerUserId },
                         principalTable: "Devices",
-                        principalColumn: "Index",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_FileNodes_Stack_ParentStackId",
                         column: x => x.ParentStackId,
@@ -401,9 +396,9 @@ namespace Audex.API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuthTokens_DeviceIndex",
+                name: "IX_AuthTokens_DeviceId_UserId",
                 table: "AuthTokens",
-                column: "DeviceIndex");
+                columns: new[] { "DeviceId", "UserId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuthTokens_ReplacedByTokenId",
@@ -446,9 +441,9 @@ namespace Audex.API.Migrations
                 column: "ParentStackId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FileNodes_UploadedByDeviceIndex",
+                name: "IX_FileNodes_UploadedByDeviceId_OwnerUserId",
                 table: "FileNodes",
-                column: "UploadedByDeviceIndex");
+                columns: new[] { "UploadedByDeviceId", "OwnerUserId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupRoles_GroupId",
@@ -476,9 +471,9 @@ namespace Audex.API.Migrations
                 column: "StackCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Stack_UploadedByDeviceIndex",
+                name: "IX_Stack_UploadedByDeviceId_OwnerUserId",
                 table: "Stack",
-                column: "UploadedByDeviceIndex");
+                columns: new[] { "UploadedByDeviceId", "OwnerUserId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_StackCategory_OwnerUserId",
