@@ -26,6 +26,8 @@ namespace Audex.API.GraphQL.Queries
                 .Include(u => u.Group)
                     .ThenInclude(g => g.GroupRoles)
                     .ThenInclude(gr => gr.Role)
+                .Include(u => u.Devices)
+                    .ThenInclude(d => d.DeviceType)
                 .Select(u => new User
                 {
                     Id = u.Id,
@@ -39,6 +41,7 @@ namespace Audex.API.GraphQL.Queries
                     Group = u.Group,
                     Devices = u.Devices
                 })
+
                 .OrderBy(u => u.Id)
                 .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id);
         }

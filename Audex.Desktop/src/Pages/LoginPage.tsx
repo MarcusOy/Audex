@@ -1,12 +1,10 @@
 import {
 	Checkbox,
-	ComboBox,
 	DefaultButton,
 	Dialog,
 	DialogFooter,
 	DialogType,
 	Dropdown,
-	Icon,
 	IDropdownOption,
 	Label,
 	LayerHost,

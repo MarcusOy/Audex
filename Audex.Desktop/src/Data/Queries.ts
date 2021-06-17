@@ -3,10 +3,21 @@ import { gql } from '@apollo/client';
 export const WHO_AM_I = gql`
 	query {
 		whoAmI {
+			id
 			username
+			devices {
+				id
+				name
+				deviceType {
+					name
+					color
+				}
+				createdOn
+			}
 			group {
 				name
 			}
+			createdOn
 		}
 	}
 `;

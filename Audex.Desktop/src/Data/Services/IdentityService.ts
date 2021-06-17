@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/prefer-namespace-keyword */
-import { DataStore } from '../DataStore/DataStore';
+import { AudexIdentity, AudexStore, DataStore } from '../DataStore/DataStore';
 import PersistenceService from './PersistenceService';
 
 interface UserData {
@@ -21,6 +21,11 @@ class IdentityService {
 		PersistenceService.setSecured('auth', u.authToken);
 		PersistenceService.setSecured('refresh', u.refreshToken);
 	}
+	static setIdentity(i: AudexIdentity | undefined) {
+		DataStore.update((s) => {
+			s.Identity = i;
+		});
+	}
 	static logOut() {
 		DataStore.update((s) => {
 			s.Authentication.accessToken = '';
@@ -29,6 +34,8 @@ class IdentityService {
 		});
 		PersistenceService.setSecured('auth', '');
 		PersistenceService.setSecured('refresh', '');
+
+		this.setIdentity(undefined);
 	}
 }
 

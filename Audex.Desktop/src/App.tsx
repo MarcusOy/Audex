@@ -24,6 +24,7 @@ import useAudexApolloClient from './Hooks/useAudexApolloClient';
 
 import './App.css';
 import ServerService from './Data/Services/ServerService';
+import AuthorizedRoot from './Pages/AuthorizedRoot';
 
 const App = () => {
 	const { isLoading, isError } = useLoader();
@@ -54,20 +55,7 @@ const App = () => {
 						{!state.Authentication.isAuthenticated ? (
 							<LoginPage />
 						) : (
-							<>
-								<HeaderBar />
-								<Switch>
-									<Route path='/' exact>
-										<Redirect to='/Home/Stacks' />
-									</Route>
-
-									<Route path='/Home/:tab'>
-										<HomePage />
-									</Route>
-									<Route path='/Users'></Route>
-									<Route path='/Settings'></Route>
-								</Switch>
-							</>
+							<AuthorizedRoot />
 						)}
 						<Modals />
 					</Router>

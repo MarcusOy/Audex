@@ -19,6 +19,7 @@ export interface AudexStore {
 		refreshToken: string;
 		deviceId: string;
 	};
+	Identity?: AudexIdentity;
 	Modals: {
 		Toasts: IToasts;
 		StackPanel: IStackPanel;
@@ -33,6 +34,24 @@ export interface AudexStore {
 		Downloads: Map<string, IDownload>;
 		NewItems: number;
 	};
+}
+
+export interface AudexIdentity {
+	id: string;
+	username: string;
+	devices: {
+		id: string;
+		name: string;
+		deviceType: {
+			name: string;
+			color: string;
+		};
+		createdOn: Date;
+	}[];
+	group: {
+		name: string;
+	};
+	createdOn: Date;
 }
 
 const devServer: IServer = {
