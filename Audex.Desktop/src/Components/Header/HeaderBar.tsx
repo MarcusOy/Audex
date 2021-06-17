@@ -15,6 +15,9 @@ import LoggedInUser from './LoggedInUser';
 import menuLinkGroups from './MenuItems';
 import useResponsive from '../../Hooks/useResponsive';
 import Logo from './Logo';
+import DownloadManager from '../Downloading/DownloadManager';
+import SearchPanel from './SearchPanel';
+import Spacer from '../Spacer';
 
 const HeaderBar = () => {
 	// Menu Panel
@@ -25,26 +28,31 @@ const HeaderBar = () => {
 	const { pathname } = useLocation();
 	const history = useHistory();
 
-	const {
-		size,
-		orientation,
-		screenIsAtLeast,
-		screenIsAtMost,
-	} = useResponsive();
+	// const {
+	// 	size,
+	// 	orientation,
+	// 	screenIsAtLeast,
+	// 	screenIsAtMost,
+	// } = useResponsive();
 
 	return (
-		<>
-			<Stack
+		<Stack>
+			<div
 				style={{
-					// marginBottom: 20,
-					paddingTop: 20,
-					paddingBottom: 10,
-					// borderBottom: '1px solid rgb(243, 242, 241)',
-					position: 'sticky',
-					WebkitUserSelect: 'none',
+					height: 20,
 					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 					//@ts-ignore
 					WebkitAppRegion: 'drag',
+					WebkitUserSelect: 'none',
+				}}
+			/>
+			<Stack
+				style={{
+					// marginBottom: 20,
+					// paddingTop: 20,
+					paddingBottom: 10,
+					// borderBottom: '1px solid rgb(243, 242, 241)',
+					position: 'sticky',
 					// '-webkit-app-region': 'drag',
 				}}
 				tokens={{ childrenGap: 8 }}
@@ -57,30 +65,22 @@ const HeaderBar = () => {
 					ariaLabel='Menu'
 					onClick={openPanel}
 				/>
-				<Logo />
-				{screenIsAtMost('sm') ? (
-					<div style={{ flexGrow: 1 }} />
-				) : (
-					<div
-						style={{
-							flexGrow: 1,
-							marginLeft: 75,
-							marginRight: 75,
-							justifyContent: 'center',
-						}}
-					>
-						<SearchBox
-							style={{
-								maxWidth: 600,
-							}}
-							placeholder='Search'
-							// underlined
-							onSearch={(newValue) =>
-								console.log('value is ' + newValue)
-							}
-						/>
-					</div>
-				)}
+				<div
+					style={{
+						flexGrow: 1,
+						marginTop: -5,
+						// height: 20,
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						//@ts-ignore
+						WebkitAppRegion: 'drag',
+						WebkitUserSelect: 'none',
+					}}
+				>
+					<Logo />
+				</div>
+				{/* <Spacer grow /> */}
+				<SearchPanel />
+				<DownloadManager />
 				<LoggedInUser />
 			</Stack>
 			<Panel
@@ -102,7 +102,7 @@ const HeaderBar = () => {
 					groups={menuLinkGroups}
 				/>
 			</Panel>
-		</>
+		</Stack>
 	);
 };
 

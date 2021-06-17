@@ -5,11 +5,13 @@ export const AUTHENTICATE = gql`
 		$username: String
 		$password: String
 		$device: String
+		$code: String
 	) {
 		authenticate(
 			username: $username
 			password: $password
 			device: $device
+			code: $code
 		) {
 			authToken
 			refreshToken
@@ -81,6 +83,14 @@ export const DELETE_STACK = gql`
 export const DELETE_FILE = gql`
 	mutation($fileIds: [Uuid!]) {
 		deleteFiles(fileIds: $fileId) {
+			id
+		}
+	}
+`;
+
+export const GET_DOWNLOAD_TOKENS_FOR_STACK = gql`
+	mutation($stackId: Uuid!) {
+		downloadTokensForStack(stackId: $stackId) {
 			id
 		}
 	}

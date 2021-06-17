@@ -6,6 +6,7 @@ class PersistenceService {
 	}
 	static async setUnsecured(key: string, value: string) {
 		await window.localStorage.setItem(key, value);
+		return value;
 	}
 
 	static async getSecured(key: string): Promise<string | null> {
@@ -15,6 +16,7 @@ class PersistenceService {
 	static async setSecured(key: string, value: string) {
 		// await ipcRenderer.invoke('keytarSet', { key, value });
 		await this.setUnsecured(key, value); // TODO: figure out keytar mess
+		return value;
 	}
 }
 

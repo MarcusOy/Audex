@@ -18,6 +18,7 @@ namespace Audex.API.Models.Stacks
         public User OwnerUser { get; set; }
 
         // Device Relationship
+        [Required]
         public Guid UploadedByDeviceId { get; set; }
         public Device UploadedByDevice { get; set; }
 

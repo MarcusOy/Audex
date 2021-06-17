@@ -17,30 +17,33 @@ namespace Audex.API.Services
     }
     public class InitializationService : IInitializationService
     {
-        private readonly AudexDBContext dbContext;
-        private readonly IIdentityService identityService;
-        private readonly ILogger<InitializationService> logger;
-        private readonly IStackService stackService;
+        private readonly AudexDBContext _dbContext;
+        private readonly IIdentityService _identityService;
+        private readonly ITwoFactorService _twoFactorService;
+        private readonly ILogger<InitializationService> _logger;
+        private readonly IStackService _stackService;
         public InitializationService(AudexDBContext dbContext,
                                      IIdentityService identityService,
                                      ILogger<InitializationService> logger,
-                                     IStackService stackService)
+                                     IStackService stackService,
+                                     ITwoFactorService twoFactorService)
         {
-            this.dbContext = dbContext;
-            this.identityService = identityService;
-            this.logger = logger;
-            this.stackService = stackService;
+            this._dbContext = dbContext;
+            this._identityService = identityService;
+            this._logger = logger;
+            this._stackService = stackService;
+            _twoFactorService = twoFactorService;
         }
         public void InitializeDatabase()
         {
             // Database initial data checks
-            using (logger.BeginScope("Audex is checking the configured database..."))
+            using (_logger.BeginScope("Audex is checking the configured database..."))
             {
                 // Apply pending migrations
-                dbContext.Database.Migrate();
+                _dbContext.Database.Migrate();
 
                 // Checking admin account
-                if (dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
+                if (_dbContext.Users.FirstOrDefault(u => u.Username == "admin") == null)
                 {
                     // Adding admin user and saving to get id
                     var un = "admin";
@@ -53,10 +56,10 @@ namespace Audex.API.Services
                         Password = SecurityHelpers.GenerateHashedPassword(p, s.AsBytes),
                         Active = true,
                         Salt = s.AsString,
-                        Group = dbContext.Groups.FirstOrDefault(g => g.Name == "Administrator")
+                        Group = _dbContext.Groups.FirstOrDefault(g => g.Name == "Administrator")
                     };
-                    dbContext.Users.Add(u);
-                    dbContext.SaveChanges();
+                    _dbContext.Users.Add(u);
+                    _dbContext.SaveChanges();
 
                     // Adding a device for the server
                     var d = new Device
@@ -64,25 +67,29 @@ namespace Audex.API.Services
                         Id = Guid.NewGuid(),
                         Name = "Audex Server",
                         User = u,
-                        DeviceType = dbContext.DeviceTypes.FirstOrDefault(d => d.Name == "Audex Server")
+                        DeviceType = _dbContext.DeviceTypes.FirstOrDefault(d => d.Name == "Audex Server")
                     };
-                    dbContext.Devices.Add(d);
-                    dbContext.SaveChanges();
+                    _dbContext.Devices.Add(d);
+                    _dbContext.SaveChanges();
 
                     // Starting Stack (as an example)
-                    stackService.CreateStartingStackAsync(u.Id).Wait();
+                    _stackService.CreateStartingStackAsync(u.Id).Wait();
+                    _twoFactorService.ResetTwoFactorAsync(u);
 
-                    logger.LogInformation($@"
+                    _dbContext.SaveChanges();
+
+                    // Display admin credentials to user
+                    _logger.LogInformation($@"
                         Admin account was not initialized, so a new one has been created.
                         Use the following account to login:
 
                         Username: {un}
                         Password: {p}
                     ");
+                    _twoFactorService.AuthQRToTerminal(u);
 
                 }
 
-                dbContext.SaveChanges();
             }
         }
     }

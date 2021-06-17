@@ -18,20 +18,35 @@ namespace Audex.API.Services
     public interface IStackService
     {
         /// <summary>
-        /// Create a stack from existing FileNodes
+        /// Create a stack from existing FileNodes.
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public Task<Stack> CreateAsync(List<Guid> fileIds);
-        public Task<Stack> CreateAsync(Stack stack, string[] filePaths, Guid? userId = null);
-        public Task<Stack> Ensure(Guid stackId, List<Guid> fileIds);
-        public Task<Stack> CreateStartingStackAsync(Guid userId);
+        Task<Stack> CreateAsync(List<Guid> fileIds);
+        /// <summary>
+        /// Create a stack from files from the filesystem.
+        /// Usually used for creating the starting stack for a user.
+        /// </summary>
+        /// <param name="stack"></param>
+        /// <param name="filePaths"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<Stack> CreateAsync(Stack stack, string[] filePaths, Guid? userId = null);
+        /// <summary>
+        /// Makes sure that the fileIds passed are inside the
+        /// specified stack.
+        /// </summary>
+        /// <param name="stackId"></param>
+        /// <param name="fileIds"></param>
+        /// <returns></returns>
+        Task<Stack> Ensure(Guid stackId, List<Guid> fileIds);
+        Task<Stack> CreateStartingStackAsync(Guid userId);
 
     }
 
     public class StackService : IStackService
     {
-        private readonly IHttpContextAccessor _context;
+        private readonly HttpContext _context;
         private readonly ILogger<StackService> _logger;
         private readonly AudexDBContext _dbContext;
         private readonly AudexSettings _settings;
@@ -46,7 +61,7 @@ namespace Audex.API.Services
                             IFileNodeService fnService,
                             IStorageService storageService)
         {
-            _context = context;
+            _context = context.HttpContext;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
@@ -58,10 +73,10 @@ namespace Audex.API.Services
         {
             var stack = new Stack
             {
-                OwnerUserId = new Guid(_context.HttpContext.User.Claims
+                OwnerUserId = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                     .Value),
-                UploadedByDeviceId = new Guid(_context.HttpContext.User.Claims
+                UploadedByDeviceId = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId")
                     .Value),
                 Files = _dbContext.FileNodes
@@ -78,7 +93,7 @@ namespace Audex.API.Services
         public async Task<Stack> CreateAsync(Stack stack, string[] filePaths, Guid? userId = null)
         {
             var userExpression = userId is null ?
-                (Func<User, bool>)(u => u.Username == _context.HttpContext.User.Identity.Name)
+                (Func<User, bool>)(u => u.Username == _context.User.Identity.Name)
                 : (u => u.Id == userId);
             var user = _dbContext.Users.FirstOrDefault(userExpression);
 
@@ -90,13 +105,14 @@ namespace Audex.API.Services
             stack.Files = fns;
             await _dbContext.Stack.AddAsync(stack);
             await _dbContext.SaveChangesAsync();
+            PersistFileNodes(stack.Files);
 
             return stack;
         }
 
         public async Task<Stack> Ensure(Guid stackId, List<Guid> fileIds)
         {
-            var userid = new Guid(_context.HttpContext.User.Claims
+            var userid = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
             var stack = _dbContext.Stack
                 .Include(s => s.Files)

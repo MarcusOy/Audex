@@ -22,28 +22,33 @@ namespace Audex.API.Services
 {
     public interface IIdentityService
     {
-        public Task<(string AuthToken, string RefreshToken)> Authenticate(string username, string password, string deviceId);
-        public Task<(string AuthToken, string RefreshToken)> Reauthenticate(string refreshToken);
+        Task<(string AuthToken, string RefreshToken)> Authenticate(string username, string password, string deviceId, string code);
+        Task<(string AuthToken, string RefreshToken)> Reauthenticate(string refreshToken);
+        User CurrentUser { get; }
+        Device CurrentDevice { get; }
     }
 
     public class IdentityService : IIdentityService
     {
-        private IHttpContextAccessor _context { get; }
-        private ILogger<IdentityService> _logger { get; }
-        private AudexDBContext _dbContext { get; }
-        private AudexSettings _settings { get; }
+        private readonly HttpContext _context;
+        private readonly ILogger<IdentityService> _logger;
+        private readonly AudexDBContext _dbContext;
+        private readonly AudexSettings _settings;
+        private readonly ITwoFactorService _twoFactorService;
 
         public IdentityService(IHttpContextAccessor context,
                                ILogger<IdentityService> logger,
                                AudexDBContext dbContext,
-                               IOptions<AudexSettings> settings)
+                               IOptions<AudexSettings> settings,
+                               ITwoFactorService twoFactorService)
         {
-            _context = context;
+            _context = context.HttpContext;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
+            _twoFactorService = twoFactorService;
         }
-        public async Task<(string AuthToken, string RefreshToken)> Authenticate(string username, string password, string deviceId)
+        public async Task<(string AuthToken, string RefreshToken)> Authenticate(string username, string password, string deviceId, string code)
         {
             var roles = new List<string>();
             var u = _dbContext.Users
@@ -52,6 +57,8 @@ namespace Audex.API.Services
                         .ThenInclude(gr => gr.Role)
                     .Include(u => u.Devices)
                     .FirstOrDefault(u => u.Username == username);
+            var d = u.Devices.Where(d => d.UserId == u.Id)
+                .FirstOrDefault(d => d.Id == new Guid(deviceId));
 
             if (u is null || u.Password != SecurityHelpers.GenerateHashedPassword(password, Convert.FromBase64String(u.Salt)))
                 throw new AuthenticationException("Credentials not valid.");
@@ -59,16 +66,34 @@ namespace Audex.API.Services
             if (!Guid.TryParse(deviceId, out _))
                 throw new AuthenticationException("DeviceId is not in the correct format.");
 
-            if (u.Devices.FirstOrDefault(d => d.Id == new Guid(deviceId)) is null)
-                throw new AuthenticationException("Device is not valid.");
+            if (d is null)
+            {
+                if (code is null || code == String.Empty)
+                    throw new AuthenticationException("Please verify your new device by providing a two factor code. (2FA_CHALLENGE)");
+
+                if (await _twoFactorService.ResolveChallengeAsync(u, code))
+                {
+                    d = new Device
+                    {
+                        Id = new Guid(deviceId),
+                        UserId = u.Id,
+                        Name = "New device",
+                        DeviceType = _dbContext.DeviceTypes
+                            .FirstOrDefault(t => t.Name == "Other")
+                    };
+                    _dbContext.Devices.Add(d);
+                    await _dbContext.SaveChangesAsync();
+                }
+                throw new AuthenticationException("Invalid two factor code.");
+            }
 
             foreach (GroupRole gR in u.Group.GroupRoles)
             {
                 roles.Add(gR.Role.Name);
             }
 
-            var newAuthToken = await GenerateAuthToken(username, u.Id, new Guid(deviceId), roles.ToArray());
-            var newRefreshToken = await GenerateRefreshToken(u.Id, new Guid(deviceId));
+            var newAuthToken = await GenerateAuthToken(u, d, roles.ToArray());
+            var newRefreshToken = await GenerateRefreshToken(u, d);
 
             return (
                 newAuthToken.Token,
@@ -81,28 +106,29 @@ namespace Audex.API.Services
             var roles = new List<string>();
             var hash = SecurityHelpers.GenerateHash(refreshToken);
             var u = _dbContext.Users
-                    .Include(u => u.Group)
-                    .Include(u => u.Group.GroupRoles)
-                        .ThenInclude(gr => gr.Role)
-                    .Include(u => u.Tokens)
-                    .SingleOrDefault(u => u.Tokens
-                        .Any(t => t.Token == hash)
-                    );
+                .Include(u => u.Group)
+                .Include(u => u.Group.GroupRoles)
+                    .ThenInclude(gr => gr.Role)
+                .Include(u => u.Tokens)
+                    .ThenInclude(t => t.Device)
+                .SingleOrDefault(u => u.Tokens
+                    .Any(t => t.Token == hash)
+                );
 
             if (u is null)
                 throw new AuthenticationException("Credential not valid.");
 
             var t = u.Tokens
-                    .Where(t => t.IsRefreshToken)
-                    .SingleOrDefault(t => t.Token == hash);
+                .Where(t => t.Type == "Refresh")
+                .SingleOrDefault(t => t.Token == hash);
 
             if (t is null || !t.IsActive)
                 throw new AuthenticationException("Refresh token not valid.");
 
-            var newAuthToken = await GenerateAuthToken(u.Username, u.Id, t.DeviceId, roles.ToArray());
-            var newRefreshToken = await GenerateRefreshToken(u.Id, t.DeviceId);
+            var newAuthToken = await GenerateAuthToken(u, t.Device, roles.ToArray());
+            var newRefreshToken = await GenerateRefreshToken(u, t.Device);
             t.RevokedOn = DateTime.UtcNow;
-            t.RevokedByIP = GetIPAddress();
+            t.RevokedByIP = _context.GetIPAddress();
             t.ReplacedByTokenId = newRefreshToken.EntityId;
 
             foreach (GroupRole gR in u.Group.GroupRoles)
@@ -116,16 +142,42 @@ namespace Audex.API.Services
             );
         }
 
-        private async Task<(string Token, Guid EntityId)> GenerateAuthToken(string username, Guid userId, Guid deviceId, string[] roles)
+        public User CurrentUser
         {
-            var key = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
+            get
+            {
+                var userid = new Guid(_context.User.Claims
+                        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+                return _dbContext.Users
+                    .FirstOrDefault(u => u.Id == userid);
+            }
+        }
+        public Device CurrentDevice
+        {
+            get
+            {
+                var deviceId = new Guid(_context.User.Claims
+                    .FirstOrDefault(c => c.Type == "deviceId").Value);
+                return _dbContext.Devices
+                    .Where(u => u.Id == CurrentUser.Id)
+                    .FirstOrDefault(d => d.Id == deviceId);
+            }
+        }
 
+        private async Task<(string Token, Guid EntityId)> GenerateAuthToken(User user, Device device, string[] roles)
+        {
+            if (user is null)
+                throw new ArgumentNullException("Must pass a user to generate an auth token.");
+            if (device is null)
+                throw new ArgumentNullException("Must pass a device generate an auth token.");
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_settings.Jwt.Key)); // TODO: change secret to one generated on initialization
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username),
-                new Claim("deviceId", deviceId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim("deviceId", device.Id.ToString())
             };
 
             var expiry = DateTime.UtcNow.AddSeconds(15); // TODO: change based on environment
@@ -145,20 +197,25 @@ namespace Audex.API.Services
             var test = SecurityHelpers.GenerateHash(signedToken);
             var e = await _dbContext.AuthTokens.AddAsync(new AuthToken
             {
-                IsRefreshToken = false,
+                Type = AuthTokenType.Auth,
                 Token = SecurityHelpers.GenerateHash(signedToken),
                 ExpiresOn = expiry,
                 CreatedOn = DateTime.UtcNow,
-                CreatedByIP = GetIPAddress(),
-                UserId = userId,
-                DeviceId = deviceId
+                CreatedByIP = _context.GetIPAddress(),
+                User = user,
+                Device = device
             });
             await _dbContext.SaveChangesAsync();
 
             return (signedToken, e.Entity.Id);
         }
-        private async Task<(string Token, Guid EntityId)> GenerateRefreshToken(Guid userId, Guid deviceId)
+        private async Task<(string Token, Guid EntityId)> GenerateRefreshToken(User user, Device device)
         {
+            if (user is null)
+                throw new ArgumentNullException("Must pass a user to generate a refresh token.");
+            if (device is null)
+                throw new ArgumentNullException("Must pass a device generate a refresh token.");
+
             using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
             {
                 var randomBytes = new byte[64];
@@ -167,25 +224,18 @@ namespace Audex.API.Services
 
                 var e = await _dbContext.AuthTokens.AddAsync(new AuthToken
                 {
-                    IsRefreshToken = true,
+                    Type = AuthTokenType.Refresh,
                     Token = SecurityHelpers.GenerateHash(token),
                     ExpiresOn = DateTime.UtcNow.AddDays(7),
                     CreatedOn = DateTime.UtcNow,
-                    CreatedByIP = GetIPAddress(),
-                    UserId = userId,
-                    DeviceId = deviceId
+                    CreatedByIP = _context.GetIPAddress(),
+                    User = user,
+                    Device = device
                 });
                 await _dbContext.SaveChangesAsync();
 
                 return (token, e.Entity.Id);
             }
-        }
-        private string GetIPAddress()
-        {
-            if (_context.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
-                return _context.HttpContext.Request.Headers["X-Forwarded-For"];
-            else
-                return _context.HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
         }
     }
 }

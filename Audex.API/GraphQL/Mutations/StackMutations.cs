@@ -24,12 +24,12 @@ namespace Audex.API.GraphQL.Mutations
     {
         [Authorize]
         public async Task<Stack> CreateStartingStack(
-            [CurrentUserGlobalState] CurrentUser user,
+            [Service] IIdentityService identityService,
             [Service] IStackService stackService,
             [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
-            var stack = await stackService.CreateStartingStackAsync(user.UserId);
+            var stack = await stackService.CreateStartingStackAsync(identityService.CurrentUser.Id);
 
             await eventSender.SendAsync(
                 $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
@@ -101,14 +101,14 @@ namespace Audex.API.GraphQL.Mutations
         [Authorize]
         public async Task<List<Stack>> DeleteStacks(
             List<Guid> stackIds,
-            [CurrentUserGlobalState] CurrentUser user,
+            [Service] IIdentityService identityService,
             [Service] AudexDBContext dbContext,
             [Service] IHttpContextAccessor context,
             [Service] ITopicEventSender eventSender)
         {
             var stacks = await dbContext.Stack
                 .Where(s => s.DeletedOn == null)
-                .Where(s => s.OwnerUserId == user.UserId)
+                .Where(s => s.OwnerUserId == identityService.CurrentUser.Id)
                 .Where(s => stackIds.Contains(s.Id))
                 .ToListAsync();
 

@@ -12,16 +12,23 @@ import {
 	Image,
 	PrimaryButton,
 	IButtonProps,
+	FontIcon,
+	SpinnerSize,
 } from '@fluentui/react';
 import { formatDistance } from 'date-fns';
 import ModalService from '../../Data/Services/ModalService';
-import faker from 'faker';
 import DetailedList, { ListClassNames } from '../../Components/DetailedList';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
-import { CREATE_STARTER_STACK } from '../../Data/Mutations';
+import {
+	CREATE_STARTER_STACK,
+	GET_DOWNLOAD_TOKENS_FOR_STACK,
+} from '../../Data/Mutations';
 import { GET_STACKS } from '../../Data/Queries';
 import fileSize from 'filesize';
-import ToastService, { TestBlocked } from '../../Data/Services/ToastService';
+import ToastService, {
+	ErrorToast,
+	TestBlocked,
+} from '../../Data/Services/ToastService';
 import RenameDialog from '../../Components/Dialogs/RenameDialog';
 import DeleteDialog from '../../Components/Dialogs/DeleteDialog';
 import { ON_STACKS_UPDATE } from '../../Data/Subscriptions';
@@ -31,6 +38,8 @@ import FileUpload, {
 	FileUploadHandle,
 } from '../../Components/Uploading/FileUpload';
 import FileIconStack from '../../Components/Icons/FileIconStack';
+import DownloadService from '../../Data/Services/DownloadService';
+import EmptyState from '../../Components/EmptyState';
 
 export interface IStackRow {
 	key: string;
@@ -209,6 +218,32 @@ const StacksTab = () => {
 		}
 	}, [data]);
 
+	const [getDownloadTokens, getDownloadTokensResponse] = useMutation(
+		GET_DOWNLOAD_TOKENS_FOR_STACK
+	);
+
+	const getDownloadTokensHandler = () => {
+		getDownloadTokens({
+			variables: {
+				stackId: selectedStacks[0].key,
+			},
+		})
+			.then((r) => {
+				const urls = (r.data.downloadTokensForStack as Array<any>).map(
+					(t) => t.id
+				);
+				DownloadService.downloadFiles(urls, selectedStacks[0].name);
+			})
+			.catch((e: Error) => {
+				ToastService.push(
+					ErrorToast(
+						`An error occurred while trying to download: ${e.message}`
+					),
+					4
+				);
+			});
+	};
+
 	const menuItems: ICommandBarItemProps[] = [
 		{
 			key: 'new',
@@ -238,8 +273,14 @@ const StacksTab = () => {
 			key: 'download',
 			text: `Download ${numSelected}`,
 			iconProps: { iconName: 'Download' },
-			onClick: () => console.log('Download'),
-			disabled: selectedStacks.length == 0,
+			onRenderIcon: getDownloadTokensResponse.loading
+				? () => {
+						return <Spinner size={SpinnerSize.small} />;
+				  }
+				: undefined,
+			onClick: getDownloadTokensHandler,
+			disabled:
+				getDownloadTokensResponse.loading || selectedStacks.length == 0,
 			split: true,
 			subMenuProps: {
 				items: [
@@ -370,15 +411,15 @@ const StacksTab = () => {
 
 	if (!loading && stacks.length <= 0)
 		content = (
-			<Stack horizontalAlign='center'>
-				<Stack horizontalAlign='center' style={{ maxWidth: 300 }}>
-					<Image width={300} src='/images/empty.png' />
-					<Text variant='xLarge'>No stacks.</Text>
+			<EmptyState
+				title='No stacks.'
+				description={
 					<Text>
 						You currently have no stacks. Drag and drop some files
 						on this window or click <b>New stack</b>.
 					</Text>
-					<Spacer />
+				}
+				actions={
 					<PrimaryButton
 						{...(menuItems[0] as IButtonProps)}
 						menuProps={{
@@ -395,8 +436,9 @@ const StacksTab = () => {
 							],
 						}}
 					/>
-				</Stack>
-			</Stack>
+				}
+				maxWidth={300}
+			/>
 		);
 
 	return (

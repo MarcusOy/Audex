@@ -83,6 +83,7 @@ namespace Audex.API
             });
 
             // Added custom JWT Identity Authentication Service
+            services.AddScoped<ITwoFactorService, TotpTwoFactorService>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.Configure<AudexSettings>(o => Configuration.GetSection("Audex").Bind(o));
             services.AddHttpContextAccessor();
@@ -125,23 +126,6 @@ namespace Audex.API
                 .AddSubscriptionType(d => d.Name("Subscription"))
                     .AddTypeExtension<StackSubscriptions>()
                 .AddAuthorization()
-                .AddHttpRequestInterceptor(
-                    (context, executer, builder, ct) =>
-                    {
-                        if (context.GetUser().Identity.IsAuthenticated)
-                        {
-                            builder.SetProperty("CurrentUser",
-                                new CurrentUser(
-                                    Guid.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)),
-                                    context.User.Identity.Name,
-                                    context.User.Claims.Select(x => $"{x.Type} : {x.Value}").ToList()
-                                )
-                            );
-                        }
-
-                        return new ValueTask(Task.CompletedTask);
-                    }
-                )
                 .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
                 .AddInMemorySubscriptions()
                 .AddErrorFilter<GraphQLErrorFilter>()

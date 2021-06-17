@@ -8,7 +8,7 @@ namespace Audex.API.Models.Auth
         [Required]
         public Guid Id { get; set; }
         [Required]
-        public bool IsRefreshToken { get; set; }
+        public string Type { get; set; }
         [Required]
         public string Token { get; set; }
         [Required]
@@ -26,12 +26,19 @@ namespace Audex.API.Models.Auth
         public User User { get; set; }
 
         // Device relationship
-        public Guid DeviceId { get; set; }
+        public Guid? DeviceId { get; set; }
         public Device Device { get; set; }
 
         // Token relationship
         public Guid? ReplacedByTokenId { get; set; }
         public AuthToken ReplacedByToken { get; set; }
 
+    }
+
+    public static class AuthTokenType
+    {
+        public const string Auth = "Auth";
+        public const string Refresh = "Refresh";
+        public const string TwoFactor = "TwoFactor";
     }
 }

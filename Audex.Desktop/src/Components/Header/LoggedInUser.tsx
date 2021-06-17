@@ -46,21 +46,8 @@ const getInitials = (fullName) => {
 };
 
 const LoggedInUser = () => {
-	// const state = DataStore.useState((s) => s.Authentication);
-	const { data, loading, error } = useQuery(WHO_AM_I);
+	const identityState = DataStore.useState((s) => s.Identity);
 	const { palette } = getTheme();
-
-	// Persona Settings
-	const examplePersona: IPersonaSharedProps = {
-		// imageUrl: TestImages.personaFemale,
-		imageInitials: data?.whoAmI?.username
-			? getInitials(data?.whoAmI?.username)
-			: 'NLI',
-		text: data?.whoAmI?.username ?? 'notloggedin',
-		secondaryText: data?.whoAmI?.group?.name ?? 'nogroup',
-		tertiaryText: 'On Audex desktop client (MacOS)',
-		showSecondaryText: true,
-	};
 
 	// Account Context Menu
 	const linkRef = React.useRef(null);
@@ -77,13 +64,25 @@ const LoggedInUser = () => {
 		[]
 	);
 
-	if (loading || !data)
+	if (identityState == undefined)
 		return (
 			<>
 				<Spinner size={SpinnerSize.small} />
 				<Spacer orientation='horizontal' />
 			</>
 		);
+
+	// Persona Settings
+	const examplePersona: IPersonaSharedProps = {
+		// imageUrl: TestImages.personaFemale,
+		imageInitials: identityState.username
+			? getInitials(identityState.username)
+			: 'NLI',
+		text: identityState.username ?? 'notloggedin',
+		secondaryText: identityState.group.name ?? 'nogroup',
+		tertiaryText: 'On Audex desktop client (MacOS)',
+		showSecondaryText: true,
+	};
 
 	return (
 		<div

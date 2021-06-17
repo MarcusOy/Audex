@@ -54,6 +54,13 @@ class ToastService {
 }
 export default ToastService;
 
+export const ErrorToast = (m: string) => {
+	return {
+		messageBarType: MessageBarType.blocked,
+		children: <>{m}</>,
+	};
+};
+
 export const TestInfo = () => {
 	return {
 		messageBarType: MessageBarType.info,

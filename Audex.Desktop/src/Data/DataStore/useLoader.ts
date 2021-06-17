@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import PersistenceService from '../Services/PersistenceService';
 import { DataStore } from './DataStore';
+import { v4 as uuidv4 } from 'uuid';
 
 const useLoader = () => {
 	const [isLoading, setIsLoading] = useState(true);
@@ -13,6 +14,9 @@ const useLoader = () => {
 				console.log('Loader is processsing...');
 				const u =
 					(await PersistenceService.getUnsecured('username')) ?? '';
+				const d =
+					(await PersistenceService.getSecured('device')) ??
+					(await PersistenceService.setSecured('device', uuidv4()));
 				const a = (await PersistenceService.getSecured('auth')) ?? '';
 				const r =
 					(await PersistenceService.getSecured('refresh')) ?? '';
@@ -21,6 +25,7 @@ const useLoader = () => {
 				DataStore.update((s) => {
 					// Authentication
 					s.Authentication.username = u;
+					s.Authentication.deviceId = d;
 
 					if (a && r) {
 						s.Authentication.isAuthenticated = true;

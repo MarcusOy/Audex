@@ -1,10 +1,11 @@
 using System;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Http;
 
 namespace Audex.API.Helpers
 {
-    public class SecurityHelpers
+    public static class SecurityHelpers
     {
         public static string GenerateRandomPassword(int length, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_")
         {
@@ -71,6 +72,14 @@ namespace Audex.API.Helpers
                 Byte[] bytes = System.Text.Encoding.UTF8.GetBytes(string.Concat(key));
                 return Convert.ToBase64String(HashTool.ComputeHash(bytes));
             }
+        }
+
+        public static string GetIPAddress(this HttpContext context)
+        {
+            if (context.Request.Headers.ContainsKey("X-Forwarded-For"))
+                return context.Request.Headers["X-Forwarded-For"];
+            else
+                return context.Connection.RemoteIpAddress.MapToIPv4().ToString();
         }
     }
 }

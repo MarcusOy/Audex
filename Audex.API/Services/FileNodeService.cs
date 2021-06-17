@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Audex.API.Data;
 using Audex.API.Helpers;
@@ -19,19 +21,26 @@ namespace Audex.API.Services
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public Task<FileNode> CreateAsync(string path);
+        Task<FileNode> CreateAsync(string path);
         /// <summary>
         /// Create FileNode from an upload. DeviceId not needed
         /// as usually the Audex Server device will use this method.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public Task<FileNode> CreateAsync(IFormFile file);
+        Task<FileNode> CreateAsync(IFormFile file);
+        /// <summary>
+        /// Creates download tokens for each provided file id and
+        /// returns them.
+        /// </summary>
+        /// <param name="fileIds"></param>
+        /// <returns></returns>
+        Task<List<DownloadToken>> GetDownloadTokens(List<Guid> fileIds);
     }
 
     public class FileNodeService : IFileNodeService
     {
-        private readonly IHttpContextAccessor _context;
+        private readonly HttpContext _context;
         private readonly ILogger<FileNodeService> _logger;
         private readonly AudexDBContext _dbContext;
         private readonly AudexSettings _settings;
@@ -44,7 +53,7 @@ namespace Audex.API.Services
             IOptions<AudexSettings> settings,
             IStorageService storageService)
         {
-            _context = context;
+            _context = context.HttpContext;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
@@ -54,9 +63,9 @@ namespace Audex.API.Services
         public async Task<FileNode> CreateAsync(IFormFile file)
         {
             // Get User and Device
-            var uname = _context.HttpContext.User.Identity.Name ?? "admin";
+            var uname = _context.User.Identity.Name ?? "admin";
             var user = _dbContext.Users.FirstOrDefault(u => u.Username == uname);
-            var deviceId = _context.HttpContext.User.Claims
+            var deviceId = _context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId").Value
                 ?? _dbContext.Devices.
                      FirstOrDefault(d => d.Name == "Audex Server").Id.ToString();
@@ -98,13 +107,13 @@ namespace Audex.API.Services
         public async Task<FileNode> CreateAsync(string path)
         {
             // Get User and Device
-            var uname = _context.HttpContext is null ? "admin"
-                : _context.HttpContext.User.Identity.Name;
+            var uname = _context is null ? "admin"
+                : _context.User.Identity.Name;
             var user = _dbContext.Users.FirstOrDefault(u => u.Username == uname);
-            var deviceId = _context.HttpContext is null ?
+            var deviceId = _context is null ?
                 _dbContext.Devices.
                     FirstOrDefault(d => d.Name == "Audex Server").Id.ToString()
-                : _context.HttpContext.User.Claims
+                : _context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId").Value;
 
 
@@ -145,5 +154,33 @@ namespace Audex.API.Services
 
 
         }
+
+        public async Task<List<DownloadToken>> GetDownloadTokens(List<Guid> fileIds)
+        {
+            var userid = new Guid(_context.User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var fileNodes = _dbContext.FileNodes
+                .Where(f => f.OwnerUserId == userid)
+                .Where(f => fileIds.Contains(f.Id));
+
+            var dts = new List<DownloadToken>();
+            foreach (var fn in fileNodes)
+            {
+                var dt = new DownloadToken
+                {
+                    NumberOfUses = 0,
+                    MaxNumberOfUses = 1,
+                    ExpiresOn = DateTime.UtcNow.AddMinutes(1),
+                    FileNodeId = fn.Id,
+                    ForUserId = userid
+                };
+                dts.Add(dt);
+                await _dbContext.DownloadTokens.AddAsync(dt);
+            }
+            await _dbContext.SaveChangesAsync();
+
+            return dts;
+        }
+
     }
 }

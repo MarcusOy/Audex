@@ -151,42 +151,50 @@ namespace Audex.API.Data
                 new DeviceType
                 {
                     Id = 1,
-                    Name = "Audex Server"
+                    Name = "Audex Server",
+                    Color = "#2196F2"
                 },
                 new DeviceType
                 {
                     Id = 2,
-                    Name = "Windows"
+                    Name = "Windows",
+                    Color = "#00aef0"
                 },
                 new DeviceType
                 {
                     Id = 3,
-                    Name = "MacOS"
+                    Name = "MacOS",
+                    Color = "#ffffff"
                 },
                 new DeviceType
                 {
                     Id = 4,
-                    Name = "Linux"
+                    Name = "Linux",
+                    Color = "#dd4814"
                 },
                 new DeviceType
                 {
                     Id = 5,
-                    Name = "Web"
+                    Name = "Web",
+                    Color = "#DD5144"
                 },
                 new DeviceType
                 {
                     Id = 6,
-                    Name = "iOS"
+                    Name = "iOS",
+                    Color = "#ffffff"
                 },
                 new DeviceType
                 {
                     Id = 7,
-                    Name = "Android"
+                    Name = "Android",
+                    Color = "#3DDC84"
                 },
                 new DeviceType
                 {
                     Id = 8,
-                    Name = "Other"
+                    Name = "Other",
+                    Color = "#46483e"
                 }
             );
         }

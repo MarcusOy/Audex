@@ -5,6 +5,7 @@ export interface IServer {
 	hostName: string;
 	apiVersion: string;
 	apiEndpoint: string;
+	downloadEndpoint: string;
 	isOfficial: boolean;
 	isOnline: boolean;
 }

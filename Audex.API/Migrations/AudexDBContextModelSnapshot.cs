@@ -17,11 +17,11 @@ namespace Audex.API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
                 .HasAnnotation("ProductVersion", "5.0.1");
 
-            modelBuilder.Entity("Audex.API.Data.Activity", b =>
+            modelBuilder.Entity("Audex.API.Data.DownloadToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime(6)");
@@ -29,35 +29,31 @@ namespace Audex.API.Migrations
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("DeviceId")
+                    b.Property<DateTime?>("ExpiresOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("FileNodeId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("FileNodeId")
+                    b.Property<Guid?>("ForUserId")
                         .HasColumnType("char(36)");
 
-                    b.Property<string>("Message")
-                        .HasColumnType("longtext");
+                    b.Property<int>("MaxNumberOfUses")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberOfUses")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("User2Id")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("char(36)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
 
                     b.HasIndex("FileNodeId");
 
-                    b.HasIndex("User2Id");
+                    b.HasIndex("ForUserId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Activity");
+                    b.ToTable("DownloadTokens");
                 });
 
             modelBuilder.Entity("Audex.API.Data.Share", b =>
@@ -97,60 +93,6 @@ namespace Audex.API.Migrations
                     b.ToTable("Shares");
                 });
 
-            modelBuilder.Entity("Audex.API.Data.Transfer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("FileNodeId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<bool>("IsFullfilled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid?>("ReceivingDeviceId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("ReceivingUserId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("ReceivingrDeviceId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("SenderDeviceId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("SenderUserId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileNodeId");
-
-                    b.HasIndex("ReceivingUserId");
-
-                    b.HasIndex("ReceivingrDeviceId");
-
-                    b.HasIndex("SenderDeviceId");
-
-                    b.HasIndex("SenderUserId");
-
-                    b.ToTable("Transfers");
-                });
-
             modelBuilder.Entity("Audex.API.Models.Auth.AuthToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -167,14 +109,11 @@ namespace Audex.API.Migrations
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("DeviceId")
+                    b.Property<Guid?>("DeviceId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("ExpiresOn")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsRefreshToken")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<Guid?>("ReplacedByTokenId")
                         .HasColumnType("char(36)");
@@ -189,6 +128,10 @@ namespace Audex.API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
@@ -197,11 +140,11 @@ namespace Audex.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
-
                     b.HasIndex("ReplacedByTokenId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("DeviceId", "UserId");
 
                     b.ToTable("AuthTokens");
                 });
@@ -209,7 +152,9 @@ namespace Audex.API.Migrations
             modelBuilder.Entity("Audex.API.Models.Auth.Device", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedOn")
@@ -231,10 +176,7 @@ namespace Audex.API.Migrations
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
+                    b.HasKey("Id", "UserId");
 
                     b.HasIndex("DeviceTypeId");
 
@@ -248,6 +190,9 @@ namespace Audex.API.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime(6)");
@@ -270,6 +215,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 1,
+                            Color = "#2196F2",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Audex Server",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -277,6 +223,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 2,
+                            Color = "#00aef0",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Windows",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -284,6 +231,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 3,
+                            Color = "#ffffff",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "MacOS",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -291,6 +239,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 4,
+                            Color = "#dd4814",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Linux",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -298,6 +247,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 5,
+                            Color = "#DD5144",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Web",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -305,6 +255,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 6,
+                            Color = "#ffffff",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "iOS",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -312,6 +263,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 7,
+                            Color = "#3DDC84",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Android",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -319,6 +271,7 @@ namespace Audex.API.Migrations
                         new
                         {
                             Id = 8,
+                            Color = "#46483e",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Other",
                             UpdatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -596,6 +549,9 @@ namespace Audex.API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("TwoFactorKey")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
@@ -650,7 +606,7 @@ namespace Audex.API.Migrations
 
                     b.HasIndex("ParentStackId");
 
-                    b.HasIndex("UploadedByDeviceId");
+                    b.HasIndex("UploadedByDeviceId", "OwnerUserId");
 
                     b.ToTable("FileNodes");
                 });
@@ -691,7 +647,7 @@ namespace Audex.API.Migrations
 
                     b.HasIndex("StackCategoryId");
 
-                    b.HasIndex("UploadedByDeviceId");
+                    b.HasIndex("UploadedByDeviceId", "OwnerUserId");
 
                     b.ToTable("Stack");
                 });
@@ -729,31 +685,21 @@ namespace Audex.API.Migrations
                     b.ToTable("StackCategory");
                 });
 
-            modelBuilder.Entity("Audex.API.Data.Activity", b =>
+            modelBuilder.Entity("Audex.API.Data.DownloadToken", b =>
                 {
-                    b.HasOne("Audex.API.Models.Auth.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId");
-
                     b.HasOne("Audex.API.Models.Stacks.FileNode", "FileNode")
                         .WithMany()
-                        .HasForeignKey("FileNodeId");
+                        .HasForeignKey("FileNodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("Audex.API.Models.Auth.User", "User2")
+                    b.HasOne("Audex.API.Models.Auth.User", "ForUser")
                         .WithMany()
-                        .HasForeignKey("User2Id");
-
-                    b.HasOne("Audex.API.Models.Auth.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Device");
+                        .HasForeignKey("ForUserId");
 
                     b.Navigation("FileNode");
 
-                    b.Navigation("User");
-
-                    b.Navigation("User2");
+                    b.Navigation("ForUser");
                 });
 
             modelBuilder.Entity("Audex.API.Data.Share", b =>
@@ -767,53 +713,8 @@ namespace Audex.API.Migrations
                     b.Navigation("FileNode");
                 });
 
-            modelBuilder.Entity("Audex.API.Data.Transfer", b =>
-                {
-                    b.HasOne("Audex.API.Models.Stacks.FileNode", "FileNode")
-                        .WithMany()
-                        .HasForeignKey("FileNodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Audex.API.Models.Auth.User", "ReceivingUser")
-                        .WithMany()
-                        .HasForeignKey("ReceivingUserId");
-
-                    b.HasOne("Audex.API.Models.Auth.Device", "ReceivingrDevice")
-                        .WithMany()
-                        .HasForeignKey("ReceivingrDeviceId");
-
-                    b.HasOne("Audex.API.Models.Auth.Device", "SenderDevice")
-                        .WithMany()
-                        .HasForeignKey("SenderDeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Audex.API.Models.Auth.User", "SenderUser")
-                        .WithMany()
-                        .HasForeignKey("SenderUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FileNode");
-
-                    b.Navigation("ReceivingrDevice");
-
-                    b.Navigation("ReceivingUser");
-
-                    b.Navigation("SenderDevice");
-
-                    b.Navigation("SenderUser");
-                });
-
             modelBuilder.Entity("Audex.API.Models.Auth.AuthToken", b =>
                 {
-                    b.HasOne("Audex.API.Models.Auth.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Audex.API.Models.Auth.AuthToken", "ReplacedByToken")
                         .WithMany()
                         .HasForeignKey("ReplacedByTokenId");
@@ -823,6 +724,10 @@ namespace Audex.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Audex.API.Models.Auth.Device", "Device")
+                        .WithMany()
+                        .HasForeignKey("DeviceId", "UserId");
 
                     b.Navigation("Device");
 
@@ -894,7 +799,7 @@ namespace Audex.API.Migrations
 
                     b.HasOne("Audex.API.Models.Auth.Device", "UploadedByDevice")
                         .WithMany()
-                        .HasForeignKey("UploadedByDeviceId")
+                        .HasForeignKey("UploadedByDeviceId", "OwnerUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -919,7 +824,7 @@ namespace Audex.API.Migrations
 
                     b.HasOne("Audex.API.Models.Auth.Device", "UploadedByDevice")
                         .WithMany()
-                        .HasForeignKey("UploadedByDeviceId")
+                        .HasForeignKey("UploadedByDeviceId", "OwnerUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
