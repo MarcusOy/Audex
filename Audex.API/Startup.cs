@@ -120,11 +120,16 @@ namespace Audex.API
                     .AddTypeExtension<AuthMutations>()
                     .AddTypeExtension<StackMutations>()
                     .AddTypeExtension<FileMutations>()
+                    // .AddTypeExtension<FormMutations>()
+                    .AddTypeExtension<DeviceMutations>()
                 .AddQueryType(d => d.Name("Query"))
                     .AddTypeExtension<UserQueries>()
                     .AddTypeExtension<StackQueries>()
+                    .AddTypeExtension<DeviceQueries>()
+                // .AddTypeExtension<FormQueries>()
                 .AddSubscriptionType(d => d.Name("Subscription"))
                     .AddTypeExtension<StackSubscriptions>()
+                    .AddTypeExtension<UserSubscriptions>()
                 .AddAuthorization()
                 .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
                 .AddInMemorySubscriptions()
@@ -138,6 +143,8 @@ namespace Audex.API
             services.AddScoped<IFileNodeService, FileNodeService>();
             services.AddScoped<IStackService, StackService>();
             services.AddScoped<IInitializationService, InitializationService>();
+            // services.AddScoped<IFormService, FormService>();
+            services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         }
 

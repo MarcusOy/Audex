@@ -12,8 +12,7 @@ namespace Audex.API.Migrations
                 name: "DeviceTypes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "longtext", nullable: false),
                     Color = table.Column<string>(type: "longtext", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -178,7 +177,7 @@ namespace Audex.API.Migrations
                     RevokedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     RevokedByIP = table.Column<string>(type: "longtext", nullable: true),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    DeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    DeviceId = table.Column<Guid>(type: "char(36)", nullable: true),
                     ReplacedByTokenId = table.Column<Guid>(type: "char(36)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -198,7 +197,7 @@ namespace Audex.API.Migrations
                         columns: x => new { x.DeviceId, x.UserId },
                         principalTable: "Devices",
                         principalColumns: new[] { "Id", "UserId" },
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_AuthTokens_Users_UserId",
                         column: x => x.UserId,

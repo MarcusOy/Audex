@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Audex.API.Data;
 using Audex.API.Helpers;
-using Audex.API.Models.Auth;
+using Audex.API.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -159,7 +159,7 @@ namespace Audex.API.Services
                 var deviceId = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId").Value);
                 return _dbContext.Devices
-                    .Where(u => u.Id == CurrentUser.Id)
+                    .Where(d => d.UserId == CurrentUser.Id)
                     .FirstOrDefault(d => d.Id == deviceId);
             }
         }

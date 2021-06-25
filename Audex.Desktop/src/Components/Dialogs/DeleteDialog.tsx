@@ -6,6 +6,7 @@ import {
 	DialogType,
 	Spinner,
 	Text,
+	SpinnerSize,
 } from '@fluentui/react';
 import { DELETE_FILE, DELETE_STACK } from '../../Data/Mutations';
 import { useMutation } from '@apollo/client';
@@ -76,7 +77,11 @@ const DeleteDialog = (props: Props) => {
 					style={{ backgroundColor: '#f00', color: 'white' }}
 					disabled={loading}
 					onRenderIcon={() => {
-						return loading ? <Spinner /> : <></>;
+						return loading ? (
+							<Spinner size={SpinnerSize.small} />
+						) : (
+							<></>
+						);
 					}}
 					onClick={onSubmit}
 				/>

@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System;
 using HotChocolate.Types;
-using Audex.API.Models.Stacks;
+
 using HotChocolate.Subscriptions;
 using Audex.API.GraphQL.Subscriptions;
-using Audex.API.GraphQL.Extensions;
 using Audex.API.Data;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Audex.API.Helpers;
 using System.Collections.Generic;
+using Audex.API.Models;
 
 namespace Audex.API.GraphQL.Mutations
 {
@@ -27,14 +27,11 @@ namespace Audex.API.GraphQL.Mutations
             [Service] IIdentityService identityService,
             [Service] IStackService stackService,
             [Service] IHttpContextAccessor context,
-            [Service] ITopicEventSender eventSender)
+            [Service] ISubscriptionService subService)
         {
             var stack = await stackService.CreateStartingStackAsync(identityService.CurrentUser.Id);
 
-            await eventSender.SendAsync(
-                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                new Guid[] { stack.Id }
-            );
+            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, new Guid[] { stack.Id });
 
             return stack;
         }
@@ -44,14 +41,12 @@ namespace Audex.API.GraphQL.Mutations
             List<Guid> fileIds,
             [Service] IStackService stackService,
             [Service] IHttpContextAccessor context,
-            [Service] ITopicEventSender eventSender)
+            [Service] ISubscriptionService subService)
         {
             var stack = await stackService.CreateAsync(fileIds);
 
-            await eventSender.SendAsync(
-                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                new Guid[] { stack.Id }
-            );
+            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, new Guid[] { stack.Id });
+
             return stack;
         }
 
@@ -61,14 +56,12 @@ namespace Audex.API.GraphQL.Mutations
             List<Guid> fileIds,
             [Service] IStackService stackService,
             [Service] IHttpContextAccessor context,
-            [Service] ITopicEventSender eventSender)
+            [Service] ISubscriptionService subService)
         {
             var stack = await stackService.Ensure(stackId, fileIds);
 
-            await eventSender.SendAsync(
-                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                new Guid[] { stack.Id }
-            );
+            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, new Guid[] { stack.Id });
+
             return stack;
         }
 
@@ -78,7 +71,7 @@ namespace Audex.API.GraphQL.Mutations
             string newName,
             [Service] AudexDBContext dbContext,
             [Service] IHttpContextAccessor context,
-            [Service] ITopicEventSender eventSender)
+            [Service] ISubscriptionService subService)
         {
             var stack = await dbContext.Stack
                 .Where(s => s.DeletedOn == null)
@@ -91,10 +84,7 @@ namespace Audex.API.GraphQL.Mutations
             stack.Name = SanitizerHelper.SanitizeString(newName);
             await dbContext.SaveChangesAsync();
 
-            await eventSender.SendAsync(
-                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                new Guid[] { stack.Id }
-            );
+            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, new Guid[] { stack.Id });
 
             return newName;
         }
@@ -104,7 +94,7 @@ namespace Audex.API.GraphQL.Mutations
             [Service] IIdentityService identityService,
             [Service] AudexDBContext dbContext,
             [Service] IHttpContextAccessor context,
-            [Service] ITopicEventSender eventSender)
+            [Service] ISubscriptionService subService)
         {
             var stacks = await dbContext.Stack
                 .Where(s => s.DeletedOn == null)
@@ -121,10 +111,7 @@ namespace Audex.API.GraphQL.Mutations
             dbContext.Stack.UpdateRange(stacks); // TODO: integrate into StackService, mark for delete child filenodes
             await dbContext.SaveChangesAsync();
 
-            await eventSender.SendAsync(
-                $"{nameof(StackSubscriptions.OnStacksUpdate)}_{context.HttpContext.User.Identity.Name}",
-                stacks.Select(s => s.Id).ToArray()
-            );
+            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, stacks.Select(s => s.Id).ToArray());
 
             return stacks;
         }

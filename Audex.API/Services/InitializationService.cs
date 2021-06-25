@@ -6,8 +6,9 @@ using System.Linq;
 using Audex.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Audex.API.Models.Auth;
+
 using Audex.API.Data;
+using Audex.API.Models;
 
 namespace Audex.API.Services
 {

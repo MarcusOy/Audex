@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Audex.API.Data;
 using Audex.API.Helpers;
-using Audex.API.Models.Stacks;
+using Audex.API.Models;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

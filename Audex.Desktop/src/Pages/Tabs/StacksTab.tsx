@@ -1,18 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
 	IColumn,
-	TooltipHost,
-	TooltipDelay,
-	DirectionalHint,
 	Spinner,
 	CommandBar,
 	ICommandBarItemProps,
 	Text,
-	Stack,
-	Image,
 	PrimaryButton,
 	IButtonProps,
-	FontIcon,
 	SpinnerSize,
 } from '@fluentui/react';
 import { formatDistance } from 'date-fns';
@@ -33,7 +27,7 @@ import RenameDialog from '../../Components/Dialogs/RenameDialog';
 import DeleteDialog from '../../Components/Dialogs/DeleteDialog';
 import { ON_STACKS_UPDATE } from '../../Data/Subscriptions';
 import Spacer from '../../Components/Spacer';
-import DevicesList from '../../Components/DevicesList';
+import DevicesList from '../../Components/Devices/DevicesList';
 import FileUpload, {
 	FileUploadHandle,
 } from '../../Components/Uploading/FileUpload';

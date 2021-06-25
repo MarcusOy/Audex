@@ -12,10 +12,22 @@ import {
 } from '@fluentui/react';
 import { useId } from '@fluentui/react-hooks';
 import React, { useRef, useState } from 'react';
+import {
+	FaServer,
+	FaWindows,
+	FaApple,
+	FaLinux,
+	FaGlobe,
+	FaAppStore,
+	FaAndroid,
+	FaDesktop,
+} from 'react-icons/fa';
+import { IconBaseProps } from 'react-icons/lib';
 
 export interface IDeviceIconProps {
+	id: string;
 	name: string;
-	icon: React.ReactNode;
+	type: string;
 	color: string;
 	isCurrentDevice?: boolean;
 
@@ -26,6 +38,32 @@ export interface IDeviceIconProps {
 
 	disableContextMenu?: boolean;
 }
+
+const getIconComponentFromDeviceType = (type: string) => {
+	const baseProps: IconBaseProps = {
+		color: 'white',
+		size: 20,
+	};
+
+	switch (type) {
+		case 'Audex Server':
+			return <FaServer {...baseProps} />;
+		case 'Windows':
+			return <FaWindows {...baseProps} />;
+		case 'MacOS':
+			return <FaApple {...baseProps} />;
+		case 'Linux':
+			return <FaLinux {...baseProps} />;
+		case 'Web':
+			return <FaGlobe {...baseProps} />;
+		case 'iOS':
+			return <FaAppStore {...baseProps} />; // TODO: use better icon
+		case 'Android':
+			return <FaAndroid {...baseProps} />;
+		default:
+			return <FaDesktop {...baseProps} />;
+	}
+};
 
 const DeviceIcon = (p: IDeviceIconProps) => {
 	const menuProps: IContextualMenuItem[] = [
@@ -101,7 +139,7 @@ const DeviceIcon = (p: IDeviceIconProps) => {
 				verticalAlign='center'
 				horizontalAlign='center'
 			>
-				{p.icon}
+				{getIconComponentFromDeviceType(p.type)}
 			</Stack>
 			<Text style={{ fontSize: 10 }}>
 				{p.isCurrentDevice ? 'This device' : p.name}

@@ -37,21 +37,33 @@ export interface AudexStore {
 }
 
 export interface AudexIdentity {
-	id: string;
-	username: string;
-	devices: {
+	user: {
+		id: string;
+		username: string;
+		devices: {
+			id: string;
+			name: string;
+			deviceType: {
+				name: string;
+				color: string;
+			};
+			createdOn: Date;
+		}[];
+		group: {
+			name: string;
+		};
+		createdOn: Date;
+	};
+	device: {
 		id: string;
 		name: string;
+		isFirstTimeSetup: boolean;
 		deviceType: {
 			name: string;
 			color: string;
 		};
 		createdOn: Date;
-	}[];
-	group: {
-		name: string;
 	};
-	createdOn: Date;
 }
 
 const devServer: IServer = {

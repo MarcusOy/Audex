@@ -3,21 +3,33 @@ import { gql } from '@apollo/client';
 export const WHO_AM_I = gql`
 	query {
 		whoAmI {
-			id
-			username
-			devices {
+			user {
+				id
+				username
+				devices {
+					id
+					name
+					deviceType {
+						name
+						color
+					}
+					createdOn
+				}
+				group {
+					name
+				}
+				createdOn
+			}
+			device {
 				id
 				name
+				isFirstTimeSetup
+				createdOn
 				deviceType {
 					name
 					color
 				}
-				createdOn
 			}
-			group {
-				name
-			}
-			createdOn
 		}
 	}
 `;
@@ -67,6 +79,27 @@ export const GET_STACK = gql`
 					fileExtension
 					fileSize
 				}
+			}
+		}
+	}
+`;
+
+export const GET_FORM = gql`
+	query($entityName: String) {
+		formSchema(entityName: $entityName) {
+			schema
+			uISchema
+		}
+	}
+`;
+
+export const GET_DEVICE_TYPES = gql`
+	query {
+		deviceTypes {
+			nodes {
+				id
+				name
+				color
 			}
 		}
 	}

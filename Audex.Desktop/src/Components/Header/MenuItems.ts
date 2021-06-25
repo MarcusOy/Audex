@@ -5,6 +5,7 @@ const menuLinkGroups: INavLinkGroup[] = [
 		links: [
 			{
 				name: 'Home',
+				key: '/',
 				links: [
 					{
 						name: 'Dashboard',
@@ -15,8 +16,8 @@ const menuLinkGroups: INavLinkGroup[] = [
 						key: '/Home/Stacks',
 					},
 					{
-						name: 'Devices',
-						key: '/Home/Devices',
+						name: 'Clips',
+						key: '/Home/Clips',
 					},
 				],
 				isExpanded: true,
@@ -27,7 +28,7 @@ const menuLinkGroups: INavLinkGroup[] = [
 			},
 			{
 				name: 'Settings',
-				key: '/Settings',
+				key: '/Settings/Account',
 			},
 		],
 	},

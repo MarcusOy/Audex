@@ -11,7 +11,6 @@ import {
 import ScrollMenu from 'react-horizontal-scrolling-menu';
 import faker from 'faker';
 import DeviceIcon, { AddDeviceIcon, IDeviceIconProps } from './DeviceIcon';
-import { DataStore } from '../Data/DataStore/DataStore';
 import { useEffect, useState } from 'react';
 import {
 	FaAndroid,
@@ -24,37 +23,13 @@ import {
 	FaServer,
 	FaWindows,
 } from 'react-icons/fa';
+import { DataStore } from '../../Data/DataStore/DataStore';
 import { IconBaseProps } from 'react-icons/lib';
 
-const getIconComponentFromDeviceType = (type: string) => {
-	const baseProps: IconBaseProps = {
-		color: 'white',
-		size: 20,
-	};
-
-	switch (type) {
-		case 'Audex Server':
-			return <FaServer {...baseProps} />;
-		case 'Windows':
-			return <FaWindows {...baseProps} />;
-		case 'MacOS':
-			return <FaApple {...baseProps} />;
-		case 'Linux':
-			return <FaLinux {...baseProps} />;
-		case 'Web':
-			return <FaGlobe {...baseProps} />;
-		case 'iOS':
-			return <FaAppStore {...baseProps} />; // TODO: use better icon
-		case 'Android':
-			return <FaAndroid {...baseProps} />;
-		default:
-			return <FaDesktop {...baseProps} />;
-	}
-};
-
 const addButton: IDeviceIconProps = {
+	id: '000',
 	name: 'Add button',
-	icon: <></>,
+	type: 'add',
 	color: '',
 	componentOverride: <AddDeviceIcon />,
 };
@@ -63,7 +38,7 @@ const DevicesList = () => {
 	const currentDeviceId = DataStore.useState(
 		(s) => s.Authentication.deviceId
 	);
-	const deviceState = DataStore.useState((s) => s.Identity?.devices);
+	const deviceState = DataStore.useState((s) => s.Identity?.user.devices);
 	const [devices, setDevices] = useState<IDeviceIconProps[]>([]);
 
 	useEffect(() => {
@@ -72,9 +47,10 @@ const DevicesList = () => {
 			const ds: IDeviceIconProps[] = deviceState
 				.map((d) => {
 					const newDevice = {
+						id: d.id,
 						name: d.name,
 						color: d.deviceType.color,
-						icon: getIconComponentFromDeviceType(d.deviceType.name),
+						type: d.deviceType.name,
 					};
 					if (d.id == currentDeviceId.replaceAll('-', '')) {
 						currentD = newDevice;
@@ -122,7 +98,7 @@ const DevicesList = () => {
 					data={devices.map(
 						(i) =>
 							i.componentOverride ?? (
-								<DeviceIcon key={i.name} {...i} />
+								<DeviceIcon key={i.id} {...i} />
 							)
 					)}
 				/>

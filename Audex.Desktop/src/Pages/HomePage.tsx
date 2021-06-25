@@ -3,7 +3,6 @@ import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import BackToTop from '../Components/BackToTop';
 import StacksTab from '../Pages/Tabs/StacksTab';
-import MenuBar from '../Components/MenuBar';
 import DashboardTab from '../Pages/Tabs/DashboardTab';
 import FileDrop from '../Components/Uploading/FileDrop';
 
@@ -33,9 +32,8 @@ const HomePage = () => {
 					<PivotItem itemKey='Stacks' headerText='Stacks'>
 						<StacksTab />
 					</PivotItem>
-					<PivotItem itemKey='Devices' headerText='Devices'>
-						<MenuBar type='Devices' />
-						<Label>Devices</Label>
+					<PivotItem itemKey='Clips' headerText='Clips'>
+						<Label>Clips</Label>
 					</PivotItem>
 				</Pivot>
 				<BackToTop />

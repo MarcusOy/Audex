@@ -8,6 +8,7 @@ import DownloadService, {
 } from '../../Data/Services/DownloadService';
 import FileIconStack from '../Icons/FileIconStack';
 import DownloadUnit from './DownloadUnit';
+import { Animate } from 'react-simple-animate';
 
 interface IDownloadUnitGroupProps {
 	downloads: IDownload[];
@@ -59,27 +60,44 @@ const DownloadUnitGroup = (p: IDownloadUnitGroupProps) => {
 					}}
 				/>
 			</Stack>
-			<div
-				className={isShown ? css(styles.activeGroup) : undefined}
-				style={{
-					marginTop: 10,
-					marginLeft: 5,
-					marginRight: 5,
-
-					transitionProperty: 'all',
-					transitionDuration: '300ms',
-					transitionTimingFunction: MotionTimings.decelerate,
-					transform: 'translate3d(0, -48px, 0)',
-					overflow: 'hidden',
-					height: 'auto',
+			<Animate
+				play={isShown}
+				easeType={MotionTimings.decelerate}
+				start={{
 					maxHeight: 0,
 					opacity: 0,
+					transform: 'translate3d(0, -48px, 0)',
+					pointerEvents: 'none',
+					cursor: 'default',
+				}}
+				end={{
+					maxHeight: 10000,
+					opacity: 1,
+					transform: 'translate3d(0, 0, 0)',
 				}}
 			>
-				{p.downloads.map((d) => {
-					return <DownloadUnit key={d.fileName} download={d} />;
-				})}
-			</div>
+				<div
+					// className={isShown ? css(styles.activeGroup) : undefined}
+					style={{
+						marginTop: 10,
+						marginLeft: 5,
+						marginRight: 5,
+
+						// transitionProperty: 'all',
+						// transitionDuration: '300ms',
+						// transitionTimingFunction: MotionTimings.decelerate,
+						// transform: 'translate3d(0, -48px, 0)',
+						overflow: 'hidden',
+						height: 'auto',
+						// maxHeight: 0,
+						// opacity: 0,
+					}}
+				>
+					{p.downloads.map((d) => {
+						return <DownloadUnit key={d.fileName} download={d} />;
+					})}
+				</div>
+			</Animate>
 		</div>
 	);
 };

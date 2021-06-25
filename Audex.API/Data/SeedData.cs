@@ -1,4 +1,4 @@
-using Audex.API.Models.Auth;
+using Audex.API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Audex.API.Data
@@ -150,49 +150,49 @@ namespace Audex.API.Data
             builder.Entity<DeviceType>().HasData(
                 new DeviceType
                 {
-                    Id = 1,
+                    Id = DeviceTypeEnum.AudexServer,
                     Name = "Audex Server",
                     Color = "#2196F2"
                 },
                 new DeviceType
                 {
-                    Id = 2,
+                    Id = DeviceTypeEnum.Windows,
                     Name = "Windows",
                     Color = "#00aef0"
                 },
                 new DeviceType
                 {
-                    Id = 3,
+                    Id = DeviceTypeEnum.MacOS,
                     Name = "MacOS",
-                    Color = "#ffffff"
+                    Color = "#000"
                 },
                 new DeviceType
                 {
-                    Id = 4,
+                    Id = DeviceTypeEnum.Linux,
                     Name = "Linux",
-                    Color = "#dd4814"
+                    Color = "#f7c700"
                 },
                 new DeviceType
                 {
-                    Id = 5,
+                    Id = DeviceTypeEnum.Web,
                     Name = "Web",
                     Color = "#DD5144"
                 },
                 new DeviceType
                 {
-                    Id = 6,
+                    Id = DeviceTypeEnum.iOS,
                     Name = "iOS",
-                    Color = "#ffffff"
+                    Color = "#000"
                 },
                 new DeviceType
                 {
-                    Id = 7,
+                    Id = DeviceTypeEnum.Android,
                     Name = "Android",
                     Color = "#3DDC84"
                 },
                 new DeviceType
                 {
-                    Id = 8,
+                    Id = DeviceTypeEnum.Other,
                     Name = "Other",
                     Color = "#46483e"
                 }

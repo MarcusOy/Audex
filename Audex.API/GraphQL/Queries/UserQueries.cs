@@ -9,9 +9,10 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using HotChocolate.AspNetCore.Authorization;
-using Audex.API.Models.Auth;
+
 using Audex.API.Data;
 using Audex.API.Services;
+using Audex.API.Models;
 
 namespace Audex.API.GraphQL.Queries
 {
@@ -19,10 +20,12 @@ namespace Audex.API.GraphQL.Queries
     public class UserQueries
     {
         [Authorize]
-        public User WhoAmI([Service] IIdentityService identityService,
+        public WhoAmIResponse WhoAmI([Service] IIdentityService identityService,
                            [Service] AudexDBContext context)
         {
-            return context.Users
+            return new WhoAmIResponse
+            {
+                User = context.Users
                 .Include(u => u.Group)
                     .ThenInclude(g => g.GroupRoles)
                     .ThenInclude(gr => gr.Role)
@@ -32,18 +35,23 @@ namespace Audex.API.GraphQL.Queries
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    // Excluding Password and Salt
-                    Password = "***",
-                    Salt = "***",
                     CreatedOn = u.CreatedOn,
                     Active = u.Active,
                     GroupId = u.GroupId,
                     Group = u.Group,
-                    Devices = u.Devices
-                })
+                    Devices = u.Devices,
 
+                    // Excluding sensitive info
+                    Password = "***",
+                    Salt = "***",
+                    TwoFactorKey = "***",
+                    Tokens = new List<AuthToken>(),
+
+                })
                 .OrderBy(u => u.Id)
-                .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id);
+                .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id),
+                Device = identityService.CurrentDevice
+            };
         }
 
         [Authorize, UsePaging, UseFiltering, UseSorting]
@@ -86,6 +94,12 @@ namespace Audex.API.GraphQL.Queries
                 .Include(gr => gr.Group)
                 .Include(gr => gr.Role)
                 .OrderBy(g => g.Id);
+        }
+
+        public class WhoAmIResponse
+        {
+            public User User { get; set; }
+            public Device Device { get; set; }
         }
 
         // [Authorize]

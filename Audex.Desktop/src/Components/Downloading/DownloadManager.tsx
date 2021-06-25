@@ -78,7 +78,7 @@ const DownloadManager = () => {
 			</IconButton>
 			{isCalloutVisible && (
 				<Callout
-					style={{ width: 320, padding: '20px 24px' }}
+					style={{ maxWidth: 320, padding: '20px 24px' }}
 					role='alertdialog'
 					gapSpace={0}
 					target={`#${buttonId}`}

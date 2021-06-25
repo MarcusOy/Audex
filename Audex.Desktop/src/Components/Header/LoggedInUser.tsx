@@ -1,4 +1,3 @@
-import { gql, useQuery } from '@apollo/client';
 import {
 	mergeStyleSets,
 	Persona,
@@ -15,38 +14,13 @@ import {
 import React, { useEffect } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import IdentityService from '../../Data/Services/IdentityService';
-import { WHO_AM_I } from '../../Data/Queries';
 import Spacer from '../Spacer';
-
-const accountMenuItems: IContextualMenuItem[] = [
-	{
-		key: 'account',
-		text: 'Account',
-		onClick: () => console.log('Account'),
-	},
-	{
-		key: 'logout',
-		text: 'Log Out',
-		onClick: () => IdentityService.logOut(),
-	},
-];
-
-const getInitials = (fullName) => {
-	const allNames = fullName.trim().split(' ');
-	const initials = allNames.reduce(
-		(acc, curr, index) => {
-			if (index === 0 || index === allNames.length - 1) {
-				acc = `${acc}${curr.charAt(0).toUpperCase()}`;
-			}
-			return acc;
-		},
-		['']
-	);
-	return initials;
-};
+import { getInitials } from '../../Data/Helpers';
+import { useHistory } from 'react-router-dom';
 
 const LoggedInUser = () => {
-	const identityState = DataStore.useState((s) => s.Identity);
+	const identityState = DataStore.useState((s) => s.Identity?.user);
+	const history = useHistory();
 	const { palette } = getTheme();
 
 	// Account Context Menu
@@ -63,6 +37,19 @@ const LoggedInUser = () => {
 		() => setShowContextualMenu(false),
 		[]
 	);
+
+	const accountMenuItems: IContextualMenuItem[] = [
+		{
+			key: 'account',
+			text: 'Account',
+			onClick: () => history.push('/Settings/Account'),
+		},
+		{
+			key: 'logout',
+			text: 'Log Out',
+			onClick: () => IdentityService.logOut(),
+		},
+	];
 
 	if (identityState == undefined)
 		return (

@@ -10,11 +10,13 @@ import HeaderBar from '../Components/Header/HeaderBar';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { WHO_AM_I } from '../Data/Queries';
 import IdentityService from '../Data/Services/IdentityService';
+import { ON_WHO_AM_I_UPDATE } from '../Data/Subscriptions';
 import HomePage from './HomePage';
+import SettingsPage from './SettingsPage';
 
 const AuthorizedRoot = () => {
 	const { data, loading, error, refetch } = useQuery(WHO_AM_I);
-	// const onIdentityUpdate = useSubscription(ON_WHO_AM_I_UPDATE, {});
+	const onIdentityUpdate = useSubscription(ON_WHO_AM_I_UPDATE, {});
 
 	// Set identity based on WHO_AM_I query
 	useEffect(() => {
@@ -22,9 +24,9 @@ const AuthorizedRoot = () => {
 	}, [data]);
 
 	// Refetch identity when subscription is triggered
-	// useEffect(() => {
-	// 	refetch();
-	// }, [onIdentityUpdate.data]);
+	useEffect(() => {
+		refetch();
+	}, [onIdentityUpdate.data]);
 
 	return (
 		<>
@@ -38,7 +40,9 @@ const AuthorizedRoot = () => {
 					<HomePage />
 				</Route>
 				<Route path='/Users'></Route>
-				<Route path='/Settings'></Route>
+				<Route path='/Settings/:tab'>
+					<SettingsPage />
+				</Route>
 			</Switch>
 		</>
 	);

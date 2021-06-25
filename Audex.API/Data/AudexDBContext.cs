@@ -1,4 +1,4 @@
-using Audex.API.Models.Auth;
+
 using Audex.API.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Audex.API.Models.Stacks;
+
 
 namespace Audex.API.Data
 {
@@ -52,6 +52,11 @@ namespace Audex.API.Data
                 .HasOne(s => s.UploadedByDevice)
                 .WithMany()
                 .HasForeignKey(s => new { s.UploadedByDeviceId, s.OwnerUserId });
+
+            // Enums
+            builder.Entity<DeviceType>()
+                .Property(dt => dt.Id)
+                    .HasConversion<int>();
 
 
             builder.HasAudexData();

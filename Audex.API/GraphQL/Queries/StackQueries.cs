@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
 using Audex.API.Data;
-using Audex.API.GraphQL.Extensions;
-using Audex.API.Models.Stacks;
+using Audex.API.Models;
 using Audex.API.Services;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;

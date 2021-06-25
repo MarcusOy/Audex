@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Audex.API.Data;
 using Audex.API.Helpers;
-using Audex.API.Models.Stacks;
+using Audex.API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

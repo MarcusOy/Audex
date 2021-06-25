@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Audex.API.Models.Auth;
 
-namespace Audex.API.Models.Stacks
+namespace Audex.API.Models
 {
     public class Stack : BaseEntity
     {

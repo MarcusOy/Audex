@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Audex.API.Models.Auth
+namespace Audex.API.Models
 {
     public class Group : BaseEntity
     {

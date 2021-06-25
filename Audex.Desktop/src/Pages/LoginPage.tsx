@@ -4,9 +4,7 @@ import {
 	Dialog,
 	DialogFooter,
 	DialogType,
-	Dropdown,
 	IDropdownOption,
-	Label,
 	LayerHost,
 	Link,
 	MessageBar,
@@ -32,6 +30,9 @@ import IdentityService from '../Data/Services/IdentityService';
 import { AUTHENTICATE } from '../Data/Mutations';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { useId } from '@fluentui/react-hooks';
+import FormTextBox from '../Components/Forms/FormTextBox';
+import FormDropdown from '../Components/Forms/FormDropdown';
+import Form from '../Components/Forms/Form';
 
 interface FormFields {
 	username: string;
@@ -102,13 +103,6 @@ const onServerRenderSelectedItem = (
 };
 
 const LoginPage = () => {
-	const {
-		register,
-		handleSubmit,
-		watch,
-		errors,
-		control,
-	} = useForm<FormFields>();
 	const onSubmit = (data: FormFields) =>
 		authenticate({
 			variables: {
@@ -134,6 +128,8 @@ const LoginPage = () => {
 				)
 					setIsShowingTwoFactor(true);
 			});
+	const onError = (errors, e) => console.log(errors, e);
+
 	const authState = DataStore.useState((s) => s.Authentication);
 	const [authenticate, { loading, error }] = useMutation(AUTHENTICATE);
 	const [isShowingTwoFactor, setIsShowingTwoFactor] = useState(false);
@@ -142,7 +138,7 @@ const LoginPage = () => {
 	const layerHostId = useId('two-factor-layer');
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<Form onFormSubmit={onSubmit} onFormError={onError}>
 			<Flex
 				style={{
 					height: '100vh',
@@ -179,72 +175,45 @@ const LoginPage = () => {
 					)}
 
 					<Stack>
-						<Label>Identity</Label>
 						<Stack
 							horizontal={screenIsAtLeast('sm')}
-							style={{ display: 'flex' }}
+							style={{ display: 'flex', alignItems: 'flex-end' }}
 						>
 							<div style={{ flexGrow: 1 }}>
-								<Controller
-									control={control}
+								<FormTextBox
 									name='username'
 									defaultValue={authState.username}
-									render={(
-										{ onChange, onBlur, value, name, ref },
-										{ invalid, isTouched, isDirty }
-									) => (
-										<TextField
-											name='username'
-											placeholder='Username'
-											suffix='@'
-											onChange={onChange}
-											value={value}
-										/>
-									)}
+									textBoxProps={{
+										label: 'Identity',
+										placeholder: 'Username',
+										suffix: '@',
+										required: true,
+									}}
 								/>
 							</div>
-							<Controller
-								control={control}
+							<FormDropdown
 								name='server'
-								render={(
-									{ onChange, onBlur, value, name, ref },
-									{ invalid, isTouched, isDirty }
-								) => (
-									<Dropdown
-										onRenderOption={onServerRenderOption}
-										onRenderTitle={
-											onServerRenderSelectedItem
-										}
-										ref={ref}
-										selectedKey={value}
-										onBlur={onBlur}
-										onChange={(e, d) => onChange(d.key)}
-										defaultSelectedKey='1'
-										options={serverOptions}
-									/>
-								)}
+								dropdownProps={{
+									onRenderOption: onServerRenderOption,
+									onRenderTitle: onServerRenderSelectedItem,
+									defaultSelectedKey: '1',
+									options: serverOptions,
+								}}
 							/>
 						</Stack>
 					</Stack>
-					<Controller
-						control={control}
+					<FormTextBox
 						name='password'
-						render={(
-							{ onChange, onBlur, value, name, ref },
-							{ invalid, isTouched, isDirty }
-						) => (
-							<TextField
-								label='Password'
-								type='password'
-								placeholder='·····'
-								onChange={onChange}
-								// canRevealPassword //TODO: figure out why this submits the form ???
-							/>
-						)}
+						textBoxProps={{
+							label: 'Password',
+							type: 'password',
+							placeholder: '·····',
+							required: true,
+						}}
 					/>
 					<Spacer size={10} />
 					<Stack horizontal>
-						<Controller
+						{/* <Controller
 							control={control}
 							name='persistent'
 							render={(
@@ -257,7 +226,7 @@ const LoginPage = () => {
 									defaultChecked
 								/>
 							)}
-						/>
+						/> */}
 
 						<Spacer orientation='horizontal' grow={true} />
 						<PrimaryButton
@@ -321,20 +290,12 @@ const LoginPage = () => {
 							</Link>
 						</MessageBar>
 					)}
-					<Controller
-						control={control}
+					<FormTextBox
 						name='code'
-						render={(
-							{ onChange, onBlur, value, name, ref },
-							{ invalid, isTouched, isDirty }
-						) => (
-							<TextField
-								name='code'
-								placeholder='ex: 123456'
-								onChange={onChange}
-								value={value}
-							/>
-						)}
+						textBoxProps={{
+							label: 'Code',
+							placeholder: 'ex: 123456',
+						}}
 					/>
 					{loading && (
 						<Spinner
@@ -358,7 +319,7 @@ const LoginPage = () => {
 					/>
 				</DialogFooter>
 			</Dialog>
-		</form>
+		</Form>
 	);
 };
 

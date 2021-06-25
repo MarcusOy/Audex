@@ -1,111 +1,113 @@
 {
-  "name": "audex",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@apollo/client": "^3.1.3",
-    "@fluentui/react": "8.0.0-beta.49",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/apollo-upload-client": "^14.1.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "@uifabric/file-type-icons": "^7.6.23",
-    "ahooks": "^2.9.3",
-    "alert": "^5.0.10",
-    "aphrodite": "^2.4.0",
-    "apollo-hooks-extended": "^1.0.0",
-    "apollo-link-error": "^1.1.13",
-    "apollo-link-jwt": "^1.1.5",
-    "apollo-upload-client": "^14.1.3",
-    "axios": "^0.21.0",
-    "axios-hooks": "^2.2.0",
-    "cross-env": "^7.0.3",
-    "date-fns": "^2.19.0",
-    "electron": "^11.1.0",
-    "electron-dl": "^3.2.1",
-    "faker": "^5.1.0",
-    "filesize": "^6.1.0",
-    "fluentui-react-grid": "^1.0.0",
-    "graphql": "^15.4.0",
-    "keytar": "^7.3.0",
-    "open-file-explorer": "^1.0.2",
-    "pullstate": "^1.20.5",
-    "react": "^17.0.1",
-    "react-back-to-top-button": "^0.0.14",
-    "react-dom": "^17.0.1",
-    "react-file-drop": "^3.1.2",
-    "react-hook-form": "^6.14.2",
-    "react-horizontal-scrolling-menu": "^0.7.10",
-    "react-icons": "^4.2.0",
-    "react-infinite-scroll-component": "^5.1.0",
-    "react-notification-badge": "^1.5.1",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.1",
-    "subscriptions-transport-ws": "^0.9.18",
-    "typescript": "^4.1.3",
-    "uuid": "^8.3.2",
-    "web-vitals": "^0.2.4"
-  },
-  "devDependencies": {
-    "@rescripts/cli": "^0.0.15",
-    "@rescripts/rescript-env": "^0.0.12",
-    "@types/faker": "^5.1.5",
-    "@types/lru-cache": "^5.1.0",
-    "@types/node": "^14.14.14",
-    "@types/react-router-dom": "^5.1.6",
-    "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.10.0",
-    "electron-builder": "^22.9.1",
-    "electron-devtools-installer": "^3.1.1",
-    "electron-rebuild": "^2.3.4",
-    "electron-reloader": "^1.2.1",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.1.3",
-    "eslint-plugin-json": "^2.1.2",
-    "eslint-plugin-prettier": "^3.3.0",
-    "eslint-plugin-react": "^7.21.5",
-    "prettier": "^2.2.1",
-    "prettier-eslint": "^12.0.0"
-  },
-  "homepage": "./",
-  "main": "src/Initialization/Startup.js",
-  "scripts": {
-    "start": "nf start -p 3000",
-    "build": "rescripts build",
-    "test": "rescripts test --env=jsdom",
-    "eject": "rescripts eject",
-    "electron": "electron .",
-    "electron-start": "node src/Initialization/StartupReact.js",
-    "react-start": "cross-env BROWSER=none rescripts start",
-    "pack": "build --dir",
-    "dist": "npm run build && build",
-    "postinstall": "install-app-deps"
-  },
-  "build": {
-    "appId": "com.audex.audexdesktop",
-    "win": {
-      "iconUrl": "https://cdn2.iconfinder.com/data/icons/designer-skills/128/react-256.png"
-    },
-    "directories": {
-      "buildResources": "public"
-    }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "rescripts": [
-    "env"
-  ]
+	"name": "audex",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@apollo/client": "^3.1.3",
+		"@fluentui/react": "8.0.0-beta.49",
+		"@testing-library/jest-dom": "^5.11.4",
+		"@testing-library/react": "^11.1.0",
+		"@testing-library/user-event": "^12.1.10",
+		"@types/apollo-upload-client": "^14.1.0",
+		"@types/react": "^17.0.0",
+		"@types/react-dom": "^17.0.0",
+		"@uifabric/file-type-icons": "^7.6.23",
+		"ahooks": "^2.9.3",
+		"alert": "^5.0.10",
+		"aphrodite": "^2.4.0",
+		"apollo-hooks-extended": "^1.0.0",
+		"apollo-link-error": "^1.1.13",
+		"apollo-link-jwt": "^1.1.5",
+		"apollo-upload-client": "^14.1.3",
+		"axios": "^0.21.0",
+		"axios-hooks": "^2.2.0",
+		"cross-env": "^7.0.3",
+		"date-fns": "^2.19.0",
+		"electron": "^11.1.0",
+		"electron-dl": "^3.2.1",
+		"faker": "^5.1.0",
+		"filesize": "^6.1.0",
+		"fluentui-react-grid": "^1.0.0",
+		"graphql": "^15.4.0",
+		"keytar": "^7.3.0",
+		"open-file-explorer": "^1.0.2",
+		"pullstate": "^1.20.5",
+		"react": "^17.0.1",
+		"react-back-to-top-button": "^0.0.14",
+		"react-dom": "^17.0.1",
+		"react-file-drop": "^3.1.2",
+		"react-hook-form": "^7.9.0",
+		"react-horizontal-scrolling-menu": "^0.7.10",
+		"react-icons": "^4.2.0",
+		"react-infinite-scroll-component": "^5.1.0",
+		"react-notification-badge": "^1.5.1",
+		"react-router-dom": "^5.2.0",
+		"react-scripts": "4.0.1",
+		"react-simple-animate": "^3.3.12",
+		"subscriptions-transport-ws": "^0.9.18",
+		"typescript": "^4.1.3",
+		"uuid": "^8.3.2",
+		"web-vitals": "^0.2.4"
+	},
+	"devDependencies": {
+		"@hookform/devtools": "3.0.2",
+		"@rescripts/cli": "^0.0.15",
+		"@rescripts/rescript-env": "^0.0.12",
+		"@types/faker": "^5.1.5",
+		"@types/lru-cache": "^5.1.0",
+		"@types/node": "^14.14.14",
+		"@types/react-router-dom": "^5.1.6",
+		"@types/uuid": "^8.3.0",
+		"@typescript-eslint/eslint-plugin": "^4.10.0",
+		"electron-builder": "^22.9.1",
+		"electron-devtools-installer": "^3.1.1",
+		"electron-rebuild": "^2.3.4",
+		"electron-reloader": "^1.2.1",
+		"eslint-config-prettier": "^7.0.0",
+		"eslint-plugin-import": "^2.22.1",
+		"eslint-plugin-jest": "^24.1.3",
+		"eslint-plugin-json": "^2.1.2",
+		"eslint-plugin-prettier": "^3.3.0",
+		"eslint-plugin-react": "^7.21.5",
+		"prettier": "^2.2.1",
+		"prettier-eslint": "^12.0.0"
+	},
+	"homepage": "./",
+	"main": "src/Initialization/Startup.js",
+	"scripts": {
+		"start": "nf start -p 3000",
+		"build": "rescripts build",
+		"test": "rescripts test --env=jsdom",
+		"eject": "rescripts eject",
+		"electron": "electron .",
+		"electron-start": "node src/Initialization/StartupReact.js",
+		"react-start": "cross-env BROWSER=none rescripts start",
+		"pack": "build --dir",
+		"dist": "npm run build && build",
+		"postinstall": "install-app-deps"
+	},
+	"build": {
+		"appId": "com.audex.audexdesktop",
+		"win": {
+			"iconUrl": "https://cdn2.iconfinder.com/data/icons/designer-skills/128/react-256.png"
+		},
+		"directories": {
+			"buildResources": "public"
+		}
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"rescripts": [
+		"env"
+	]
 }

@@ -7,3 +7,11 @@ export const ON_STACKS_UPDATE = gql`
 		}
 	}
 `;
+
+export const ON_WHO_AM_I_UPDATE = gql`
+	subscription {
+		onUserUpdate {
+			id
+		}
+	}
+`;

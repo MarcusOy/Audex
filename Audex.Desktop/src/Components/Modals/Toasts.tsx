@@ -6,8 +6,9 @@ import {
 	IStyleFunctionOrObject,
 	MessageBar,
 	MessageBarType,
+	MotionTimings,
 } from '@fluentui/react';
-import faker from 'faker';
+import { Animate } from 'react-simple-animate';
 import React, { useState } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import ToastService from '../../Data/Services/ToastService';
@@ -50,23 +51,37 @@ const Toasts = () => {
 		>
 			{toastState.toasts.map((t) => {
 				return (
-					<div key={t.key}>
-						<Spacer />
-						<MessageBar
-							key={t.key}
-							styles={{
-								root: {
-									opacity: 0.95,
-									boxShadow:
-										'rgba(0, 0, 0, 0.1) 0px 4px 12px',
-									borderRadius: 10,
-									width: 300,
-								},
-							}}
-							{...t}
-							onDismiss={() => onDismiss(t.key as string)}
-						/>
-					</div>
+					<Animate
+						key={t.key}
+						play
+						easeType={MotionTimings.decelerate}
+						start={{
+							opacity: 0,
+							transform: 'translateX(48px)',
+						}}
+						end={{
+							opacity: 1,
+							transform: 'translateX(0px)',
+						}}
+					>
+						<div>
+							<Spacer />
+							<MessageBar
+								key={t.key}
+								styles={{
+									root: {
+										opacity: 0.95,
+										boxShadow:
+											'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+										borderRadius: 10,
+										width: 300,
+									},
+								}}
+								{...t}
+								onDismiss={() => onDismiss(t.key as string)}
+							/>
+						</div>
+					</Animate>
 				);
 			})}
 			<UploadToast />

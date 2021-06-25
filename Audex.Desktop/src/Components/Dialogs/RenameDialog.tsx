@@ -8,6 +8,7 @@ import {
 	TextField,
 	Spinner,
 	Text,
+	SpinnerSize,
 } from '@fluentui/react';
 import { RENAME_FILE, RENAME_STACK } from '../../Data/Mutations';
 import { useMutation } from '@apollo/client';
@@ -79,7 +80,11 @@ const RenameDialog = (props: Props) => {
 					disabled={loading}
 					onClick={onSubmit}
 					onRenderIcon={() => {
-						return loading ? <Spinner /> : <></>;
+						return loading ? (
+							<Spinner size={SpinnerSize.small} />
+						) : (
+							<></>
+						);
 					}}
 					text='Submit'
 				/>

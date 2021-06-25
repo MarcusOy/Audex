@@ -95,3 +95,11 @@ export const GET_DOWNLOAD_TOKENS_FOR_STACK = gql`
 		}
 	}
 `;
+
+export const EDIT_DEVICE = gql`
+	mutation($name: String!, $deviceType: DeviceTypeEnum!) {
+		editDevice(request: { name: $name, deviceType: $deviceType }) {
+			id
+		}
+	}
+`;
