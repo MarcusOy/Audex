@@ -6,6 +6,7 @@ namespace Audex.API.Services
         public string DomainName { get; set; }
         public Jwt Jwt { get; set; }
         public FileSystem FileSystem { get; set; }
+        public Notifications Notifications { get; set; }
     }
 
     public class Jwt
@@ -19,5 +20,11 @@ namespace Audex.API.Services
     {
         public string Persistant { get; set; }
         public string Temporary { get; set; }
+    }
+    public class Notifications
+    {
+        public string FcmId { get; set; }
+        public string AppId { get; set; }
+        public string ApiKey { get; set; }
     }
 }

@@ -19,7 +19,7 @@ export interface AudexStore {
 		refreshToken: string;
 		deviceId: string;
 	};
-	Identity?: AudexIdentity;
+	Identity?: Identity;
 	Modals: {
 		Toasts: IToasts;
 		StackPanel: IStackPanel;
@@ -36,7 +36,7 @@ export interface AudexStore {
 	};
 }
 
-export interface AudexIdentity {
+export interface Identity {
 	user: {
 		id: string;
 		username: string;
@@ -47,22 +47,45 @@ export interface AudexIdentity {
 				name: string;
 				color: string;
 			};
-			createdOn: Date;
+			createdOn: string;
 		}[];
 		group: {
 			name: string;
 		};
-		createdOn: Date;
+		createdOn: string;
 	};
 	device: {
 		id: string;
 		name: string;
 		isFirstTimeSetup: boolean;
+		createdOn: string;
 		deviceType: {
 			name: string;
 			color: string;
 		};
-		createdOn: Date;
+		incomingTransfers: IncomingTransfer[];
+	};
+}
+
+export interface IncomingTransfer {
+	id: string;
+	createdOn: string;
+	stack: {
+		id: string;
+		name: string;
+		vanityName: {
+			name: string;
+			suffix: string;
+		};
+		files: {
+			id: string;
+			name: string;
+			fileExtension: string;
+		}[];
+	};
+	fromDevice: {
+		id: string;
+		name: string;
 	};
 }
 

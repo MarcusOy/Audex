@@ -3,14 +3,16 @@ using System;
 using Audex.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210703211414_NewInitial")]
+    partial class NewInitial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -622,16 +624,28 @@ namespace Audex.API.Migrations
                     b.Property<Guid>("FromDeviceId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("FromDeviceId1")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("FromDeviceUserId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("FromUserId")
                         .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("StackId")
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("ToDeviceId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ToDeviceId1")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ToDeviceUserId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("ToUserId")
@@ -650,7 +664,11 @@ namespace Audex.API.Migrations
 
                     b.HasIndex("FromDeviceId", "FromUserId");
 
+                    b.HasIndex("FromDeviceId1", "FromDeviceUserId");
+
                     b.HasIndex("ToDeviceId", "ToUserId");
+
+                    b.HasIndex("ToDeviceId1", "ToDeviceUserId");
 
                     b.ToTable("Transfers");
                 });
@@ -860,17 +878,25 @@ namespace Audex.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Audex.API.Models.Device", "FromDevice")
+                    b.HasOne("Audex.API.Models.Device", null)
                         .WithMany("OutgoingTransfers")
                         .HasForeignKey("FromDeviceId", "FromUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Audex.API.Models.Device", "ToDevice")
+                    b.HasOne("Audex.API.Models.Device", "FromDevice")
+                        .WithMany()
+                        .HasForeignKey("FromDeviceId1", "FromDeviceUserId");
+
+                    b.HasOne("Audex.API.Models.Device", null)
                         .WithMany("IncomingTransfers")
                         .HasForeignKey("ToDeviceId", "ToUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Audex.API.Models.Device", "ToDevice")
+                        .WithMany()
+                        .HasForeignKey("ToDeviceId1", "ToDeviceUserId");
 
                     b.Navigation("FromDevice");
 

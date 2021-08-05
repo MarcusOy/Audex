@@ -7,14 +7,14 @@ namespace Audex.API.Data
     {
         public static void HasAudexData(this ModelBuilder builder)
         {
-            builder.HasRoles();
-            builder.HasGroups();
-            builder.HasGroupRoles();
-            builder.HasDeviceTypes();
+            builder.HasRoles()
+                .HasGroups()
+                .HasGroupRoles()
+                .HasDeviceTypes();
         }
 
         // TODO: make these dynamic or based from file/db
-        private static void HasRoles(this ModelBuilder builder)
+        private static ModelBuilder HasRoles(this ModelBuilder builder)
         {
             builder.Entity<Role>().HasData(
                 new Role
@@ -53,8 +53,9 @@ namespace Audex.API.Data
                     Name = "PubliclyShareFiles"
                 }
             );
+            return builder;
         }
-        private static void HasGroups(this ModelBuilder builder)
+        private static ModelBuilder HasGroups(this ModelBuilder builder)
         {
             builder.Entity<Group>().HasData(
                 new Group
@@ -73,8 +74,10 @@ namespace Audex.API.Data
                     Name = "Viewer"
                 }
             );
+            return builder;
+
         }
-        private static void HasGroupRoles(this ModelBuilder builder)
+        private static ModelBuilder HasGroupRoles(this ModelBuilder builder)
         {
             builder.Entity<GroupRole>().HasData(
                 new GroupRole
@@ -144,8 +147,9 @@ namespace Audex.API.Data
                     RoleId = 6
                 }
             );
+            return builder;
         }
-        private static void HasDeviceTypes(this ModelBuilder builder)
+        private static ModelBuilder HasDeviceTypes(this ModelBuilder builder)
         {
             builder.Entity<DeviceType>().HasData(
                 new DeviceType
@@ -197,6 +201,7 @@ namespace Audex.API.Data
                     Color = "#46483e"
                 }
             );
+            return builder;
         }
     }
 }

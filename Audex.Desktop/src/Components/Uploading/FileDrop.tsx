@@ -20,7 +20,7 @@ const FileDrop = (props: Props) => {
 
 	const { palette } = useTheme();
 	const baseOverlayStyle: React.CSSProperties = {
-		position: 'absolute',
+		position: 'fixed',
 		top: 0,
 		left: 0,
 		right: 0,

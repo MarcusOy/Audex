@@ -8,6 +8,7 @@ using Audex.API.Data;
 using Audex.API.Helpers;
 using Audex.API.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -36,6 +37,13 @@ namespace Audex.API.Services
         /// <param name="fileIds"></param>
         /// <returns></returns>
         Task<List<DownloadToken>> GetDownloadTokens(List<Guid> fileIds);
+        /// <summary>
+        /// Creates download tokens for each file inside the provided
+        /// stack.
+        /// </summary>
+        /// <param name="stack"></param>
+        /// <returns></returns>
+        Task<List<DownloadToken>> GetDownloadTokens(Stack stack);
     }
 
     public class FileNodeService : IFileNodeService
@@ -45,19 +53,21 @@ namespace Audex.API.Services
         private readonly AudexDBContext _dbContext;
         private readonly AudexSettings _settings;
         private readonly IStorageService _storageService;
+        private readonly IIdentityService _idService;
 
-        public FileNodeService(
-            IHttpContextAccessor context,
-            ILogger<FileNodeService> logger,
-            AudexDBContext dbContext,
-            IOptions<AudexSettings> settings,
-            IStorageService storageService)
+        public FileNodeService(IHttpContextAccessor context,
+                               ILogger<FileNodeService> logger,
+                               AudexDBContext dbContext,
+                               IOptions<AudexSettings> settings,
+                               IStorageService storageService,
+                               IIdentityService idService)
         {
             _context = context.HttpContext;
             _logger = logger;
             _dbContext = dbContext;
             _settings = settings.Value;
             _storageService = storageService;
+            _idService = idService;
         }
 
         public async Task<FileNode> CreateAsync(IFormFile file)
@@ -181,6 +191,13 @@ namespace Audex.API.Services
 
             return dts;
         }
+        public async Task<List<DownloadToken>> GetDownloadTokens(Stack stack)
+        {
+            if (stack.Files.Count <= 0)
+                throw new InvalidOperationException("No files in stack.");
 
+            var fileIds = stack.Files.Select(s => s.Id).ToList();
+            return await GetDownloadTokens(fileIds);
+        }
     }
 }

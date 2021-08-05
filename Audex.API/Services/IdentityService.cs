@@ -159,6 +159,12 @@ namespace Audex.API.Services
                 var deviceId = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == "deviceId").Value);
                 return _dbContext.Devices
+                    .Include(d => d.IncomingTransfers.Where(t => t.Status == TransferStatus.Pending)
+                                                     .OrderByDescending(t => t.CreatedOn))
+                        .ThenInclude(t => t.Stack)
+                            .ThenInclude(s => s.Files)
+                    .Include(d => d.IncomingTransfers)
+                        .ThenInclude(t => t.FromDevice)
                     .Where(d => d.UserId == CurrentUser.Id)
                     .FirstOrDefault(d => d.Id == deviceId);
             }

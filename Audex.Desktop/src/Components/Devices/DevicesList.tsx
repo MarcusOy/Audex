@@ -1,40 +1,18 @@
-import * as React from 'react';
-import {
-	IconButton,
-	Stack,
-	Label,
-	Separator,
-	Text,
-	Spinner,
-	SpinnerSize,
-} from '@fluentui/react';
+import React from 'react';
+import { IconButton, Spinner, SpinnerSize } from '@fluentui/react';
 import ScrollMenu from 'react-horizontal-scrolling-menu';
-import faker from 'faker';
 import DeviceIcon, { AddDeviceIcon, IDeviceIconProps } from './DeviceIcon';
 import { useEffect, useState } from 'react';
-import {
-	FaAndroid,
-	FaApple,
-	FaAppStore,
-	FaAppStoreIos,
-	FaDesktop,
-	FaGlobe,
-	FaLinux,
-	FaServer,
-	FaWindows,
-} from 'react-icons/fa';
 import { DataStore } from '../../Data/DataStore/DataStore';
-import { IconBaseProps } from 'react-icons/lib';
 
-const addButton: IDeviceIconProps = {
-	id: '000',
-	name: 'Add button',
-	type: 'add',
-	color: '',
-	componentOverride: <AddDeviceIcon />,
-};
+interface IDevicesListProps extends React.HTMLAttributes<HTMLDivElement> {
+	hideCurrentDevice?: boolean;
+	hideAddButton?: boolean;
+	compactMode?: boolean;
+	searchText?: string;
+}
 
-const DevicesList = () => {
+const DevicesList = (p: IDevicesListProps) => {
 	const currentDeviceId = DataStore.useState(
 		(s) => s.Authentication.deviceId
 	);
@@ -44,7 +22,7 @@ const DevicesList = () => {
 	useEffect(() => {
 		if (deviceState) {
 			let currentD: IDeviceIconProps | undefined;
-			const ds: IDeviceIconProps[] = deviceState
+			let ds: IDeviceIconProps[] = deviceState
 				.map((d) => {
 					const newDevice = {
 						id: d.id,
@@ -59,12 +37,22 @@ const DevicesList = () => {
 					return newDevice;
 				})
 				.filter((i) => i != undefined) as IDeviceIconProps[];
-			if (currentD != undefined)
+			if (p.searchText && p.searchText != '')
+				ds = ds.filter(
+					(i) =>
+						i.name
+							.toUpperCase()
+							.includes(p.searchText!.toUpperCase()) ||
+						i.type
+							.toUpperCase()
+							.includes(p.searchText!.toUpperCase())
+				);
+			if (!p.hideCurrentDevice && currentD != undefined)
 				ds.unshift({ ...currentD, isCurrentDevice: true });
-			ds.push(addButton);
+			if (!p.hideAddButton) ds.push(addButton);
 			setDevices(ds);
 		}
-	}, [deviceState]);
+	}, [deviceState, p.searchText]);
 
 	return (
 		<div
@@ -107,6 +95,14 @@ const DevicesList = () => {
 			)}
 		</div>
 	);
+};
+
+const addButton: IDeviceIconProps = {
+	id: '000',
+	name: 'Add button',
+	type: 'add',
+	color: '',
+	componentOverride: <AddDeviceIcon />,
 };
 
 export default DevicesList;

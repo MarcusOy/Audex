@@ -1,5 +1,4 @@
 import React from 'react';
-import faker from 'faker';
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { IMessageBarProps, MessageBarType } from '@fluentui/react';
 import { DataStore } from '../DataStore/DataStore';
@@ -8,7 +7,6 @@ class ToastService {
 	static toasts: IMessageBarProps[] = [];
 
 	static push(t: IMessageBarProps, d?: number) {
-		t.key = faker.random.alphaNumeric(12);
 		DataStore.update((s) => {
 			const ts: IMessageBarProps[] = new Array<IMessageBarProps>().concat(
 				DataStore.getRawState().Modals.Toasts.toasts.slice()
@@ -53,6 +51,13 @@ class ToastService {
 	}
 }
 export default ToastService;
+
+export const SuccessToast = (m: string) => {
+	return {
+		messageBarType: MessageBarType.success,
+		children: <>{m}</>,
+	};
+};
 
 export const ErrorToast = (m: string) => {
 	return {

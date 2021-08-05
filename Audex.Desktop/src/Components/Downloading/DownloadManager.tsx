@@ -4,6 +4,7 @@ import {
 	IconButton,
 	Stack,
 	Text,
+	useTheme,
 } from '@fluentui/react';
 import React, { useState } from 'react';
 import { useId } from '@fluentui/react-hooks';
@@ -14,27 +15,7 @@ import DownloadService, {
 } from '../../Data/Services/DownloadService';
 import NotificationBadge, { Effect } from 'react-notification-badge';
 import DownloadUnitGroup from './DownloadUnitGroup';
-
-// function from https://stackoverflow.com/a/65148504/6111675
-const groupBy = (inputArray, key, removeKey = false, outputType = {}) => {
-	return inputArray.reduce(
-		(previous, current) => {
-			// Get the current value that matches the input key and remove the key value for it.
-			const { [key]: keyValue } = current;
-			// remove the key if option is set
-			removeKey && keyValue && delete current[key];
-			// If there is already an array for the user provided key use it else default to an empty array.
-			const { [keyValue]: reducedValue = [] } = previous;
-
-			// Create a new object and return that merges the previous with the current object
-			return Object.assign(previous, {
-				[keyValue]: reducedValue.concat(current),
-			});
-		},
-		// Replace the object here to an array to change output object to an array
-		outputType
-	);
-};
+import { groupBy } from '../../Data/Helpers';
 
 const DownloadManager = () => {
 	const downloadState = DataStore.useState((s) => s.Download);
@@ -73,7 +54,12 @@ const DownloadManager = () => {
 				<NotificationBadge
 					count={downloadState.NewItems}
 					effect={Effect.SCALE}
-					style={{ fontSize: 10, minWidth: 3, right: 0 }}
+					style={{
+						fontSize: 10,
+						minWidth: 3,
+						right: 0,
+						backgroundColor: useTheme().palette.orangeLight,
+					}}
 				/>
 			</IconButton>
 			{isCalloutVisible && (

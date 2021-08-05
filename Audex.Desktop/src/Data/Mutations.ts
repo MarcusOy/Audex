@@ -103,3 +103,33 @@ export const EDIT_DEVICE = gql`
 		}
 	}
 `;
+export const TRANSFER_STACK = gql`
+	mutation($stackId: Uuid!, $toDeviceId: Uuid!) {
+		transferStack(stackId: $stackId, toDeviceId: $toDeviceId) {
+			id
+			stack {
+				id
+				name
+			}
+			toDevice {
+				id
+				name
+			}
+		}
+	}
+`;
+export const ACCEPT_TRANSFER = gql`
+	mutation($transferId: Uuid!) {
+		acceptTransfer(transferId: $transferId) {
+			id
+		}
+	}
+`;
+export const DECLINE_TRANSFER = gql`
+	mutation($transferId: Uuid!) {
+		declineTransfer(transferId: $transferId) {
+			id
+			status
+		}
+	}
+`;

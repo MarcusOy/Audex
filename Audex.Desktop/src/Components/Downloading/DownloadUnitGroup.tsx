@@ -1,7 +1,7 @@
 import { IconButton } from '@fluentui/react';
 import { Text, Stack, MotionTimings } from '@fluentui/react-internal';
 import { StyleSheet, css } from 'aphrodite';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getFileExt, getFolderName } from '../../Data/Helpers';
 import DownloadService, {
 	IDownload,
@@ -20,7 +20,7 @@ const DownloadUnitGroup = (p: IDownloadUnitGroupProps) => {
 	const completedDownloads = p.downloads.filter((d) => d.progress == 1)
 		.length;
 	const totalDownloads = p.downloads.length;
-	const fileExtensions = p.downloads.map((d) => {
+	const fileExtensions = p.downloads.slice(0, 3).map((d) => {
 		return getFileExt(d.fileName);
 	});
 
@@ -77,20 +77,12 @@ const DownloadUnitGroup = (p: IDownloadUnitGroupProps) => {
 				}}
 			>
 				<div
-					// className={isShown ? css(styles.activeGroup) : undefined}
 					style={{
 						marginTop: 10,
 						marginLeft: 5,
 						marginRight: 5,
-
-						// transitionProperty: 'all',
-						// transitionDuration: '300ms',
-						// transitionTimingFunction: MotionTimings.decelerate,
-						// transform: 'translate3d(0, -48px, 0)',
 						overflow: 'hidden',
 						height: 'auto',
-						// maxHeight: 0,
-						// opacity: 0,
 					}}
 				>
 					{p.downloads.map((d) => {
@@ -101,13 +93,5 @@ const DownloadUnitGroup = (p: IDownloadUnitGroupProps) => {
 		</div>
 	);
 };
-
-const styles = StyleSheet.create({
-	activeGroup: {
-		maxHeight: 10000,
-		opacity: 1,
-		transform: 'translate3d(0, 0, 0)',
-	},
-});
 
 export default DownloadUnitGroup;

@@ -66,9 +66,7 @@ const RenameDialog = (props: Props) => {
 			</Text>
 			<Spacer />
 			<TextField
-				placeholder={
-					props.stack ? props.stack.noName : props.file?.name
-				}
+				placeholder={props.stack ? props.stack.name : props.file?.name}
 				defaultValue={props.stack?.rawName ?? ''}
 				onChange={(_, n) => setNewName(n!)}
 				onKeyDown={(e) => {

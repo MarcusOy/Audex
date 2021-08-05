@@ -111,7 +111,7 @@ const DeviceIcon = (p: IDeviceIconProps) => {
 
 	return (
 		<Stack
-			style={{ width: 75, marginRight: 10 }}
+			style={{ width: 75 }}
 			horizontalAlign='center'
 			key={p.name}
 			onClick={p.hasOnClick ? p.onClick : onShowContextualMenu}

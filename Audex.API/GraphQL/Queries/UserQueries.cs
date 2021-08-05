@@ -21,35 +21,35 @@ namespace Audex.API.GraphQL.Queries
     {
         [Authorize]
         public WhoAmIResponse WhoAmI([Service] IIdentityService identityService,
-                           [Service] AudexDBContext context)
+                                     [Service] AudexDBContext context)
         {
             return new WhoAmIResponse
             {
                 User = context.Users
-                .Include(u => u.Group)
-                    .ThenInclude(g => g.GroupRoles)
-                    .ThenInclude(gr => gr.Role)
-                .Include(u => u.Devices)
-                    .ThenInclude(d => d.DeviceType)
-                .Select(u => new User
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    CreatedOn = u.CreatedOn,
-                    Active = u.Active,
-                    GroupId = u.GroupId,
-                    Group = u.Group,
-                    Devices = u.Devices,
+                    .Include(u => u.Group)
+                        .ThenInclude(g => g.GroupRoles)
+                        .ThenInclude(gr => gr.Role)
+                    .Include(u => u.Devices)
+                        .ThenInclude(d => d.DeviceType)
+                    .Select(u => new User
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        CreatedOn = u.CreatedOn,
+                        Active = u.Active,
+                        GroupId = u.GroupId,
+                        Group = u.Group,
+                        Devices = u.Devices,
 
-                    // Excluding sensitive info
-                    Password = "***",
-                    Salt = "***",
-                    TwoFactorKey = "***",
-                    Tokens = new List<AuthToken>(),
+                        // Excluding sensitive info
+                        Password = "***",
+                        Salt = "***",
+                        TwoFactorKey = "***",
+                        Tokens = new List<AuthToken>(),
 
-                })
-                .OrderBy(u => u.Id)
-                .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id),
+                    })
+                    .OrderBy(u => u.Id)
+                    .FirstOrDefault(u => u.Id == identityService.CurrentUser.Id),
                 Device = identityService.CurrentDevice
             };
         }

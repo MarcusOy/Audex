@@ -1,6 +1,6 @@
 const { ipcRenderer } = window.require('electron');
-import faker from 'faker';
 import { DataStore } from '../DataStore/DataStore';
+import { groupBy } from '../Helpers';
 
 export interface IDownload {
 	fileName: string;
@@ -48,10 +48,12 @@ class DownloadService {
 				});
 		});
 		ipcRenderer.on(`download-completed`, (_: any, { file }: any) => {
-			if (file)
+			if (file) {
 				DataStore.update((s) => {
 					s.Download.Downloads.get(file.path)!.isDownloaded = true;
 				});
+				// this.checkDownloadGroupCompletion(file);
+			}
 		});
 		this.isInit = true;
 	}
@@ -74,6 +76,21 @@ class DownloadService {
 		DataStore.update((d) => {
 			d.Download.NewItems = d.Download.NewItems + links.length;
 		});
+	}
+
+	static checkDownloadGroupCompletion(file: any) {
+		const downloadGroups: IDownload[][] = Object.values(
+			groupBy(
+				Array.from(
+					DataStore.getRawState().Download.Downloads.entries()
+				).map(([k, d]) => {
+					return d;
+				}),
+				'groupId',
+				false
+			)
+		);
+		// const downloadGroup =
 	}
 
 	static dismissNewItems(): void {

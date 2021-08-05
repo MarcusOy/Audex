@@ -9,6 +9,21 @@ namespace Audex.API.Models
         [Required]
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public VanityName VanityName
+        {
+            get
+            {
+                if (Name is not null && !String.IsNullOrWhiteSpace(Name))
+                    return new VanityName { Name = Name, Suffix = "" };
+                if (Files is null)
+                    return new VanityName { Name = "", Suffix = "No vanity name. Make sure to include Stack.Files to generate one." };
+                if (Files.Count == 0)
+                    return new VanityName { Name = "", Suffix = "Empty stack" };
+                if (Files.Count == 1)
+                    return new VanityName { Name = Files[0].Name, Suffix = " by itself" };
+                return new VanityName { Name = Files[0].Name, Suffix = $" and {Files.Count} other files" };
+            }
+        }
         public DateTime? ExpiryDate { get; set; }
 
         // StackCategory Relationship
@@ -44,5 +59,10 @@ namespace Audex.API.Models
 
         // Stack Relationship
         public List<Stack> Stacks { get; set; }
+    }
+    public class VanityName
+    {
+        public string Name { get; set; }
+        public string Suffix { get; set; }
     }
 }

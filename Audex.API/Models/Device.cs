@@ -30,6 +30,10 @@ namespace Audex.API.Models
         public DeviceTypeEnum DeviceTypeId { get; set; }
         [JsonIgnore]
         public DeviceType DeviceType { get; set; }
+
+        // Transfer Relationship
+        public List<Transfer> IncomingTransfers { get; set; }
+        public List<Transfer> OutgoingTransfers { get; set; }
     }
 
     public class DeviceType : BaseEntity

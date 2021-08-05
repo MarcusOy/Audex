@@ -81,9 +81,12 @@ namespace Audex.API.GraphQL.Mutations
             if (stack is null)
                 throw new InvalidDataException("Stack not found.");
 
-            stack.Name = SanitizerHelper.SanitizeString(newName);
-            await dbContext.SaveChangesAsync();
+            if (String.IsNullOrWhiteSpace(SanitizerHelper.SanitizeString(newName)))
+                stack.Name = null;
+            else
+                stack.Name = SanitizerHelper.SanitizeString(newName);
 
+            await dbContext.SaveChangesAsync();
             await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, new Guid[] { stack.Id });
 
             return newName;

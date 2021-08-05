@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
-import { IconButton, ProgressIndicator, Text, useTheme } from '@fluentui/react';
+import {
+	IconButton,
+	ProgressIndicator,
+	Stack,
+	Text,
+	useTheme,
+} from '@fluentui/react';
 import filesize from 'filesize';
 import useAxios from 'axios-hooks';
 import { DataStore } from '../../Data/DataStore/DataStore';
@@ -8,6 +14,9 @@ import { useStoreState } from 'pullstate';
 import FileService from '../../Data/Services/FileService';
 import { useMutation } from '@apollo/client';
 import { UPLOAD_FILE } from '../../Data/Mutations';
+import FileIcon from '../Icons/FileIcon';
+import Spacer from '../Spacer';
+import { getFileExt, getFileName } from '../../Data/Helpers';
 
 export interface IFileUnit {
 	success: boolean;
@@ -28,6 +37,8 @@ const FileUnit = (props: Props) => {
 		DataStore,
 		(s) => s.Upload.FileUnits[props.fileIndex]
 	);
+	const file = getFileName(props.file.name);
+	const ext = getFileExt(props.file.name);
 	const [isError, setIsError] = useState<boolean>(false);
 	const [error, setError] = useState<string>('');
 
@@ -114,19 +125,27 @@ const FileUnit = (props: Props) => {
 				<ProgressIndicator
 					key={props.file.name}
 					label={
-						<div className={css(styles.fileNameContainer)}>
-							<Text
-								className={css(styles.fileName, styles.hover)}
-								variant='smallPlus'
-							>
-								{props.file.name}
-							</Text>
-						</div>
+						// <div className={css(styles.fileNameContainer)}>
+						// 	<Text
+						// 		className={css(styles.fileName, styles.hover)}
+						// 		variant='smallPlus'
+						// 	>
+						// 		{props.file.name}
+						// 	</Text>
+						// </div>
+						<Stack horizontal style={{ overflowX: 'hidden' }}>
+							<FileIcon extension={ext} xs />
+							<Spacer orientation='horizontal' />
+							{file}
+						</Stack>
 					}
 					description={
 						<Text variant='small'>
 							{!fileUnitState.success ? description : ''}
 						</Text>
+					}
+					progressHidden={
+						fileUnitState.success && fileUnitState.uid != undefined
 					}
 					percentComplete={
 						fileUnitState.success || isError
@@ -155,7 +174,7 @@ const FileUnit = (props: Props) => {
 			<IconButton
 				iconProps={{ iconName: 'ChromeClose' }}
 				size={5}
-				title={'Remove file'}
+				title='Remove file'
 				onClick={removeFile}
 				styles={{ icon: { fontSize: 12 } }}
 			/>
@@ -172,7 +191,6 @@ const styles = StyleSheet.create({
 	progressIndicatorContainer: {
 		flexGrow: 1,
 		whiteSpace: 'normal',
-		maxWidth: '40ch',
 	},
 	progressIndicator: {
 		whiteSpace: 'normal',
@@ -192,7 +210,7 @@ const styles = StyleSheet.create({
 	},
 	hover: {
 		':hover': {
-			transform: 'translateX(calc(155px - 100%))',
+			// transform: 'translateX(calc(155px - 100%))',
 		},
 	},
 });

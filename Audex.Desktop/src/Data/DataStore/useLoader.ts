@@ -21,7 +21,6 @@ const useLoader = () => {
 				const r =
 					(await PersistenceService.getSecured('refresh')) ?? '';
 
-				console.log(`Getting auth from storage... ${u} ${a} ${r}`);
 				DataStore.update((s) => {
 					// Authentication
 					s.Authentication.username = u;

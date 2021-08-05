@@ -24,8 +24,8 @@ namespace Audex.API.Data
         public DbSet<StackCategory> StackCategory { get; set; }
         public DbSet<FileNode> FileNodes { get; set; }
         public DbSet<DownloadToken> DownloadTokens { get; set; }
-        // public DbSet<Transfer> Transfers { get; set; }
-        public DbSet<Share> Shares { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
+        // public DbSet<Share> Shares { get; set; }
         // public DbSet<Activity> Activity { get; set; }
         // public DbSet<FileType> FilesTypes { get; set; }
         // public DbSet<FileExtension> FileExtensions { get; set; }
@@ -52,13 +52,36 @@ namespace Audex.API.Data
                 .HasOne(s => s.UploadedByDevice)
                 .WithMany()
                 .HasForeignKey(s => new { s.UploadedByDeviceId, s.OwnerUserId });
+            builder.Entity<Transfer>()
+                .HasOne(t => t.ToDevice)
+                .WithMany()
+                .HasForeignKey(t => new { t.ToDeviceId, t.ToUserId });
+            builder.Entity<Transfer>()
+                .HasOne(t => t.FromDevice)
+                .WithMany()
+                .HasForeignKey(t => new { t.FromDeviceId, t.FromUserId });
+            builder.Entity<Device>()
+                .HasMany(d => d.IncomingTransfers)
+                .WithOne(t => t.ToDevice);
+            // no FK, because there's already an FK above
+            builder.Entity<Device>()
+                .HasMany(d => d.OutgoingTransfers)
+                .WithOne(t => t.FromDevice);
+            // no FK, because there's already an FK above
 
             // Enums
             builder.Entity<DeviceType>()
                 .Property(dt => dt.Id)
                     .HasConversion<int>();
+            builder.Entity<Transfer>()
+                .Property(t => t.Status)
+                    .HasConversion<int>();
 
+            // Do not map VanityName on Stack table
+            builder.Entity<Stack>()
+                .Ignore(s => s.VanityName);
 
+            // Ensure seed data
             builder.HasAudexData();
         }
 
@@ -113,10 +136,6 @@ namespace Audex.API.Data
         //     => options.UseMySql("server=localhost:3306;user=audexapp;password=!audexapp!;database=audex", new MySqlServerVersion(new Version(5, 7, 32)));
     }
 
-
-
-
-
     // public class File
     // {
     //     [Required]
@@ -165,70 +184,22 @@ namespace Audex.API.Data
     //     public FileType FileType { get; set; }
     // }
 
-    public class DownloadToken : BaseEntity
-    {
-        [Required]
-        public Guid Id { get; set; }
-        [Required]
-        public int NumberOfUses { get; set; }
-        [Required]
-        public int MaxNumberOfUses { get; set; }
-        public DateTime? ExpiresOn { get; set; }
-
-        // FileNode relationship
-        public Guid FileNodeId { get; set; }
-        public FileNode FileNode { get; set; }
-
-        // User relationship
-        public Guid? ForUserId { get; set; } // if null, token is public
-        public User ForUser { get; set; }
-
-    }
-
-    // public class Transfer : BaseEntity
+    // public class Share : BaseEntity
     // {
     //     [Required]
     //     public Guid Id { get; set; }
 
+    //     public string UrlExtension { get; set; }
+    //     public int PIN { get; set; }
+    //     public int TimesUsed { get; set; }
+
     //     public DateTime? ExpiryDate { get; set; }
-    //     public bool IsFullfilled { get; set; }
 
     //     // FileNode Relationship
     //     [Required]
     //     public Guid FileNodeId { get; set; }
     //     public FileNode FileNode { get; set; }
-
-    //     // Device Relationship
-    //     [Required]
-    //     public Guid SenderDeviceId { get; set; }
-    //     public Device SenderDevice { get; set; }
-    //     public Guid? ReceivingDeviceId { get; set; }
-    //     public Device ReceivingrDevice { get; set; }
-
-    //     // User Relationship
-    //     [Required]
-    //     public Guid SenderUserId { get; set; }
-    //     public User SenderUser { get; set; }
-    //     public Guid? ReceivingUserId { get; set; }
-    //     public User ReceivingUser { get; set; }
     // }
-
-    public class Share : BaseEntity
-    {
-        [Required]
-        public Guid Id { get; set; }
-
-        public string UrlExtension { get; set; }
-        public int PIN { get; set; }
-        public int TimesUsed { get; set; }
-
-        public DateTime? ExpiryDate { get; set; }
-
-        // FileNode Relationship
-        [Required]
-        public Guid FileNodeId { get; set; }
-        public FileNode FileNode { get; set; }
-    }
 
     // public class Activity : BaseEntity
     // {

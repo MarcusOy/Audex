@@ -1,18 +1,26 @@
 import {
 	ActivityItem,
 	Icon,
+	IconButton,
 	Link,
 	Separator,
 	Spinner,
 	SpinnerSize,
+	Stack,
 	Text,
 } from '@fluentui/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { getFileTypeIconProps } from '@uifabric/file-type-icons';
 import React, { useState } from 'react';
 import faker from 'faker';
-import MenuBar from './MenuBar';
-import ModalService from '../Data/Services/ModalService';
+import MenuBar from '../MenuBar';
+import ModalService from '../../Data/Services/ModalService';
+import Spacer from '../Spacer';
+import { DataStore } from '../../Data/DataStore/DataStore';
+import FileIconStack from '../Icons/FileIconStack';
+import { formatDistance } from 'date-fns';
+import IncomingTransfer from './IncomingTransfer';
+import IncomingTransfers from './IncomingTransfers';
 
 const ActivityFeed = () => {
 	const moreFakeRecent = () => {
@@ -77,10 +85,25 @@ const ActivityFeed = () => {
 					overflow: 'visible',
 				}}
 			>
+				<Stack horizontal>
+					<Text variant='large'>Transfers</Text>
+					<Spacer grow orientation='horizontal' />
+					<IconButton iconProps={{ iconName: 'DependencyAdd' }} />
+					<IconButton iconProps={{ iconName: 'DependencyRemove' }} />
+				</Stack>
+				<Spacer />
+				<IncomingTransfers />
+				<Separator />
+				<Stack horizontal>
+					<Text variant='large'>Recent activity</Text>
+					<Spacer grow orientation='horizontal' />
+					<IconButton iconProps={{ iconName: 'Filter' }} />
+				</Stack>
+				<Spacer />
 				{activity.map((i) => {
 					return (
 						<div key={i.key}>
-							<Separator />
+							<Spacer />
 							<ActivityItem
 								{...i}
 								style={{

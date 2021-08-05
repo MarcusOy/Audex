@@ -5,11 +5,13 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Audex.API.Data;
 using Audex.API.Helpers;
+using Audex.API.Models;
 using Audex.API.Services;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +21,7 @@ namespace Audex.API.GraphQL.Mutations
     public class FileMutations
     {
         [Authorize]
+        [RequestSizeLimit(2000000000)]
         public async Task<string> UploadFile(
             IFile f,
             [Service] ILogger<FileMutations> logger,
@@ -52,23 +55,17 @@ namespace Audex.API.GraphQL.Mutations
         public async Task<List<DownloadToken>> GetDownloadTokensForStack(
             Guid stackId,
             [Service] AudexDBContext context,
-            [Service] IHttpContextAccessor httpContext,
+            [Service] IIdentityService idService,
             [Service] IFileNodeService fnService)
         {
-            var userid = new Guid(httpContext.HttpContext.User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
             var stack = context.Stack
                 .Include(s => s.Files)
                 .Where(s => s.DeletedOn == null)
-                .Where(s => s.OwnerUserId == userid)
+                .Where(s => s.OwnerUserId == idService.CurrentUser.Id)
                 .FirstOrDefault(s => s.Id == stackId);
             if (stack is null)
                 throw new InvalidOperationException("Stack not found.");
-
-            var fileIds = stack.Files.Select(s => s.Id).ToList();
-            if (fileIds.Count > 0)
-                return await fnService.GetDownloadTokens(fileIds);
-            throw new InvalidOperationException("No files in stack.");
+            return await fnService.GetDownloadTokens(stack);
         }
     }
 }

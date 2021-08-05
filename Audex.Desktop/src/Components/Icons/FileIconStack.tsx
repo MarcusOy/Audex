@@ -4,7 +4,6 @@ import {
 	TooltipDelay,
 	TooltipHost,
 } from '@fluentui/react';
-import faker from 'faker';
 import React from 'react';
 import { getFileExt } from '../../Data/Helpers';
 import { IStackRow } from '../../Pages/Tabs/StacksTab';
@@ -30,7 +29,7 @@ const FileIconStack = (props: IFileIconStackProps) => {
 					<FileIcon
 						xs
 						extension={getFileExt(i)}
-						key={faker.random.number()}
+						key={index}
 						style={{
 							position: 'relative',
 							left: !isSingle ? -13 * index + 3 : -3,

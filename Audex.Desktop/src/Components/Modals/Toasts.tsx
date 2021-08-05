@@ -49,10 +49,10 @@ const Toasts = () => {
 				maxWidth: '50vh',
 			}}
 		>
-			{toastState.toasts.map((t) => {
+			{toastState.toasts.map((t, i) => {
 				return (
 					<Animate
-						key={t.key}
+						key={i}
 						play
 						easeType={MotionTimings.decelerate}
 						start={{
@@ -84,7 +84,6 @@ const Toasts = () => {
 					</Animate>
 				);
 			})}
-			<UploadToast />
 		</div>
 	);
 };

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/prefer-namespace-keyword */
-import { AudexIdentity, AudexStore, DataStore } from '../DataStore/DataStore';
+import { Identity, AudexStore, DataStore } from '../DataStore/DataStore';
 import PersistenceService from './PersistenceService';
 
 interface UserData {
@@ -21,7 +21,7 @@ class IdentityService {
 		PersistenceService.setSecured('auth', u.authToken);
 		PersistenceService.setSecured('refresh', u.refreshToken);
 	}
-	static setIdentity(i: AudexIdentity | undefined) {
+	static setIdentity(i: Identity | undefined) {
 		DataStore.update((s) => {
 			s.Identity = i;
 		});

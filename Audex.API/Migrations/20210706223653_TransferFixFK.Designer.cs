@@ -3,14 +3,16 @@ using System;
 using Audex.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210706223653_TransferFixFK")]
+    partial class TransferFixFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -861,13 +863,13 @@ namespace Audex.API.Migrations
                         .IsRequired();
 
                     b.HasOne("Audex.API.Models.Device", "FromDevice")
-                        .WithMany("OutgoingTransfers")
+                        .WithMany()
                         .HasForeignKey("FromDeviceId", "FromUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Audex.API.Models.Device", "ToDevice")
-                        .WithMany("IncomingTransfers")
+                        .WithMany()
                         .HasForeignKey("ToDeviceId", "ToUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -892,13 +894,6 @@ namespace Audex.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Group");
-                });
-
-            modelBuilder.Entity("Audex.API.Models.Device", b =>
-                {
-                    b.Navigation("IncomingTransfers");
-
-                    b.Navigation("OutgoingTransfers");
                 });
 
             modelBuilder.Entity("Audex.API.Models.DeviceType", b =>

@@ -29,6 +29,27 @@ export const WHO_AM_I = gql`
 					name
 					color
 				}
+				incomingTransfers {
+					id
+					createdOn
+					stack {
+						id
+						name
+						vanityName {
+							name
+							suffix
+						}
+						files {
+							id
+							name
+							fileExtension
+						}
+					}
+					fromDevice {
+						id
+						name
+					}
+				}
 			}
 		}
 	}
@@ -40,6 +61,10 @@ export const GET_STACKS = gql`
 			nodes {
 				id
 				name
+				vanityName {
+					name
+					suffix
+				}
 				stackCategory {
 					name
 					color
@@ -65,6 +90,10 @@ export const GET_STACK = gql`
 			nodes {
 				id
 				name
+				vanityName {
+					name
+					suffix
+				}
 				stackCategory {
 					name
 					color

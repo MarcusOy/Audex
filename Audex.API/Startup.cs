@@ -23,6 +23,7 @@ using Audex.API.GraphQL.Queries;
 using Audex.API.Data;
 using Audex.API.GraphQL.Subscriptions;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Audex.API
 {
@@ -38,11 +39,11 @@ namespace Audex.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // // Sets max file size
-            // services.Configure<KestrelServerOptions>(options =>
-            // {
-            //     options.Limits.MaxRequestBodySize = int.MaxValue; // TODO: set max file size
-            // });
+            // Sets max file size
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.Limits.MaxRequestBodySize = 2147483648; // TODO: set max file size
+            });
 
             // Add API Controllers
             services.AddControllers();
@@ -62,7 +63,7 @@ namespace Audex.API
                         cs.ConnectionString,
                         new MySqlServerVersion(new Version(5, 7, 32)),
                         mySqlOptions => mySqlOptions
-                            .CharSetBehavior(CharSetBehavior.NeverAppend)
+                            // .CharSetBehavior(CharSetBehavior.NeverAppend)
                             .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
                     // Everything from this point on is optional but helps with debugging.
                     .EnableSensitiveDataLogging()
@@ -122,6 +123,7 @@ namespace Audex.API
                     .AddTypeExtension<FileMutations>()
                     // .AddTypeExtension<FormMutations>()
                     .AddTypeExtension<DeviceMutations>()
+                    .AddTypeExtension<TransferMutations>()
                 .AddQueryType(d => d.Name("Query"))
                     .AddTypeExtension<UserQueries>()
                     .AddTypeExtension<StackQueries>()
@@ -145,6 +147,7 @@ namespace Audex.API
             services.AddScoped<IInitializationService, InitializationService>();
             // services.AddScoped<IFormService, FormService>();
             services.AddScoped<ISubscriptionService, SubscriptionService>();
+            services.AddScoped<INotificationService, OneSignalNotificationService>();
 
         }
 

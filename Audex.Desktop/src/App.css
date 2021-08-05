@@ -1,12 +1,17 @@
 .html {
-    height: 100%;
- }
- .body {
-    height: 100%;
- }
- #root {
-     height: 100vh;
- }
- #root > div {
-     height: 100vh;
- }
+	height: 100%;
+	overflow-x: hidden;
+}
+.body {
+	height: 100%;
+}
+#root {
+	height: 100vh;
+}
+#root > div {
+	height: 100vh;
+}
+
+.scroll-menu-arrow--disabled {
+	display: none;
+}

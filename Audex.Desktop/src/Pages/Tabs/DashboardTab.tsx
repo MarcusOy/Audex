@@ -8,9 +8,10 @@ import {
 } from '@fluentui/react';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import ActivityFeed from '../../Components/ActivityFeed';
+import ActivityFeed from '../../Components/Activity/ActivityFeed';
 import { Grid } from 'fluentui-react-grid';
 import Spacer from '../../Components/Spacer';
+import { DataStore } from '../../Data/DataStore/DataStore';
 
 const DashboardTab = () => {
 	const history = useHistory();
@@ -43,11 +44,6 @@ const DashboardTab = () => {
 					</Stack>
 				</Grid.Col>
 				<Grid.Col sizeSm={12} sizeMd={12} sizeLg={8}>
-					<Stack horizontal>
-						<Text variant='large'>Recent activity</Text>
-						<Spacer grow orientation='horizontal' />
-						<IconButton iconProps={{ iconName: 'Filter' }} />
-					</Stack>
 					<ActivityFeed />
 				</Grid.Col>
 			</Grid.Row>

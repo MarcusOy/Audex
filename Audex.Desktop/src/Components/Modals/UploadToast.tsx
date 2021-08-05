@@ -1,27 +1,36 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { useMutation } from '@apollo/client';
 import { useResettableMutation } from 'apollo-hooks-extended';
 import {
 	DefaultButton,
+	IconButton,
 	IMessageBarProps,
 	MessageBar,
 	MessageBarType,
+	MotionTimings,
+	Separator,
+	Spinner,
 	Stack,
+	useTheme,
 } from '@fluentui/react';
 import { DataStore } from '../../Data/DataStore/DataStore';
 import { CREATE_STACK, ENSURE_STACK } from '../../Data/Mutations';
 import Spacer from '../Spacer';
 import FileUnit from '../Uploading/FileUnit';
-import faker from 'faker';
 import { Console } from 'console';
 import FileService from '../../Data/Services/FileService';
+import { Animate } from 'react-simple-animate';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const UploadToast = () => {
+	const { palette } = useTheme();
 	const [createStack, createResponse] = useResettableMutation(CREATE_STACK);
 	const [ensureStack, ensureResponse] = useResettableMutation(ENSURE_STACK);
 	const fileState = DataStore.useState((s) => s.Upload.Files);
 	const uploadState = DataStore.useState((s) => s.Upload);
+
+	const [isShown, setIsShown] = useState(true);
 
 	const isToastShowing = uploadState.Files.length > 0;
 	const isDoneUploading =
@@ -67,98 +76,149 @@ const UploadToast = () => {
 		FileService.removeAllFiles();
 	}, [uploadState.FileUnits]);
 
-	const toastProps: IMessageBarProps = {
-		messageBarType:
-			createResponse.error || ensureResponse.error
-				? MessageBarType.error
-				: isStackCreated && isDoneUploading
-				? MessageBarType.success
-				: MessageBarType.info,
-		onDismiss: () => {
-			FileService.removeAllFiles();
-		},
-		children: (
-			<Stack>
-				{createResponse.error || ensureResponse.error ? (
-					<span>
-						<b>Error creating new stack.</b>{' '}
-						{createResponse.error?.message}
-						{ensureResponse.error?.message}
-					</span>
-				) : isStackCreated ? (
-					<span>
-						<b>Stack created.</b> To add more files to this stack,
-						keep dropping files.
-					</span>
-				) : (
-					<b>Creating new stack from dropped files...</b>
-				)}
-				<Spacer />
-				<div className={css(styles.fileUnitsContainer)}>
-					{fileState.map((f, i) => {
-						return (
-							<FileUnit
-								key={f.name + faker.random.alphaNumeric()}
-								fileIndex={i}
-								file={f}
-							/>
-						);
-					})}
-				</div>
-				<Spacer />
-				<Stack horizontal>
-					{isStackCreated ? (
-						<>
-							<Stack.Item grow>
-								<DefaultButton
-									text='Transfer'
-									iconProps={{ iconName: 'Send' }}
-								/>
-							</Stack.Item>
-							<Stack.Item grow>
-								<DefaultButton
-									text='Share'
-									iconProps={{ iconName: 'Share' }}
-								/>
-							</Stack.Item>
-						</>
-					) : (
-						<></>
-					)}
-				</Stack>
-			</Stack>
-		),
-	};
+	const toastState =
+		createResponse.error || ensureResponse.error
+			? {
+					icon: <FaTimesCircle color={palette.red} />,
+					headerText: (
+						<span>
+							<b>Error creating new stack.</b>{' '}
+							{createResponse.error?.message}{' '}
+							{ensureResponse.error?.message}
+						</span>
+					),
+			  }
+			: isStackCreated && isDoneUploading
+			? {
+					icon: <FaCheckCircle size={40} color={palette.green} />,
+					headerText: (
+						<span>
+							<b>Stack created.</b> To add more files to this
+							stack, keep dropping files.
+						</span>
+					),
+			  }
+			: {
+					icon: <Spinner />,
+					headerText: <b>Creating new stack from dropped files...</b>,
+			  };
+
+	// const toastProps: IMessageBarProps = {
+	// 	messageBarType:
+	// 		createResponse.error || ensureResponse.error
+	// 			? MessageBarType.error
+	// 			: isStackCreated && isDoneUploading
+	// 			? MessageBarType.success
+	// 			: MessageBarType.info,
+	// 	onDismiss: () => {
+	// 		FileService.removeAllFiles();
+	// 	},
+	// };
 	return (
 		<>
-			{isToastShowing ? (
-				<Stack>
-					<Spacer />
-					<MessageBar
-						styles={{
-							root: {
-								opacity: 0.95,
-								boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
-								borderRadius: 10,
-								width: 300,
-							},
-						}}
-						{...toastProps}
-						// onDismiss={() => onDismiss(t.key as string)}
-					/>
-				</Stack>
-			) : (
-				<></>
-			)}
+			<Stack className={css(styles.container)}>
+				<Animate
+					play={isToastShowing}
+					easeType={MotionTimings.decelerate}
+					start={{
+						opacity: 0,
+						transform: 'translateY(48px)',
+						pointerEvents: 'none',
+					}}
+					end={{
+						opacity: 1,
+						transform: 'translateY(0px)',
+						pointerEvents: 'all',
+					}}
+				>
+					<Stack className={css(styles.toast)}>
+						<Stack
+							horizontal
+							horizontalAlign='center'
+							tokens={{ childrenGap: 10 }}
+						>
+							{toastState.icon}
+							{toastState.headerText}
+							<IconButton
+								iconProps={{
+									iconName: isShown
+										? 'ChevronUp'
+										: 'ChevronDown',
+								}}
+								text='Show/Hide uploads'
+								onClick={() => {
+									setIsShown(!isShown);
+								}}
+							/>
+							<IconButton
+								iconProps={{ iconName: 'Cancel' }}
+								text='Finish stack'
+								onClick={() => FileService.removeAllFiles()}
+							/>
+						</Stack>
+						<Animate
+							play={isShown}
+							easeType={MotionTimings.decelerate}
+							start={{
+								maxHeight: 0,
+								opacity: 0,
+								transform: 'translate3d(0, 48px, 0)',
+								cursor: 'default',
+							}}
+							end={{
+								maxHeight: 10000,
+								opacity: 1,
+								transform: 'translate3d(0, 0, 0)',
+							}}
+						>
+							<Separator />
+							<div className={css(styles.fileUnitsContainer)}>
+								{fileState.map((f, i) => {
+									return (
+										<FileUnit
+											key={i}
+											fileIndex={i}
+											file={f}
+										/>
+									);
+								})}
+							</div>
+						</Animate>
+						<Spacer />
+					</Stack>
+				</Animate>
+			</Stack>
 		</>
 	);
 };
 
 const styles = StyleSheet.create({
+	container: {
+		position: 'fixed',
+		// pointerEvents: 'none',
+		width: '100%',
+		bottom: 0,
+	},
+	toast: {
+		position: 'absolute',
+		left: 0,
+		right: 0,
+		bottom: 10,
+		margin: '0 auto',
+
+		background: 'white',
+		opacity: 0.95,
+		boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+		padding: 15,
+		border: '1px solid #eee',
+		borderRadius: 10,
+		maxWidth: 400,
+	},
 	fileUnitsContainer: {
-		maxHeight: '14rem',
 		overflowX: 'hidden',
-		overflowY: 'scroll',
+		overflowY: 'visible',
+		paddingLeft: 10,
+		paddingRight: 10,
 	},
 });
 

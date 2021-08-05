@@ -48,3 +48,29 @@ export const getOS = () => {
 	}
 	return os;
 };
+
+// function from https://stackoverflow.com/a/65148504/6111675
+export const groupBy = (
+	inputArray: any,
+	key: any,
+	removeKey = false,
+	outputType = {}
+) => {
+	return inputArray.reduce(
+		(previous: any, current: any) => {
+			// Get the current value that matches the input key and remove the key value for it.
+			const { [key]: keyValue } = current;
+			// remove the key if option is set
+			removeKey && keyValue && delete current[key];
+			// If there is already an array for the user provided key use it else default to an empty array.
+			const { [keyValue]: reducedValue = [] } = previous;
+
+			// Create a new object and return that merges the previous with the current object
+			return Object.assign(previous, {
+				[keyValue]: reducedValue.concat(current),
+			});
+		},
+		// Replace the object here to an array to change output object to an array
+		outputType
+	);
+};

@@ -8,6 +8,7 @@ import {
 	PrimaryButton,
 	IButtonProps,
 	SpinnerSize,
+	ContextualMenuItem,
 } from '@fluentui/react';
 import { formatDistance } from 'date-fns';
 import ModalService from '../../Data/Services/ModalService';
@@ -34,13 +35,17 @@ import FileUpload, {
 import FileIconStack from '../../Components/Icons/FileIconStack';
 import DownloadService from '../../Data/Services/DownloadService';
 import EmptyState from '../../Components/EmptyState';
+import DownloadCommandButton from '../../Components/Buttons/CommandButtons/DownloadCommandButton';
+import TransferCommandButton from '../../Components/Buttons/CommandButtons/TransferCommandButton';
 
 export interface IStackRow {
 	key: string;
 	rawName: string;
 	name: string;
-	nameComponent: React.ReactNode;
-	noName: string;
+	vanityName: {
+		name: string;
+		suffix: string;
+	};
 	createdByDevice: string;
 	createdOn: Date;
 	files: string[];
@@ -79,7 +84,14 @@ const stackColumns: IColumn[] = [
 		data: 'string',
 		isPadded: true,
 		onRender: (item: IStackRow) => {
-			return item.nameComponent;
+			return (
+				<span>
+					<span style={{ fontWeight: 600 }}>
+						{item.vanityName.name}
+					</span>{' '}
+					{item.vanityName.suffix}
+				</span>
+			);
 		},
 	},
 	{
@@ -128,33 +140,6 @@ const stackColumns: IColumn[] = [
 	},
 ];
 
-export const makeStackNameComponent = (s: any) => {
-	return (
-		<>
-			{s.name ? (
-				<span style={{ fontWeight: 600 }}>{s.name}</span>
-			) : (s.files as Array<any>).length != 0 ? (
-				<span>
-					<span style={{ fontWeight: 600 }}>{s.files[0].name}</span>{' '}
-					{(s.files as Array<any>).length > 1
-						? `and ${s.files.length - 1} other files`
-						: ` by itself`}
-				</span>
-			) : (
-				<span>Empty stack</span>
-			)}
-		</>
-	);
-};
-
-export const makeStackName = (s: any) => {
-	return (s.files as Array<any>).length > 1
-		? `${s.files[0].name} and ${s.files.length - 1} other files`
-		: (s.files as Array<any>).length == 1
-		? `${s.files[0].name} by itself`
-		: `Empty stack`;
-};
-
 const StacksTab = () => {
 	const { data, loading, error, refetch } = useQuery(GET_STACKS);
 	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE, {});
@@ -172,10 +157,10 @@ const StacksTab = () => {
 
 	const numSelected =
 		selectedStacks.length > 1 ? `${selectedStacks.length} stacks` : 'stack';
-	const zeroOrOneSelected =
-		selectedStacks.length == 0 || selectedStacks.length > 1
-			? 'stack'
-			: 'file';
+	// const zeroOrOneSelected =
+	// 	selectedStacks.length == 0 || selectedStacks.length > 1
+	// 		? 'stack'
+	// 		: 'file';
 
 	useEffect(() => {
 		refetch();
@@ -188,9 +173,8 @@ const StacksTab = () => {
 				return {
 					key: s.id,
 					rawName: s.name,
-					name: s.name ?? makeStackName(s),
-					nameComponent: makeStackNameComponent(s),
-					noName: makeStackName(s),
+					name: s.name ?? s.vanityName,
+					vanityName: s.vanityName,
 					createdByDevice: s.uploadedByDevice.name,
 					createdOn: new Date(s.createdOn),
 					files: (s.files as Array<any>).map<string>((f) => f.name),
@@ -211,32 +195,6 @@ const StacksTab = () => {
 			setSelectedStacks([]);
 		}
 	}, [data]);
-
-	const [getDownloadTokens, getDownloadTokensResponse] = useMutation(
-		GET_DOWNLOAD_TOKENS_FOR_STACK
-	);
-
-	const getDownloadTokensHandler = () => {
-		getDownloadTokens({
-			variables: {
-				stackId: selectedStacks[0].key,
-			},
-		})
-			.then((r) => {
-				const urls = (r.data.downloadTokensForStack as Array<any>).map(
-					(t) => t.id
-				);
-				DownloadService.downloadFiles(urls, selectedStacks[0].name);
-			})
-			.catch((e: Error) => {
-				ToastService.push(
-					ErrorToast(
-						`An error occurred while trying to download: ${e.message}`
-					),
-					4
-				);
-			});
-	};
 
 	const menuItems: ICommandBarItemProps[] = [
 		{
@@ -265,37 +223,15 @@ const StacksTab = () => {
 		},
 		{
 			key: 'download',
-			text: `Download ${numSelected}`,
-			iconProps: { iconName: 'Download' },
-			onRenderIcon: getDownloadTokensResponse.loading
-				? () => {
-						return <Spinner size={SpinnerSize.small} />;
-				  }
-				: undefined,
-			onClick: getDownloadTokensHandler,
-			disabled:
-				getDownloadTokensResponse.loading || selectedStacks.length == 0,
-			split: true,
-			subMenuProps: {
-				items: [
-					{
-						key: 'zip',
-						text: `Download ${numSelected} as .zip`,
-					},
-					{
-						key: 'unencrypted',
-						text: `Download ${numSelected} as encrypted`,
-					},
-				],
-			},
+			commandBarButtonAs: (p) => (
+				<DownloadCommandButton selectedStacks={selectedStacks} {...p} />
+			),
 		},
 		{
 			key: 'transfer',
-			text: `Transfer ${numSelected}`,
-			iconProps: { iconName: 'Send' },
-			onClick: () => console.log('Transfer'),
-			disabled: selectedStacks.length == 0,
-			split: true,
+			commandBarButtonAs: (p) => (
+				<TransferCommandButton selectedStacks={selectedStacks} {...p} />
+			),
 		},
 		{
 			key: 'share',
@@ -362,6 +298,14 @@ const StacksTab = () => {
 				}}
 				items={menuItems}
 				farItems={farItems}
+				overflowButtonProps={{
+					menuProps: {
+						contextualMenuItemAs: (props) => (
+							<ContextualMenuItem {...props} />
+						),
+						items: [],
+					},
+				}}
 				ariaLabel='Use left and right arrow keys to navigate between commands'
 			/>
 			<FileUpload ref={uploadRef} />

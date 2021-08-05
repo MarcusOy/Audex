@@ -14,7 +14,7 @@ import {
 	Text,
 	Image,
 } from '@fluentui/react';
-import { IStackRow, makeStackName } from '../../Pages/Tabs/StacksTab';
+import { IStackRow } from '../../Pages/Tabs/StacksTab';
 import { useStoreState } from 'pullstate';
 import React, { useEffect, useState } from 'react';
 import { DataStore } from '../../Data/DataStore/DataStore';
@@ -22,7 +22,6 @@ import ModalService from '../../Data/Services/ModalService';
 import Spacer from '../Spacer';
 import { IModal } from './Modals';
 import { ListClassNames } from '../DetailedList';
-import faker from 'faker';
 import DetailedList from '../DetailedList';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import { GET_STACK } from '../../Data/Queries';
@@ -56,7 +55,7 @@ const onDetailRender = (i: IStackDetail | undefined) => {
 export interface IFileRow {
 	key: string;
 	name: string;
-	iconName: string;
+	// iconName: string;
 	fileType: string;
 	fileSize: string;
 	fileSizeRaw: number;
@@ -165,7 +164,6 @@ const StackPanel = () => {
 					return {
 						key: f.id,
 						name: f.name,
-						iconName: faker.image.imageUrl(),
 						fileType: f.fileExtension,
 						fileSize: fileSize(f.fileSize),
 						fileSizeRaw: f.fileSize,
@@ -337,31 +335,32 @@ const StackPanel = () => {
 		);
 
 	return (
-		<>
-			<Panel
-				onRenderHeader={() => {
-					return (
-						<>
-							<Spacer orientation='horizontal' size={30} />
-							<Text variant='xLarge'>
-								{!loading && stack ? (
-									makeStackName(stack)
-								) : (
-									<></>
-								)}
-							</Text>
-							<Spacer grow />
-						</>
-					);
-				}}
-				type={PanelType.medium}
-				isOpen={modalState.isOpen}
-				onDismiss={onDismissed}
-				isLightDismiss
-			>
-				{content}
-			</Panel>
-		</>
+		<Panel
+			onRenderHeader={() => {
+				return (
+					<>
+						<Spacer orientation='horizontal' size={30} />
+						<Text variant='xLarge'>
+							{!loading && stack && (
+								<span>
+									{stack.vanityName.name}{' '}
+									<span style={{ fontWeight: 400 }}>
+										{stack.vanityName.suffix}
+									</span>
+								</span>
+							)}
+						</Text>
+						<Spacer grow />
+					</>
+				);
+			}}
+			type={PanelType.medium}
+			isOpen={modalState.isOpen}
+			onDismiss={onDismissed}
+			isLightDismiss
+		>
+			{content}
+		</Panel>
 	);
 };
 export default StackPanel;

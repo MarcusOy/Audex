@@ -8,13 +8,18 @@ namespace Audex.API.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateTable(
                 name: "DeviceTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    Color = table.Column<string>(type: "longtext", nullable: true),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Color = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -22,7 +27,8 @@ namespace Audex.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DeviceTypes", x => x.Id);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Groups",
@@ -30,7 +36,8 @@ namespace Audex.API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -38,7 +45,8 @@ namespace Audex.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Groups", x => x.Id);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Roles",
@@ -46,7 +54,8 @@ namespace Audex.API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -54,18 +63,24 @@ namespace Audex.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Username = table.Column<string>(type: "longtext", nullable: false),
-                    Password = table.Column<string>(type: "longtext", nullable: false),
-                    Salt = table.Column<string>(type: "longtext", nullable: false),
-                    PublicKey = table.Column<string>(type: "longtext", nullable: true),
-                    TwoFactorKey = table.Column<string>(type: "longtext", nullable: true),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Username = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Password = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Salt = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PublicKey = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TwoFactorKey = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Active = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     GroupId = table.Column<int>(type: "int", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -81,7 +96,8 @@ namespace Audex.API.Migrations
                         principalTable: "Groups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "GroupRoles",
@@ -110,16 +126,20 @@ namespace Audex.API.Migrations
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Devices",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    NotificationIdentifier = table.Column<string>(type: "longtext", nullable: true),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    NotificationIdentifier = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsFirstTimeSetup = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeviceTypeId = table.Column<int>(type: "int", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -140,16 +160,19 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "StackCategory",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    Color = table.Column<string>(type: "longtext", nullable: false),
-                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Color = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -163,22 +186,27 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "AuthTokens",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Type = table.Column<string>(type: "longtext", nullable: false),
-                    Token = table.Column<string>(type: "longtext", nullable: false),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Type = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Token = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     ExpiresOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CreatedByIP = table.Column<string>(type: "longtext", nullable: false),
+                    CreatedByIP = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     RevokedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    RevokedByIP = table.Column<string>(type: "longtext", nullable: true),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    DeviceId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    ReplacedByTokenId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    RevokedByIP = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    DeviceId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    ReplacedByTokenId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -204,18 +232,20 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Stack",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: true),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    StackCategoryId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    StackCategoryId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -241,19 +271,22 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "FileNodes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    FileExtension = table.Column<string>(type: "longtext", nullable: true),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FileExtension = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    ParentStackId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    OwnerUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    UploadedByDeviceId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ParentStackId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -279,18 +312,87 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Transfers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    IsComplete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    StackId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    FromUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ToUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    FromDeviceId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    FromDeviceId1 = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    FromDeviceUserId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    ToDeviceId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ToDeviceId1 = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    ToDeviceUserId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transfers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Devices_FromDeviceId_FromUserId",
+                        columns: x => new { x.FromDeviceId, x.FromUserId },
+                        principalTable: "Devices",
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Devices_FromDeviceId1_FromDeviceUserId",
+                        columns: x => new { x.FromDeviceId1, x.FromDeviceUserId },
+                        principalTable: "Devices",
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Devices_ToDeviceId_ToUserId",
+                        columns: x => new { x.ToDeviceId, x.ToUserId },
+                        principalTable: "Devices",
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Devices_ToDeviceId1_ToDeviceUserId",
+                        columns: x => new { x.ToDeviceId1, x.ToDeviceUserId },
+                        principalTable: "Devices",
+                        principalColumns: new[] { "Id", "UserId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Stack_StackId",
+                        column: x => x.StackId,
+                        principalTable: "Stack",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Users_FromUserId",
+                        column: x => x.FromUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transfers_Users_ToUserId",
+                        column: x => x.ToUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "DownloadTokens",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     NumberOfUses = table.Column<int>(type: "int", nullable: false),
                     MaxNumberOfUses = table.Column<int>(type: "int", nullable: false),
                     ExpiresOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    FileNodeId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    ForUserId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    FileNodeId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ForUserId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
@@ -310,32 +412,8 @@ namespace Audex.API.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Shares",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    UrlExtension = table.Column<string>(type: "longtext", nullable: true),
-                    PIN = table.Column<int>(type: "int", nullable: false),
-                    TimesUsed = table.Column<int>(type: "int", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    FileNodeId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Shares", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Shares_FileNodes_FileNodeId",
-                        column: x => x.FileNodeId,
-                        principalTable: "FileNodes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.InsertData(
                 table: "DeviceTypes",
@@ -344,10 +422,10 @@ namespace Audex.API.Migrations
                 {
                     { 1, "#2196F2", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Audex Server", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
                     { 2, "#00aef0", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Windows", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
-                    { 3, "#ffffff", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "MacOS", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
-                    { 4, "#dd4814", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Linux", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 3, "#000", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "MacOS", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 4, "#f7c700", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Linux", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
                     { 5, "#DD5144", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Web", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
-                    { 6, "#ffffff", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "iOS", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 6, "#000", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "iOS", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
                     { 7, "#3DDC84", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Android", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
                     { 8, "#46483e", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Other", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) }
                 });
@@ -455,11 +533,6 @@ namespace Audex.API.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Shares_FileNodeId",
-                table: "Shares",
-                column: "FileNodeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Stack_OwnerUserId",
                 table: "Stack",
                 column: "OwnerUserId");
@@ -480,6 +553,41 @@ namespace Audex.API.Migrations
                 column: "OwnerUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Transfers_FromDeviceId_FromUserId",
+                table: "Transfers",
+                columns: new[] { "FromDeviceId", "FromUserId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_FromDeviceId1_FromDeviceUserId",
+                table: "Transfers",
+                columns: new[] { "FromDeviceId1", "FromDeviceUserId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_FromUserId",
+                table: "Transfers",
+                column: "FromUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_StackId",
+                table: "Transfers",
+                column: "StackId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_ToDeviceId_ToUserId",
+                table: "Transfers",
+                columns: new[] { "ToDeviceId", "ToUserId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_ToDeviceId1_ToDeviceUserId",
+                table: "Transfers",
+                columns: new[] { "ToDeviceId1", "ToDeviceUserId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transfers_ToUserId",
+                table: "Transfers",
+                column: "ToUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_GroupId",
                 table: "Users",
                 column: "GroupId");
@@ -497,13 +605,13 @@ namespace Audex.API.Migrations
                 name: "GroupRoles");
 
             migrationBuilder.DropTable(
-                name: "Shares");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
+                name: "Transfers");
 
             migrationBuilder.DropTable(
                 name: "FileNodes");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Stack");
