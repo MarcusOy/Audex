@@ -19,27 +19,27 @@ using Microsoft.EntityFrameworkCore;
 namespace Audex.API.GraphQL.Subscriptions
 {
     [ExtendObjectType("Subscription")]
-    public class StackSubscriptions
+    public class ClipSubscriptions
     {
-        [Subscribe(With = nameof(SubscribeOnStacksUpdateAsync)), Topic]
-        public async Task<List<Stack>> OnStacksUpdate(
-            [EventMessage] Guid[] changedStackIds,
-            [Service] IHttpContextAccessor context,
+        [Subscribe(With = nameof(SubscribeOnClipsUpdateAsync)), Topic]
+        public async Task<List<Stack>> OnClipsUpdate(
+            [EventMessage] Guid[] changedClipIds,
+            [Service] IIdentityService idService,
             [Service] AudexDBContext dbContext
         )
         {
             return await dbContext.Stacks
-                .Where(s => s.OwnerUser.Username == context.HttpContext.User.Identity.Name)
-                .Where(s => changedStackIds.Contains(s.Id))
+                .Where(s => s.OwnerUser.Id == idService.CurrentUser.Id)
+                .Where(s => changedClipIds.Contains(s.Id))
                 .ToListAsync();
         }
         [Authorize]
-        public async ValueTask<ISourceStream<Guid[]>> SubscribeOnStacksUpdateAsync(
+        public async ValueTask<ISourceStream<Guid[]>> SubscribeOnClipsUpdateAsync(
             [Service] ISubscriptionService subService,
             CancellationToken cancellationToken
         )
         {
-            return await subService.SubscribeAsync<Guid[]>(SubscriptionTopic.OnStacksUpdate, cancellationToken);
+            return await subService.SubscribeAsync<Guid[]>(SubscriptionTopic.OnClipsUpdate, cancellationToken);
         }
     }
 }

@@ -82,7 +82,7 @@ namespace Audex.API.Services
                     .Where(fn => filesIds.Contains(fn.Id))
                     .ToList()
             };
-            await _dbContext.Stack.AddAsync(stack);
+            await _dbContext.Stacks.AddAsync(stack);
             await _dbContext.SaveChangesAsync();
             PersistFileNodes(stack.Files);
 
@@ -102,7 +102,7 @@ namespace Audex.API.Services
                 fns.Add(await _fnService.CreateAsync(p));
 
             stack.Files = fns;
-            await _dbContext.Stack.AddAsync(stack);
+            await _dbContext.Stacks.AddAsync(stack);
             await _dbContext.SaveChangesAsync();
             PersistFileNodes(stack.Files);
 
@@ -113,7 +113,7 @@ namespace Audex.API.Services
         {
             var userid = new Guid(_context.User.Claims
                     .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var stack = _dbContext.Stack
+            var stack = _dbContext.Stacks
                 .Include(s => s.Files)
                 .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUserId == userid)

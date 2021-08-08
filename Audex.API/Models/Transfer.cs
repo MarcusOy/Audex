@@ -14,9 +14,11 @@ namespace Audex.API.Models
         public TransferStatus Status { get; set; }
 
         // Stack Relationship
-        [Required]
-        public Guid StackId { get; set; }
+        public Guid? StackId { get; set; }
         public Stack Stack { get; set; }
+        // Clip Relationship
+        public Guid? ClipId { get; set; }
+        public Clip Clip { get; set; }
 
         // User Relationship
         [Required]
@@ -40,6 +42,11 @@ namespace Audex.API.Models
         [GraphQLDescription("Accepted")]
         Accepted = 2,
         [GraphQLDescription("Declined")]
-        Declined = 3
+        Declined = 3,
+        // For Clips only
+        [GraphQLDescription("Copied")]
+        Copied = 4,
+        [GraphQLDescription("Dismissed")]
+        Dismissed = 5
     }
 }

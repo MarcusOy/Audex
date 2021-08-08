@@ -58,7 +58,7 @@ namespace Audex.API.GraphQL.Mutations
             [Service] IIdentityService idService,
             [Service] IFileNodeService fnService)
         {
-            var stack = context.Stack
+            var stack = context.Stacks
                 .Include(s => s.Files)
                 .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUserId == idService.CurrentUser.Id)

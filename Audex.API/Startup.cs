@@ -121,17 +121,18 @@ namespace Audex.API
                     .AddTypeExtension<AuthMutations>()
                     .AddTypeExtension<StackMutations>()
                     .AddTypeExtension<FileMutations>()
-                    // .AddTypeExtension<FormMutations>()
                     .AddTypeExtension<DeviceMutations>()
                     .AddTypeExtension<TransferMutations>()
+                    .AddTypeExtension<ClipMutations>()
                 .AddQueryType(d => d.Name("Query"))
                     .AddTypeExtension<UserQueries>()
                     .AddTypeExtension<StackQueries>()
                     .AddTypeExtension<DeviceQueries>()
-                // .AddTypeExtension<FormQueries>()
+                    .AddTypeExtension<ClipQueries>()
                 .AddSubscriptionType(d => d.Name("Subscription"))
                     .AddTypeExtension<StackSubscriptions>()
                     .AddTypeExtension<UserSubscriptions>()
+                    .AddTypeExtension<ClipSubscriptions>()
                 .AddAuthorization()
                 .AddSocketSessionInterceptor<SubscriptionAuthMiddleware>()
                 .AddInMemorySubscriptions()
@@ -144,8 +145,9 @@ namespace Audex.API
             services.AddScoped<IStorageService, LocalStorageService>();
             services.AddScoped<IFileNodeService, FileNodeService>();
             services.AddScoped<IStackService, StackService>();
+            services.AddScoped<IClipService, ClipService>();
+            services.AddScoped<ITransferService, TransferService>();
             services.AddScoped<IInitializationService, InitializationService>();
-            // services.AddScoped<IFormService, FormService>();
             services.AddScoped<ISubscriptionService, SubscriptionService>();
             services.AddScoped<INotificationService, OneSignalNotificationService>();
 
@@ -177,7 +179,6 @@ namespace Audex.API
                 app.UseAuthentication();
 
                 app.UseAuthorization();
-
 
                 app.UseEndpoints(endpoints =>
                 {

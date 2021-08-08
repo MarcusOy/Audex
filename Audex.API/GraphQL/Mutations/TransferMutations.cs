@@ -17,87 +17,38 @@ namespace Audex.API.GraphQL.Mutations
     {
         public async Task<Transfer> TransferStack(Guid stackId,
                                                 Guid toDeviceId,
-                                                [Service] AudexDBContext dbContext,
-                                                [Service] IIdentityService idService,
-                                                [Service] ISubscriptionService subService,
-                                                [Service] INotificationService notificationService)
+                                                [Service] ITransferService transferService)
         {
-            var d = dbContext.Devices
-                .FirstOrDefault(d => d.Id == toDeviceId
-                    && d.UserId == idService.CurrentUser.Id);
-            var s = dbContext.Stack
-                .Include(s => s.Files)
-                .Where(s => s.OwnerUserId == idService.CurrentUser.Id)
-                .FirstOrDefault(s => s.Id == stackId);
-
-            if (d == null)
-                throw new InvalidOperationException("Invalid device.");
-            if (d == null)
-                throw new InvalidOperationException("Invalid stack.");
-
-            var transfer = new Transfer
-            {
-                Status = TransferStatus.Pending,
-                StackId = s.Id,
-                FromUserId = idService.CurrentUser.Id,
-                FromDeviceId = idService.CurrentDevice.Id,
-                ToUserId = idService.CurrentUser.Id,
-                ToDeviceId = d.Id
-            };
-
-            await dbContext.Transfers.AddAsync(transfer);
-            await dbContext.SaveChangesAsync();
-            await subService.NotifyAsync(SubscriptionTopic.OnUserUpdate, idService.CurrentUser.Id);
-            if (!String.IsNullOrWhiteSpace(d.NotificationIdentifier))
-                await notificationService.SendNotification(new TransferStackNotification(idService.CurrentDevice, d, s));
-
-            return transfer;
+            return await transferService.TransferStackAsync(stackId, toDeviceId);
+        }
+        public async Task<Transfer> TransferClip(Guid clipId,
+                                                Guid toDeviceId,
+                                                [Service] ITransferService transferService)
+        {
+            return await transferService.TransferClipAsync(clipId, toDeviceId);
         }
 
         public async Task<List<DownloadToken>> AcceptTransfer(Guid transferId,
-                                                [Service] AudexDBContext dbContext,
-                                                [Service] IFileNodeService fnService,
-                                                [Service] IIdentityService idService,
-                                                [Service] ISubscriptionService subService)
+                                                [Service] ITransferService transferService,
+                                                [Service] IFileNodeService fnService)
+
         {
-            var t = dbContext.Transfers
-                .Include(t => t.Stack)
-                    .ThenInclude(s => s.Files)
-                .Where(t => t.ToUserId == idService.CurrentUser.Id)
-                .Where(t => t.Status == TransferStatus.Pending)
-                .FirstOrDefault(t => t.Id == transferId);
-
-            if (t == null)
-                throw new InvalidOperationException("Invalid transfer.");
-
-            t.Status = TransferStatus.Accepted;
-
-            dbContext.Transfers.Update(t);
-            await dbContext.SaveChangesAsync();
-            await subService.NotifyAsync(SubscriptionTopic.OnUserUpdate, idService.CurrentUser.Id);
-
+            var t = await transferService.UpdateStatusAsync(transferId, TransferStatus.Accepted);
             return await fnService.GetDownloadTokens(t.Stack);
         }
         public async Task<Transfer> DeclineTransfer(Guid transferId,
-                                                [Service] AudexDBContext dbContext,
-                                                [Service] IIdentityService idService,
-                                                [Service] ISubscriptionService subService)
+                                                [Service] ITransferService transferService)
+
         {
-            var t = dbContext.Transfers
-                .Where(t => t.ToUserId == idService.CurrentUser.Id)
-                .Where(t => t.Status == TransferStatus.Pending)
-                .FirstOrDefault(t => t.Id == transferId);
+            return await transferService.UpdateStatusAsync(transferId, TransferStatus.Declined);
+        }
 
-            if (t == null)
-                throw new InvalidOperationException("Invalid transfer.");
+        public async Task<Transfer> DismissClipTransfer(Guid transferId,
+                                                        bool didCopy,
+                                                        [Service] ITransferService transferService)
 
-            t.Status = TransferStatus.Declined;
-
-            dbContext.Transfers.Update(t);
-            await dbContext.SaveChangesAsync();
-            await subService.NotifyAsync(SubscriptionTopic.OnUserUpdate, idService.CurrentUser.Id);
-
-            return t;
+        {
+            return await transferService.UpdateStatusAsync(transferId, didCopy ? TransferStatus.Copied : TransferStatus.Dismissed);
         }
     }
 }

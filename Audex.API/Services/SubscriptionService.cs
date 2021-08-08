@@ -88,6 +88,8 @@ namespace Audex.API.Services
     {
         OnStacksUpdate,
         OnStackUpdate,
+        OnClipsUpdate,
+        OnClipUpdate,
         OnFileUpdate,
         OnUserUpdate
     }

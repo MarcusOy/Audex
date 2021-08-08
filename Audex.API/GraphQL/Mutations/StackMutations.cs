@@ -73,7 +73,7 @@ namespace Audex.API.GraphQL.Mutations
             [Service] IHttpContextAccessor context,
             [Service] ISubscriptionService subService)
         {
-            var stack = await dbContext.Stack
+            var stack = await dbContext.Stacks
                 .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUser.Username == context.HttpContext.User.Identity.Name)
                 .FirstOrDefaultAsync(s => s.Id == stackId);
@@ -99,7 +99,7 @@ namespace Audex.API.GraphQL.Mutations
             [Service] IHttpContextAccessor context,
             [Service] ISubscriptionService subService)
         {
-            var stacks = await dbContext.Stack
+            var stacks = await dbContext.Stacks
                 .Where(s => s.DeletedOn == null)
                 .Where(s => s.OwnerUserId == identityService.CurrentUser.Id)
                 .Where(s => stackIds.Contains(s.Id))
@@ -111,7 +111,7 @@ namespace Audex.API.GraphQL.Mutations
             foreach (Stack s in stacks)
                 s.DeletedOn = DateTime.UtcNow;
 
-            dbContext.Stack.UpdateRange(stacks); // TODO: integrate into StackService, mark for delete child filenodes
+            dbContext.Stacks.UpdateRange(stacks); // TODO: integrate into StackService, mark for delete child filenodes
             await dbContext.SaveChangesAsync();
 
             await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, stacks.Select(s => s.Id).ToArray());

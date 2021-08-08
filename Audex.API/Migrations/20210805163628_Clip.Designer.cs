@@ -3,14 +3,16 @@ using System;
 using Audex.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Audex.API.Migrations
 {
     [DbContext(typeof(AudexDBContext))]
-    partial class AudexDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210805163628_Clip")]
+    partial class Clip
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -605,7 +607,7 @@ namespace Audex.API.Migrations
 
                     b.HasIndex("UploadedByDeviceId", "OwnerUserId");
 
-                    b.ToTable("Stacks");
+                    b.ToTable("Stack");
                 });
 
             modelBuilder.Entity("Audex.API.Models.StackCategory", b =>
@@ -638,7 +640,7 @@ namespace Audex.API.Migrations
 
                     b.HasIndex("OwnerUserId");
 
-                    b.ToTable("StackCategories");
+                    b.ToTable("StackCategory");
                 });
 
             modelBuilder.Entity("Audex.API.Models.Transfer", b =>

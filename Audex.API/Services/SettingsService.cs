@@ -7,6 +7,8 @@ namespace Audex.API.Services
         public Jwt Jwt { get; set; }
         public FileSystem FileSystem { get; set; }
         public Notifications Notifications { get; set; }
+        public Stacks Stacks { get; set; }
+        public Clips Clips { get; set; }
     }
 
     public class Jwt
@@ -26,5 +28,13 @@ namespace Audex.API.Services
         public string FcmId { get; set; }
         public string AppId { get; set; }
         public string ApiKey { get; set; }
+    }
+    public class Stacks
+    {
+
+    }
+    public class Clips
+    {
+        public string StarterClip { get; set; }
     }
 }

@@ -11,19 +11,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Audex.API.GraphQL.Queries
 {
     [ExtendObjectType("Query")]
-    public class StackQueries
+    public class ClipQueries
     {
         [Authorize, UsePaging, UseFiltering, UseSorting]
-        public IQueryable<Stack> GetStacks([Service] IIdentityService identityService,
+        public IQueryable<Clip> GetClips([Service] IIdentityService identityService,
                                            [Service] AudexDBContext context)
         {
-            return context.Stacks
+            return context.Clips
                 .Where(s => s.OwnerUserId == identityService.CurrentUser.Id)
                 .Where(s => s.DeletedOn == null)
-                .Include(s => s.StackCategory)
                 .Include(s => s.OwnerUser)
                 .Include(s => s.UploadedByDevice)
-                .Include(s => s.Files)
                 .OrderByDescending(s => s.CreatedOn);
         }
     }

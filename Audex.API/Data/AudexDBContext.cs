@@ -20,11 +20,12 @@ namespace Audex.API.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceType> DeviceTypes { get; set; }
-        public DbSet<Stack> Stack { get; set; }
-        public DbSet<StackCategory> StackCategory { get; set; }
+        public DbSet<Stack> Stacks { get; set; }
+        public DbSet<StackCategory> StackCategories { get; set; }
         public DbSet<FileNode> FileNodes { get; set; }
         public DbSet<DownloadToken> DownloadTokens { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<Clip> Clips { get; set; }
         // public DbSet<Share> Shares { get; set; }
         // public DbSet<Activity> Activity { get; set; }
         // public DbSet<FileType> FilesTypes { get; set; }
@@ -60,6 +61,10 @@ namespace Audex.API.Data
                 .HasOne(t => t.FromDevice)
                 .WithMany()
                 .HasForeignKey(t => new { t.FromDeviceId, t.FromUserId });
+            builder.Entity<Clip>()
+                .HasOne(s => s.UploadedByDevice)
+                .WithMany()
+                .HasForeignKey(s => new { s.UploadedByDeviceId, s.OwnerUserId });
             builder.Entity<Device>()
                 .HasMany(d => d.IncomingTransfers)
                 .WithOne(t => t.ToDevice);

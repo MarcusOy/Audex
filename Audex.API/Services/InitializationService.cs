@@ -23,16 +23,19 @@ namespace Audex.API.Services
         private readonly ITwoFactorService _twoFactorService;
         private readonly ILogger<InitializationService> _logger;
         private readonly IStackService _stackService;
+        private readonly IClipService _clipService;
         public InitializationService(AudexDBContext dbContext,
                                      IIdentityService identityService,
                                      ILogger<InitializationService> logger,
                                      IStackService stackService,
+                                     IClipService clipService,
                                      ITwoFactorService twoFactorService)
         {
-            this._dbContext = dbContext;
-            this._identityService = identityService;
-            this._logger = logger;
-            this._stackService = stackService;
+            _dbContext = dbContext;
+            _identityService = identityService;
+            _logger = logger;
+            _stackService = stackService;
+            _clipService = clipService;
             _twoFactorService = twoFactorService;
         }
         public void InitializeDatabase()
@@ -73,8 +76,9 @@ namespace Audex.API.Services
                     _dbContext.Devices.Add(d);
                     _dbContext.SaveChanges();
 
-                    // Starting Stack (as an example)
+                    // Starting Stack and Clip (as an example)
                     _stackService.CreateStartingStackAsync(u.Id).Wait();
+                    _clipService.CreateStartingClipAsync(u.Id).Wait();
                     _twoFactorService.ResetTwoFactorAsync(u);
 
                     _dbContext.SaveChanges();

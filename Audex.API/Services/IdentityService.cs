@@ -164,6 +164,8 @@ namespace Audex.API.Services
                         .ThenInclude(t => t.Stack)
                             .ThenInclude(s => s.Files)
                     .Include(d => d.IncomingTransfers)
+                        .ThenInclude(t => t.Clip)
+                    .Include(d => d.IncomingTransfers)
                         .ThenInclude(t => t.FromDevice)
                     .Where(d => d.UserId == CurrentUser.Id)
                     .FirstOrDefault(d => d.Id == deviceId);

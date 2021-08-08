@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Audex.API.Helpers;
 using Audex.API.Models;
 using Microsoft.Extensions.Options;
 using OneSignal.RestAPIv3.Client;
@@ -58,6 +59,32 @@ namespace Audex.API.Services
             this.ActionButtons.Add(new ActionButtonField
             {
                 Id = "StackOpenInAudex",
+                Text = "Open in Audex"
+            });
+        }
+    }
+
+    public class TransferClipNotification : NotificationCreateOptions
+    {
+        public TransferClipNotification(Device fromDevice, Device toDevice, Clip clip) : base()
+        {
+            this.Headings.Add(LanguageCodes.English, "New clip transfer");
+            this.Contents.Add(LanguageCodes.English, $"{fromDevice.Name} would like to send you a clip with{(clip.IsSecured ? " secured " : " ")}content{(clip.IsSecured ? "." : ":")}\n{(clip.IsSecured ? "" : clip.Content.Truncate(25))}.");
+            this.IncludePlayerIds = new List<string> { toDevice.NotificationIdentifier };
+
+            this.Data = new Dictionary<string, string>();
+            this.Data.Add("ClipId", clip.Id.ToString());
+            this.TimeToLive = 1209600; // 14 days
+
+            this.ActionButtons = new List<ActionButtonField>();
+            this.ActionButtons.Add(new ActionButtonField
+            {
+                Id = "CopyClip",
+                Text = "Copy"
+            });
+            this.ActionButtons.Add(new ActionButtonField
+            {
+                Id = "ClipOpenInAudex",
                 Text = "Open in Audex"
             });
         }
