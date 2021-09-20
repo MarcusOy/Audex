@@ -24,7 +24,7 @@ const IncomingTransfers = () => {
 	return (
 		<Stack style={{ marginLeft: 20 }}>
 			{incomingTransfersState.map((t) => (
-				<IncomingTransfer key={t.id} {...t} />
+				<IncomingTransfer key={t.id} transfer={t} />
 			))}
 		</Stack>
 	);

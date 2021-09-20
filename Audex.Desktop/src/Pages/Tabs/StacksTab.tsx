@@ -143,9 +143,8 @@ const stackColumns: IColumn[] = [
 const StacksTab = () => {
 	const { data, loading, error, refetch } = useQuery(GET_STACKS);
 	const onStacksUpdate = useSubscription(ON_STACKS_UPDATE, {});
-	const [createStarterStack, createStarterStackResponse] = useMutation(
-		CREATE_STARTER_STACK
-	);
+	const [createStarterStack, createStarterStackResponse] =
+		useMutation(CREATE_STARTER_STACK);
 
 	const [stacks, setStacks] = useState<IStackRow[]>([]);
 	const [columns, setColumns] = useState(stackColumns);
@@ -168,8 +167,9 @@ const StacksTab = () => {
 
 	useEffect(() => {
 		if (data) {
-			const s: IStackRow[] = (data.stacks
-				.nodes as Array<any>).map<IStackRow>((s) => {
+			const s: IStackRow[] = (
+				data.stacks.nodes as Array<any>
+			).map<IStackRow>((s) => {
 				return {
 					key: s.id,
 					rawName: s.name,

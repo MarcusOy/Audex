@@ -29,13 +29,13 @@ export const REAUTHENTICATE = gql`
 `;
 
 export const UPLOAD_FILE = gql`
-	mutation($file: Upload!) {
+	mutation ($file: Upload!) {
 		uploadFile(f: $file)
 	}
 `;
 
 export const CREATE_STACK = gql`
-	mutation($fileIds: [Uuid!]) {
+	mutation ($fileIds: [Uuid!]) {
 		createStack(fileIds: $fileIds) {
 			id
 		}
@@ -53,7 +53,7 @@ export const CREATE_STARTER_STACK = gql`
 `;
 
 export const ENSURE_STACK = gql`
-	mutation($stackId: Uuid!, $fileIds: [Uuid!]!) {
+	mutation ($stackId: Uuid!, $fileIds: [Uuid!]!) {
 		ensureInStack(stackId: $stackId, fileIds: $fileIds) {
 			id
 		}
@@ -61,19 +61,19 @@ export const ENSURE_STACK = gql`
 `;
 
 export const RENAME_STACK = gql`
-	mutation($stackId: Uuid!, $newName: String) {
+	mutation ($stackId: Uuid!, $newName: String) {
 		renameStack(stackId: $stackId, newName: $newName)
 	}
 `;
 
 export const RENAME_FILE = gql`
-	mutation($fileId: Uuid!, $newName: String) {
+	mutation ($fileId: Uuid!, $newName: String) {
 		renameFile(fileId: $fileId, newName: $newName)
 	}
 `;
 
 export const DELETE_STACK = gql`
-	mutation($stackIds: [Uuid!]) {
+	mutation ($stackIds: [Uuid!]) {
 		deleteStacks(stackIds: $stackIds) {
 			id
 		}
@@ -81,7 +81,7 @@ export const DELETE_STACK = gql`
 `;
 
 export const DELETE_FILE = gql`
-	mutation($fileIds: [Uuid!]) {
+	mutation ($fileIds: [Uuid!]) {
 		deleteFiles(fileIds: $fileId) {
 			id
 		}
@@ -89,7 +89,7 @@ export const DELETE_FILE = gql`
 `;
 
 export const GET_DOWNLOAD_TOKENS_FOR_STACK = gql`
-	mutation($stackId: Uuid!) {
+	mutation ($stackId: Uuid!) {
 		downloadTokensForStack(stackId: $stackId) {
 			id
 		}
@@ -97,14 +97,14 @@ export const GET_DOWNLOAD_TOKENS_FOR_STACK = gql`
 `;
 
 export const EDIT_DEVICE = gql`
-	mutation($name: String!, $deviceType: DeviceTypeEnum!) {
+	mutation ($name: String!, $deviceType: DeviceTypeEnum!) {
 		editDevice(request: { name: $name, deviceType: $deviceType }) {
 			id
 		}
 	}
 `;
 export const TRANSFER_STACK = gql`
-	mutation($stackId: Uuid!, $toDeviceId: Uuid!) {
+	mutation ($stackId: Uuid!, $toDeviceId: Uuid!) {
 		transferStack(stackId: $stackId, toDeviceId: $toDeviceId) {
 			id
 			stack {
@@ -119,17 +119,55 @@ export const TRANSFER_STACK = gql`
 	}
 `;
 export const ACCEPT_TRANSFER = gql`
-	mutation($transferId: Uuid!) {
+	mutation ($transferId: Uuid!) {
 		acceptTransfer(transferId: $transferId) {
 			id
 		}
 	}
 `;
 export const DECLINE_TRANSFER = gql`
-	mutation($transferId: Uuid!) {
+	mutation ($transferId: Uuid!) {
 		declineTransfer(transferId: $transferId) {
 			id
 			status
+		}
+	}
+`;
+
+export const DISMISS_TRANFER = gql`
+	mutation ($transferId: Uuid!, $didCopy: Boolean!) {
+		dismissClipTransfer(transferId: $transferId, didCopy: $didCopy) {
+			id
+		}
+	}
+`;
+
+export const CREATE_STARTING_CLIP = gql`
+	mutation {
+		createStartingClip {
+			id
+			content
+			isSecured
+			createdOn
+		}
+	}
+`;
+
+export const CREATE_AND_SEND_CLIP = gql`
+	mutation ($content: String, $isSecure: Boolean!, $transferTo: [Uuid!]) {
+		createClip(
+			content: $content
+			isSecure: $isSecure
+			transferTo: $transferTo
+		) {
+			id
+		}
+	}
+`;
+export const DELETE_CLIPS = gql`
+	mutation ($clipIds: [Uuid!]) {
+		deleteClips(clipIds: $clipIds) {
+			id
 		}
 	}
 `;

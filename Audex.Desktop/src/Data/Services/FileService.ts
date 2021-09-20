@@ -62,9 +62,10 @@ class FileService {
 			s.Upload.Files = DataStore.getRawState().Upload.Files.filter(
 				(_, index) => i != index
 			);
-			s.Upload.FileUnits = DataStore.getRawState().Upload.FileUnits.filter(
-				(_, index) => i != index
-			);
+			s.Upload.FileUnits =
+				DataStore.getRawState().Upload.FileUnits.filter(
+					(_, index) => i != index
+				);
 		});
 	}
 	static removeAllFiles(): void {

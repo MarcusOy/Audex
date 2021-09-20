@@ -51,7 +51,7 @@ namespace Audex.API.Services
             if (_dbContext.AuthTokens.Where(t => t.Token == code).Count() <= 0)
             {
                 if (new Totp(Base32Encoding.ToBytes(user.TwoFactorKey))
-                    .VerifyTotp(code, out long timeStep))
+                    .VerifyTotp(code, out long timeStep, new VerificationWindow(1, 1)))
                 {
                     _dbContext.AuthTokens.Add(new AuthToken
                     {

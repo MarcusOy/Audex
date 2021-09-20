@@ -13,7 +13,7 @@ namespace Audex.API.GraphQL.Queries
     [ExtendObjectType("Query")]
     public class ClipQueries
     {
-        [Authorize, UsePaging, UseFiltering, UseSorting]
+        [Authorize, UsePaging(DefaultPageSize = 25, MaxPageSize = 50, IncludeTotalCount = true), UseFiltering, UseSorting]
         public IQueryable<Clip> GetClips([Service] IIdentityService identityService,
                                            [Service] AudexDBContext context)
         {
@@ -22,6 +22,7 @@ namespace Audex.API.GraphQL.Queries
                 .Where(s => s.DeletedOn == null)
                 .Include(s => s.OwnerUser)
                 .Include(s => s.UploadedByDevice)
+                    .ThenInclude(d => d.DeviceType)
                 .OrderByDescending(s => s.CreatedOn);
         }
     }

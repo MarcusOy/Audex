@@ -1,3 +1,4 @@
+import { IClipPanel } from '../../Components/Modals/ClipPanel';
 import { IStackPanel } from '../../Components/Modals/StackPanel';
 import { DataStore } from '../DataStore/DataStore';
 
@@ -11,6 +12,17 @@ class ModalService {
 	static closeFileModal() {
 		DataStore.update((s) => {
 			s.Modals.StackPanel.isOpen = false;
+		});
+	}
+	static openClipModal({ clipId }: IClipPanel) {
+		DataStore.update((s) => {
+			s.Modals.ClipPanel.clipId = clipId;
+			s.Modals.ClipPanel.isOpen = true;
+		});
+	}
+	static closeClipModal() {
+		DataStore.update((s) => {
+			s.Modals.ClipPanel.isOpen = false;
 		});
 	}
 }

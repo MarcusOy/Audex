@@ -42,19 +42,16 @@ class ServerService {
 			// If the passed in server is in the server list, change its status
 			if (serverList.has(server.hostName))
 				DataStore.update((s) => {
-					s.Servers.serverList.get(
-						server.hostName
-					)!.isOnline = isOnline;
+					s.Servers.serverList.get(server.hostName)!.isOnline =
+						isOnline;
 				});
 		}
 		return isOnline;
 	}
 
 	static async isSelectedServerUp(): Promise<boolean> {
-		const {
-			serverList,
-			selectedServerHostname,
-		} = DataStore.getRawState().Servers;
+		const { serverList, selectedServerHostname } =
+			DataStore.getRawState().Servers;
 		return selectedServerHostname
 			? await this.isServerUp(serverList.get(selectedServerHostname)!)
 			: false;

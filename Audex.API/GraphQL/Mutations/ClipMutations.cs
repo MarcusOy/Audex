@@ -40,12 +40,29 @@ namespace Audex.API.GraphQL.Mutations
         public async Task<Clip> CreateClip(
             string content,
             bool isSecure,
+            List<Guid> transferTo,
             [Service] IClipService clipService,
+            [Service] ITransferService transferService,
             [Service] ISubscriptionService subService)
         {
             var clip = await clipService.CreateAsync(content, isSecure);
 
             await subService.NotifyAsync(SubscriptionTopic.OnClipsUpdate, new Guid[] { clip.Id });
+
+            if (transferTo is not null)
+            {
+                try
+                {
+                    foreach (Guid dId in transferTo)
+                    {
+                        await transferService.TransferClipAsync(clip.Id, dId);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"The clip was created but was not able to be transfered: {e.Message}");
+                }
+            }
 
             return clip;
         }
@@ -98,7 +115,7 @@ namespace Audex.API.GraphQL.Mutations
             dbContext.Clips.UpdateRange(clips);
             await dbContext.SaveChangesAsync();
 
-            await subService.NotifyAsync(SubscriptionTopic.OnStacksUpdate, clips.Select(s => s.Id).ToArray());
+            await subService.NotifyAsync(SubscriptionTopic.OnClipsUpdate, clips.Select(s => s.Id).ToArray());
 
             return clips;
         }

@@ -1,3 +1,5 @@
+import { IClipPanel } from './../../Components/Modals/ClipPanel';
+import { ITransferRow } from './../../Components/Activity/IncomingTransfer';
 // import { IFileTransferPanel } from '../../Components/Modals/FileTransferPanel';
 import { IModal } from '../../Components/Modals/Modals';
 import { IStackPanel } from '../../Components/Modals/StackPanel';
@@ -23,6 +25,7 @@ export interface AudexStore {
 	Modals: {
 		Toasts: IToasts;
 		StackPanel: IStackPanel;
+		ClipPanel: IClipPanel;
 		FilePreview: IModal;
 	};
 	Upload: {
@@ -63,29 +66,7 @@ export interface Identity {
 			name: string;
 			color: string;
 		};
-		incomingTransfers: IncomingTransfer[];
-	};
-}
-
-export interface IncomingTransfer {
-	id: string;
-	createdOn: string;
-	stack: {
-		id: string;
-		name: string;
-		vanityName: {
-			name: string;
-			suffix: string;
-		};
-		files: {
-			id: string;
-			name: string;
-			fileExtension: string;
-		}[];
-	};
-	fromDevice: {
-		id: string;
-		name: string;
+		incomingTransfers: ITransferRow[];
 	};
 }
 
@@ -131,6 +112,10 @@ const initialState: AudexStore = {
 		StackPanel: {
 			isOpen: false,
 			stackId: '',
+		},
+		ClipPanel: {
+			isOpen: false,
+			clipId: '',
 		},
 		FilePreview: {
 			isOpen: false,

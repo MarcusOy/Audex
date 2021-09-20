@@ -45,6 +45,11 @@ export const WHO_AM_I = gql`
 							fileExtension
 						}
 					}
+					clip {
+						id
+						isSecured
+						content
+					}
 					fromDevice {
 						id
 						name
@@ -85,7 +90,7 @@ export const GET_STACKS = gql`
 `;
 
 export const GET_STACK = gql`
-	query($stackId: Uuid!) {
+	query ($stackId: Uuid!) {
 		stacks(where: { id: { in: [$stackId] } }) {
 			nodes {
 				id
@@ -113,14 +118,54 @@ export const GET_STACK = gql`
 	}
 `;
 
-export const GET_FORM = gql`
-	query($entityName: String) {
-		formSchema(entityName: $entityName) {
-			schema
-			uISchema
+export const GET_CLIPS = gql`
+	query ($cursor: String) {
+		clips(after: $cursor) {
+			nodes {
+				id
+				createdOn
+				uploadedByDevice {
+					id
+					name
+					deviceType {
+						name
+					}
+				}
+				content
+				isSecured
+			}
+			pageInfo {
+				endCursor
+				hasNextPage
+			}
 		}
 	}
 `;
+
+export const GET_CLIP = gql`
+	query ($clipId: Uuid!) {
+		clips(where: { id: { in: [$clipId] } }) {
+			nodes {
+				id
+				createdOn
+				uploadedByDevice {
+					name
+				}
+				content
+				isSecured
+			}
+		}
+	}
+`;
+
+// export const GET_FORM = gql`
+// 	query ($entityName: String) {
+// 		formSchema(entityName: $entityName) {
+// 			schema
+// 			uISchema
+// 		}
+// 	}
+// `;
 
 export const GET_DEVICE_TYPES = gql`
 	query {

@@ -4,6 +4,7 @@ import Toasts from './Toasts';
 import OfflineModal from './OfflineModal';
 import DeviceSetupModal from './DeviceSetupModal';
 import UploadToast from './UploadToast';
+import ClipPanel from './ClipPanel';
 
 export interface IModal {
 	isOpen?: boolean;
@@ -17,6 +18,7 @@ const Modals = () => {
 			<Toasts />
 			<UploadToast />
 			<StackPanel />
+			<ClipPanel />
 			{/* <FileTransferPanel /> */}
 		</>
 	);

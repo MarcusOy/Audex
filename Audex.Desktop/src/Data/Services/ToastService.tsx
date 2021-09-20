@@ -7,6 +7,7 @@ class ToastService {
 	static toasts: IMessageBarProps[] = [];
 
 	static push(t: IMessageBarProps, d?: number) {
+		t.key = new Date().getTime();
 		DataStore.update((s) => {
 			const ts: IMessageBarProps[] = new Array<IMessageBarProps>().concat(
 				DataStore.getRawState().Modals.Toasts.toasts.slice()
@@ -25,15 +26,17 @@ class ToastService {
 	static dismiss(k: string) {
 		DataStore.update((s) => {
 			// @ts-ignore
-			s.Modals.Toasts.toasts = DataStore.getRawState().Modals.Toasts.toasts.filter(
-				(t) => t.key != k
-			);
+			s.Modals.Toasts.toasts =
+				DataStore.getRawState().Modals.Toasts.toasts.filter(
+					(t) => t.key != k
+				);
 		});
 	}
 
 	static pop(i?: number) {
 		DataStore.update((s) => {
-			const ts: IMessageBarProps[] = DataStore.getRawState().Modals.Toasts.toasts.slice();
+			const ts: IMessageBarProps[] =
+				DataStore.getRawState().Modals.Toasts.toasts.slice();
 			i = i ?? 1;
 			Array(i)
 				.fill(i)

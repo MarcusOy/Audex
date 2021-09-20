@@ -37,9 +37,11 @@ const DeviceSetupModal = () => {
 	const platform = getOS();
 
 	// GraphQL hooks
-	const { data, loading: dtLoading, error: dtError } = useQuery(
-		GET_DEVICE_TYPES
-	);
+	const {
+		data,
+		loading: dtLoading,
+		error: dtError,
+	} = useQuery(GET_DEVICE_TYPES);
 	const [setupDevice, { loading, error }] = useMutation(EDIT_DEVICE);
 
 	// Get DeviceTypes

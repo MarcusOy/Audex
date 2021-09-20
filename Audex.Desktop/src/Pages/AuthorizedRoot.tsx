@@ -7,6 +7,7 @@ import {
 	Redirect,
 } from 'react-router-dom';
 import HeaderBar from '../Components/Header/HeaderBar';
+import FileDrop from '../Components/Uploading/FileDrop';
 import { DataStore } from '../Data/DataStore/DataStore';
 import { WHO_AM_I } from '../Data/Queries';
 import IdentityService from '../Data/Services/IdentityService';
@@ -29,22 +30,31 @@ const AuthorizedRoot = () => {
 	}, [onIdentityUpdate.data]);
 
 	return (
-		<>
-			<HeaderBar />
-			<Switch>
-				<Route path='/' exact>
-					<Redirect to='/Home/Stacks' />
-				</Route>
+		<FileDrop>
+			<div
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					height: '100vh',
+				}}
+			>
+				<HeaderBar />
 
-				<Route path='/Home/:tab'>
-					<HomePage />
-				</Route>
-				<Route path='/Users'></Route>
-				<Route path='/Settings/:tab'>
-					<SettingsPage />
-				</Route>
-			</Switch>
-		</>
+				<Switch>
+					<Route path='/' exact>
+						<Redirect to='/Home/Stacks' />
+					</Route>
+
+					<Route path='/Home/:tab'>
+						<HomePage />
+					</Route>
+					<Route path='/Users'></Route>
+					<Route path='/Settings/:tab'>
+						<SettingsPage />
+					</Route>
+				</Switch>
+			</div>
+		</FileDrop>
 	);
 };
 

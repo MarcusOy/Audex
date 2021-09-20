@@ -1,9 +1,10 @@
-.html {
+html {
 	height: 100%;
 	overflow-x: hidden;
 }
-.body {
+body {
 	height: 100%;
+	margin: 0;
 }
 #root {
 	height: 100vh;

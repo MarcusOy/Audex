@@ -22,15 +22,18 @@ namespace Audex.API.GraphQL.Subscriptions
     public class ClipSubscriptions
     {
         [Subscribe(With = nameof(SubscribeOnClipsUpdateAsync)), Topic]
-        public async Task<List<Stack>> OnClipsUpdate(
+        public async Task<List<Clip>> OnClipsUpdate(
             [EventMessage] Guid[] changedClipIds,
             [Service] IIdentityService idService,
             [Service] AudexDBContext dbContext
         )
         {
-            return await dbContext.Stacks
+            return await dbContext.Clips
                 .Where(s => s.OwnerUser.Id == idService.CurrentUser.Id)
                 .Where(s => changedClipIds.Contains(s.Id))
+                .Include(s => s.OwnerUser)
+                .Include(s => s.UploadedByDevice)
+                    .ThenInclude(d => d.DeviceType)
                 .ToListAsync();
         }
         [Authorize]

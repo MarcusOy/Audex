@@ -7,6 +7,7 @@ import {
 	SearchBox,
 	Stack,
 	Text,
+	useTheme,
 } from '@fluentui/react';
 import { useBoolean } from '@fluentui/react-hooks';
 import React from 'react';
@@ -21,39 +22,60 @@ import Spacer from '../Spacer';
 
 const HeaderBar = () => {
 	// Menu Panel
-	const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(
-		false
-	);
+	const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
+		useBoolean(false);
 
 	const { pathname } = useLocation();
 	const history = useHistory();
 
-	// const {
-	// 	size,
-	// 	orientation,
-	// 	screenIsAtLeast,
-	// 	screenIsAtMost,
-	// } = useResponsive();
+	const { palette } = useTheme();
 
 	return (
 		<Stack>
 			<div
 				style={{
-					height: 20,
+					// height: 35,
+					// backgroundColor: 'rgba(243, 242, 241, 0.0)',
+					display: 'flex',
+					borderBottom: '1px solid rgb(243, 242, 241)',
 					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 					//@ts-ignore
 					WebkitAppRegion: 'drag',
 					WebkitUserSelect: 'none',
+					padding: 13,
 				}}
-			/>
+			>
+				<div
+					style={{
+						backgroundColor: '#00000026',
+						height: 12,
+						width: 12,
+						borderRadius: 12,
+						marginRight: 8,
+					}}
+				></div>
+				<div
+					style={{
+						backgroundColor: '#00000026',
+						height: 12,
+						width: 12,
+						borderRadius: 12,
+						marginRight: 8,
+					}}
+				></div>
+				<div
+					style={{
+						backgroundColor: '#00000026',
+						height: 12,
+						width: 12,
+						borderRadius: 12,
+					}}
+				></div>
+			</div>
 			<Stack
 				style={{
-					// marginBottom: 20,
-					// paddingTop: 20,
 					paddingBottom: 10,
-					// borderBottom: '1px solid rgb(243, 242, 241)',
 					position: 'sticky',
-					// '-webkit-app-region': 'drag',
 				}}
 				tokens={{ childrenGap: 8 }}
 				horizontal

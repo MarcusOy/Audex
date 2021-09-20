@@ -6,7 +6,7 @@ const {
 	session,
 	Notification,
 } = require('electron');
-const toast = require('powertoast');
+// const toast = require('powertoast');
 const { setup: setupPushReceiver } = require('electron-push-receiver');
 const { currentPlatform, platformNames } = require('./Helpers');
 
@@ -16,17 +16,17 @@ exports.notificationHandlersInit = () => {
 
 	ipcMain.on('PushOneSignalNotification', (_, notif) => {
 		if (currentPlatform == platformNames.win32) {
-			toast({
-				title: notif.data.title,
-				message: notif.data.alert,
-				scenario: 'reminder',
-				button: JSON.parse(notif.data.o).map((a) => {
-					return {
-						text: a.n,
-						onClick: a.i,
-					};
-				}),
-			});
+			// toast({
+			// 	title: notif.data.title,
+			// 	message: notif.data.alert,
+			// 	scenario: 'reminder',
+			// 	button: JSON.parse(notif.data.o).map((a) => {
+			// 		return {
+			// 			text: a.n,
+			// 			onClick: a.i,
+			// 		};
+			// 	}),
+			// });
 			return;
 		}
 

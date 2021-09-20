@@ -15,17 +15,10 @@ import {
 } from '@fluentui/react';
 import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import BackToTop from '../Components/BackToTop';
-import StacksTab from './Tabs/StacksTab';
-import MenuBar from '../Components/MenuBar';
-import DashboardTab from './Tabs/DashboardTab';
-import FileDrop from '../Components/Uploading/FileDrop';
 import { Grid } from 'fluentui-react-grid';
 import { DataStore } from '../Data/DataStore/DataStore';
 import Spacer from '../Components/Spacer';
 import { getInitials } from '../Data/Helpers';
-import AccountSettingsTab from './Tabs/AccountSettingsTab';
-import DeviceSettingsTab from './Tabs/DeviceSettingsTab';
 
 interface SettingsPageParams {
 	tab: string;

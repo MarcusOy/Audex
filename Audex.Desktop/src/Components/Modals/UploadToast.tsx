@@ -116,7 +116,7 @@ const UploadToast = () => {
 	// };
 	return (
 		<>
-			<Stack className={css(styles.container)}>
+			<Stack className={css(UploadToastStyles.container)}>
 				<Animate
 					play={isToastShowing}
 					easeType={MotionTimings.decelerate}
@@ -131,7 +131,12 @@ const UploadToast = () => {
 						pointerEvents: 'all',
 					}}
 				>
-					<Stack className={css(styles.toast)}>
+					<Stack
+						className={css(
+							UploadToastStyles.positioner,
+							UploadToastStyles.toast
+						)}
+					>
 						<Stack
 							horizontal
 							horizontalAlign='center'
@@ -172,7 +177,11 @@ const UploadToast = () => {
 							}}
 						>
 							<Separator />
-							<div className={css(styles.fileUnitsContainer)}>
+							<div
+								className={css(
+									UploadToastStyles.fileUnitsContainer
+								)}
+							>
 								{fileState.map((f, i) => {
 									return (
 										<FileUnit
@@ -192,20 +201,21 @@ const UploadToast = () => {
 	);
 };
 
-const styles = StyleSheet.create({
+export const UploadToastStyles = StyleSheet.create({
 	container: {
 		position: 'fixed',
 		// pointerEvents: 'none',
 		width: '100%',
 		bottom: 0,
 	},
-	toast: {
+	positioner: {
 		position: 'absolute',
 		left: 0,
 		right: 0,
 		bottom: 10,
 		margin: '0 auto',
-
+	},
+	toast: {
 		background: 'white',
 		opacity: 0.95,
 		boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',

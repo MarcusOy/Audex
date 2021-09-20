@@ -30,7 +30,6 @@ const EditDeviceIcon = (p: IEditDeviceIconProps) => {
 				id='test'
 				type={actualDeviceType}
 				name={watchedDeviceName ? watchedDeviceName : 'This device'}
-				color={actualDeviceColor}
 				disableContextMenu
 			/>
 		</Stack>

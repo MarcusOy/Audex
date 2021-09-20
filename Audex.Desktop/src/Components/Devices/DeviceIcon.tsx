@@ -5,6 +5,7 @@ import {
 	getTheme,
 	IconButton,
 	IContextualMenuItem,
+	Image,
 	Link,
 	mergeStyleSets,
 	Stack,
@@ -12,23 +13,11 @@ import {
 } from '@fluentui/react';
 import { useId } from '@fluentui/react-hooks';
 import React, { useRef, useState } from 'react';
-import {
-	FaServer,
-	FaWindows,
-	FaApple,
-	FaLinux,
-	FaGlobe,
-	FaAppStore,
-	FaAndroid,
-	FaDesktop,
-} from 'react-icons/fa';
-import { IconBaseProps } from 'react-icons/lib';
 
 export interface IDeviceIconProps {
 	id: string;
 	name: string;
 	type: string;
-	color: string;
 	isCurrentDevice?: boolean;
 
 	componentOverride?: JSX.Element;
@@ -38,32 +27,6 @@ export interface IDeviceIconProps {
 
 	disableContextMenu?: boolean;
 }
-
-const getIconComponentFromDeviceType = (type: string) => {
-	const baseProps: IconBaseProps = {
-		color: 'white',
-		size: 20,
-	};
-
-	switch (type) {
-		case 'Audex Server':
-			return <FaServer {...baseProps} />;
-		case 'Windows':
-			return <FaWindows {...baseProps} />;
-		case 'MacOS':
-			return <FaApple {...baseProps} />;
-		case 'Linux':
-			return <FaLinux {...baseProps} />;
-		case 'Web':
-			return <FaGlobe {...baseProps} />;
-		case 'iOS':
-			return <FaAppStore {...baseProps} />; // TODO: use better icon
-		case 'Android':
-			return <FaAndroid {...baseProps} />;
-		default:
-			return <FaDesktop {...baseProps} />;
-	}
-};
 
 const DeviceIcon = (p: IDeviceIconProps) => {
 	const menuProps: IContextualMenuItem[] = [
@@ -129,18 +92,14 @@ const DeviceIcon = (p: IDeviceIconProps) => {
 				}).stack
 			}
 		>
-			<Stack
+			<Image
+				width={45}
+				height={45}
 				style={{
 					borderRadius: 45,
-					width: 45,
-					height: 45,
-					backgroundColor: p.color,
 				}}
-				verticalAlign='center'
-				horizontalAlign='center'
-			>
-				{getIconComponentFromDeviceType(p.type)}
-			</Stack>
+				src={`/images/devices/${p.type}.png`}
+			/>
 			<Text style={{ fontSize: 10 }}>
 				{p.isCurrentDevice ? 'This device' : p.name}
 			</Text>

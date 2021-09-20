@@ -17,8 +17,9 @@ interface IDownloadUnitGroupProps {
 const DownloadUnitGroup = (p: IDownloadUnitGroupProps) => {
 	const [isShown, setIsShown] = useState(false);
 
-	const completedDownloads = p.downloads.filter((d) => d.progress == 1)
-		.length;
+	const completedDownloads = p.downloads.filter(
+		(d) => d.progress == 1
+	).length;
 	const totalDownloads = p.downloads.length;
 	const fileExtensions = p.downloads.slice(0, 3).map((d) => {
 		return getFileExt(d.fileName);
